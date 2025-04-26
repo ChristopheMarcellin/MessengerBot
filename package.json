@@ -1,0 +1,9 @@
+{
+  "name": "fb-proxy-railway",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.5.0"
+  }
+}
