@@ -31,23 +31,29 @@ app.post('/webhook', async (req, res) => {
     console.log("Incoming Request Body:", JSON.stringify(req.body));
     
     // Prepare the outgoing payload
-    const payload = JSON.stringify(req.body); // <<< IMPORTANT: Stringify before sending
+    const payload = JSON.stringify(req.body); // <<< Stringify before sending
 
     // Log outgoing payload
     console.log("Forwarding to Apps Script:");
     console.log("Outgoing Body:", payload);
 
     // Forward the request to Google Apps Script Web App
-    await axios.post(YOUR_APPS_SCRIPT_URL, payload, {
+    const response = await axios.post(YOUR_APPS_SCRIPT_URL, payload, {
       headers: {
         'Content-Type': 'application/json' // Explicitly tell GAS it's JSON
       }
     });
-    
+
+    // Log the response from Apps Script
+    console.log("Response from Apps Script:", response.data);
+
     // Respond immediately to Messenger to avoid timeouts
     res.status(200).send('EVENT_RECEIVED');
   } catch (error) {
     console.error("Error forwarding event:", error.toString());
+    if (error.response && error.response.data) {
+      console.error("Error details from Apps Script:", error.response.data);
+    }
     res.status(500).send('Error forwarding event');
   }
 });
