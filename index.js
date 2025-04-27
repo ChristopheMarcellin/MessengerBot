@@ -4,7 +4,8 @@ const app = express();
 app.use(express.json());
 
 const VERIFY_TOKEN = 'helloworldtoken'; // <<< your verify token
-const YOUR_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnt88zFCVT6B4N0M7fPTQqjgEbVzXGSc-OulTgWS8F2BmZZUQq8dC14R6NuHyEGvgd/exec'; // <<< Paste your Apps Script Web App URL
+const YOUR_APPS_SCRIPT_URL = 
+'https://script.google.com/macros/s/AKfycbwnt88zFCVT6B4N0M7fPTQqjgEbVzXGSc-OulTgWS8F2BmZZUQq8dC14R6NuHyEGvgd/exec'; // <<< Paste your Apps Script Web App URL
 
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
