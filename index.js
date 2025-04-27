@@ -4,8 +4,7 @@ const app = express();
 app.use(express.json());
 
 const VERIFY_TOKEN = 'helloworldtoken'; // <<< your verify token
-const YOUR_APPS_SCRIPT_URL = 
-'https://script.google.com/macros/s/AKfycbwnt88zFCVT6B4N0M7fPTQqjgEbVzXGSc-OulTgWS8F2BmZZUQq8dC14R6NuHyEGvgd/exec'; // <<< Paste your Apps Script Web App URL
+const YOUR_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnt88zFCVT6B4N0M7fPTQqjgEbVzXGSc-OulTgWS8F2BmZZUQq8dC14R6NuHyEGvgd/exec'; // <<< your Apps Script Web App URL
 
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
@@ -25,9 +24,22 @@ app.get('/webhook', (req, res) => {
 
 app.post('/webhook', async (req, res) => {
   try {
-    await axios.post(YOUR_APPS_SCRIPT_URL, req.body);
+    console.log("Incoming Request Headers:", JSON.stringify(req.headers));
+    console.log("Incoming Request Body:", JSON.stringify(req.body));
+    
+    // Forward the request
+    console.log("Forwarding to Apps Script:");
+    console.log("Outgoing Body:", JSON.stringify(req.body));
+
+    await axios.post(YOUR_APPS_SCRIPT_URL, req.body, {
+      headers: {
+        'Content-Type': 'application/json' // Make sure to set Content-Type explicitly
+      }
+    });
+    
     res.status(200).send('EVENT_RECEIVED');
   } catch (error) {
+    console.error("Error forwarding event:", error.toString());
     res.status(500).send('Error forwarding event');
   }
 });
