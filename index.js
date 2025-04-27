@@ -3,10 +3,10 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-const VERIFY_TOKEN = 'helloworldtoken'; // <<< your verify token
-const YOUR_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnt88zFCVT6B4N0M7fPTQqjgEbVzXGSc-OulTgWS8F2BmZZUQq8dC14R6NuHyEGvgd/exec'; // <<< your Apps Script Web App URL
+const VERIFY_TOKEN = 'helloworldtoken'; // your verify token
+const PAGE_ACCESS_TOKEN = 'EAAJKoaoqWTwBO13IbPGWADaCrLI4CtECzrrTw8AV0A7DHyskEXv1V4Yw3B3xfQuzuns1zM7qKhgbZAQ3DzLPo9KuD4ZAfZArqrcQFEsZCV8yktqNgIQAyWjJjIdLVZC2WyNmPWdRqau6OYvpZC04dGaNMKAy6zNaoL5wOZByFYYaaXyYhS59G4S6qHsxjwuZAfPbp2c0tBzSoc5DmjUZD'; // your Page token (very important)
 
-// Verification endpoint (Facebook webhook handshake)
+// Messenger webhook verification (handshake)
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -23,41 +23,44 @@ app.get('/webhook', (req, res) => {
   }
 });
 
-// Main webhook event listener
+// Messenger webhook event reception
 app.post('/webhook', async (req, res) => {
   try {
-    // Log the incoming request for troubleshooting
-    console.log("Incoming Request Headers:", JSON.stringify(req.headers));
-    console.log("Incoming Request Body:", JSON.stringify(req.body));
-    
-    // Prepare the outgoing payload
-    const payload = JSON.stringify(req.body); // <<< Stringify before sending
+    console.log("Incoming Request:", JSON.stringify(req.body));
 
-    // Log outgoing payload
-    console.log("Forwarding to Apps Script:");
-    console.log("Outgoing Body:", payload);
+    const receivedMessage = req.body.entry?.[0]?.messaging?.[0]?.message?.text;
+    const senderId = req.body.entry?.[0]?.messaging?.[0]?.sender?.id;
 
-    // Forward the request to Google Apps Script Web App
-    const response = await axios.post(YOUR_APPS_SCRIPT_URL, payload, {
-      headers: {
-        'Content-Type': 'application/json' // Explicitly tell GAS it's JSON
+    if (receivedMessage && senderId) {
+      const normalizedMessage = receivedMessage.trim().toLowerCase();
+
+      if (normalizedMessage === 'hi' || normalizedMessage === 'hello') {
+        const messageData = {
+          recipient: { id: senderId },
+          message: { text: "Hello! 👋 How can I assist you today?" }
+        };
+
+        await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, messageData, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        console.log("Reply sent to Messenger successfully!");
+      } else {
+        console.log("Received a message that is not 'hi' or 'hello'. Ignored.");
       }
-    });
+    } else {
+      console.log("No valid message or sender ID found in incoming request.");
+    }
 
-    // Log the response from Apps Script
-    console.log("Response from Apps Script:", response.data);
-
-    // Respond immediately to Messenger to avoid timeouts
     res.status(200).send('EVENT_RECEIVED');
   } catch (error) {
-    console.error("Error forwarding event:", error.toString());
+    console.error("Error handling webhook event:", error.toString());
     if (error.response && error.response.data) {
-      console.error("Error details from Apps Script:", error.response.data);
+      console.error("Error details:", error.response.data);
     }
-    res.status(500).send('Error forwarding event');
+    res.status(500).send('Error handling event');
   }
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
