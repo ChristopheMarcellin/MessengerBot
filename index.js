@@ -37,12 +37,27 @@ app.post('/webhook', async (req, res) => {
     const receivedMessage = req.body.entry?.[0]?.messaging?.[0]?.message?.text;
     const senderId = req.body.entry?.[0]?.messaging?.[0]?.sender?.id;
 
+// Ignore if it's an echo (sent by our Page)
+    const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
+
+
+if (messagingEvent.message?.is_echo) {
+  console.log("Skipping echo message");
+  return res.status(200).send('EVENT_RECEIVED');
+}
+
+// Ignore delivery or read events
+if (messagingEvent.delivery || messagingEvent.read) {
+  console.log("Skipping delivery/read event");
+  return res.status(200).send('EVENT_RECEIVED');
+}
+
     if (receivedMessage && senderId) {
       console.log(`Received message: ${receivedMessage}`);
 
       // 1. Send user's message to ChatGPT
       const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: "gpt-4o",
+        model: "gpt-3.5-turbo",
         messages: [{ role: "user", content: receivedMessage }]
       }, {
         headers: {
