@@ -34,8 +34,15 @@ app.post('/webhook', async (req, res) => {
   try {
     console.log("Incoming Request:", JSON.stringify(req.body));
 
-    const receivedMessage = req.body.entry?.[0]?.messaging?.[0]?.message?.text;
-    const senderId = req.body.entry?.[0]?.messaging?.[0]?.sender?.id;
+      const receivedMessage = req.body.entry?.[0]?.messaging?.[0]?.message?.text;
+      const senderId = req.body.entry?.[0]?.messaging?.[0]?.sender?.id;
+      const { detectUserLanguage } = require('./modules/languageDetector');
+
+ 
+
+// Store 'F' or 'E' as needed for later flow
+
+
 
 // Ignore if it's an echo (sent by our Page)
     const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
@@ -54,10 +61,12 @@ if (messagingEvent.delivery || messagingEvent.read) {
 
     if (receivedMessage && senderId) {
       console.log(`Received message: ${receivedMessage}`);
+      const userLanguage = await detectUserLanguage(receivedMessage);
+      console.log(`Detected Language: ${userLanguage}`);
 
       // 1. Send user's message to ChatGPT
       const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o",
         messages: [{ role: "user", content: receivedMessage }]
       }, {
         headers: {
