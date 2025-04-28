@@ -1,4 +1,8 @@
 require('dotenv').config();
+
+console.log("DEBUG ENV OPENAI KEY:", process.env.OPENAI_API_KEY);
+console.log("DEBUG ENV PAGE ACCESS TOKEN:", process.env.PAGE_ACCESS_TOKEN);
+
 const express = require('express');
 const axios = require('axios');
 const app = express();
