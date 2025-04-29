@@ -65,8 +65,22 @@ Message: """${receivedMessage}"""
             }
         });
 
-        const detectionText = detectionResponse.data.choices?.[0]?.message?.content || "{}";
-        const { language, project } = JSON.parse(detectionText.trim());
+        let detectionText = detectionResponse.data.choices?.[0]?.message?.content || "{}";
+
+        // Clean markdown if GPT returns ```json ... ```
+        detectionText = detectionText.replace(/```json|```/g, "").trim();
+
+        let language = "en";
+        let project = "E";
+
+        try {
+            const parsed = JSON.parse(detectionText);
+            language = parsed.language || "en";
+            project = parsed.project || "E";
+        } catch (e) {
+            console.warn("[WARNING] Failed to parse detection JSON. Defaulting to EN/E.");
+        }
+
 
         console.log("[STEP 3] Detected Language:", language);
         console.log("[STEP 4] Detected Project:", project);
