@@ -1,4 +1,4 @@
-/ index.js (enhanced with specification engine, question limit, and debug logger)
+// index.js (enhanced with specification engine, question limit, and debug logger)
 require('dotenv').config();
 
 const express = require('express');
@@ -148,10 +148,12 @@ app.post('/webhook', async (req, res) => {
 
         const session = userSessions[senderId];
 
-        // If projectType is not resolved, handle it as a hardcoded question
+        // If projectType is not resolved AND we're still in early GPT usage, ask the hardcoded question
         if (!["B", "S", "R"].includes(session.specValues.projectType)) {
-            await handleSpecification(senderId, "projectType", receivedMessage);
-            return res.status(200).send('EVENT_RECEIVED');
+            if (session.questionCount < 4) {
+                await handleSpecification(senderId, "projectType", receivedMessage);
+                return res.status(200).send('EVENT_RECEIVED');
+            }
         }
 
         // ChatGPT question limit check
