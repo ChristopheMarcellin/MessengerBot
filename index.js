@@ -51,8 +51,7 @@ async function handleSpecification(senderId, specName, userMessage) {
 
     // Step 1: Check if we already have the value
     if (session.specValues[specName] !== undefined) {
-        const response = session.language === "fr" ? "Avez-vous une autre question ?" : "Do you have another inquiry?";
-        return await sendMessage(senderId, response);
+        return; // Do nothing, just wait for next user input
     }
 
     // Step 2: If we already asked but no value yet, try to interpret the reply
@@ -148,12 +147,10 @@ app.post('/webhook', async (req, res) => {
 
         const session = userSessions[senderId];
 
-        // If projectType is not resolved AND we're still in early GPT usage, ask the hardcoded question
-        if (!["B", "S", "R"].includes(session.specValues.projectType)) {
-            if (session.questionCount < 4) {
-                await handleSpecification(senderId, "projectType", receivedMessage);
-                return res.status(200).send('EVENT_RECEIVED');
-            }
+        // If projectType has never been asked, ask it once regardless of GPT count
+        if (!session.askedSpecs.projectType) {
+            await handleSpecification(senderId, "projectType", receivedMessage);
+            return res.status(200).send('EVENT_RECEIVED');
         }
 
         // ChatGPT question limit check
