@@ -1,108 +1,149 @@
 require('dotenv').config();
 
-console.log("DEBUG ENV OPENAI KEY:", process.env.OPENAI_API_KEY);
-console.log("DEBUG ENV PAGE ACCESS TOKEN:", process.env.PAGE_ACCESS_TOKEN);
-
 const express = require('express');
 const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-const VERIFY_TOKEN = 'helloworldtoken'; // Messenger verify token
+const VERIFY_TOKEN = 'helloworldtoken';
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// Messenger webhook verification
+const userSessions = {}; // Temporary in-memory user session object
+
 app.get('/webhook', (req, res) => {
-  const mode = req.query['hub.mode'];
-  const token = req.query['hub.verify_token'];
-  const challenge = req.query['hub.challenge'];
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
 
-  if (mode && token) {
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-      res.status(200).send(challenge);
-    } else {
-      res.sendStatus(403);
-    }
-  } else {
-    res.sendStatus(400);
-  }
-});
-
-// Messenger webhook event reception
-app.post('/webhook', async (req, res) => {
-  try {
-    console.log("Incoming Request:", JSON.stringify(req.body));
-
-      const receivedMessage = req.body.entry?.[0]?.messaging?.[0]?.message?.text;
-      const senderId = req.body.entry?.[0]?.messaging?.[0]?.sender?.id;
-      const { detectUserLanguage } = require('./modules/languageDetector');
-
- 
-
-// Store 'F' or 'E' as needed for later flow
-
-
-
-// Ignore if it's an echo (sent by our Page)
-    const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
-
-
-if (messagingEvent.message?.is_echo) {
-  console.log("Skipping echo message");
-  return res.status(200).send('EVENT_RECEIVED');
-}
-
-// Ignore delivery or read events
-if (messagingEvent.delivery || messagingEvent.read) {
-  console.log("Skipping delivery/read event");
-  return res.status(200).send('EVENT_RECEIVED');
-}
-
-    if (receivedMessage && senderId) {
-      console.log(`Received message: ${receivedMessage}`);
-      const userLanguage = await detectUserLanguage(receivedMessage);
-      console.log(`Detected Language: ${userLanguage}`);
-
-      // 1. Send user's message to ChatGPT
-      const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: "gpt-4o",
-        messages: [{ role: "user", content: receivedMessage }]
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`
+    if (mode && token) {
+        if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+            res.status(200).send(challenge);
+        } else {
+            res.sendStatus(403);
         }
-      });
-
-      const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim() || "Sorry, I couldn't understand.";
-
-      console.log(`ChatGPT Reply: ${gptReply}`);
-
-      // 2. Send ChatGPT reply back to Messenger
-      const messageData = {
-        recipient: { id: senderId },
-        message: { text: gptReply }
-      };
-
-      await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, messageData, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      console.log("Sent ChatGPT reply back to Messenger!");
     } else {
-      console.log("No valid message or sender ID found in incoming request.");
+        res.sendStatus(400);
     }
-
-    res.status(200).send('EVENT_RECEIVED');
-  } catch (error) {
-    console.error("Error handling webhook event:", error.toString());
-    if (error.response && error.response.data) {
-      console.error("Error details:", JSON.stringify(error.response.data));
-    }
-    res.status(500).send('Error handling event');
-  }
 });
 
+app.post('/webhook', async (req, res) => {
+    try {
+        const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
+        if (!messagingEvent || messagingEvent.message?.is_echo || messagingEvent.delivery || messagingEvent.read) {
+            return res.status(200).send('EVENT_RECEIVED');
+        }
+
+        const senderId = messagingEvent.sender?.id;
+        const receivedMessage = messagingEvent.message?.text;
+
+        if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
+
+        console.log("[STEP 1] Sender ID:", senderId);
+        console.log("[STEP 2] Received Message:", receivedMessage);
+
+        // ChatGPT: Detect language and project type in one call
+        const detectionPrompt = `
+Detect the user's language and project intent from the following message.
+
+Return a JSON object with:
+- "language": "en" or "fr"
+- "project": "B" for buying, "S" for selling, "R" for renting, "E" for anything else
+
+Message: """${receivedMessage}"""
+`;
+
+        const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: detectionPrompt }],
+            max_tokens: 100,
+            temperature: 0.3
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            }
+        });
+
+        const detectionText = detectionResponse.data.choices?.[0]?.message?.content || "{}";
+        const { language, project } = JSON.parse(detectionText.trim());
+
+        console.log("[STEP 3] Detected Language:", language);
+        console.log("[STEP 4] Detected Project:", project);
+
+        // Save to session
+        userSessions[senderId] = {
+            language: language || "en",
+            projectType: project || "E"
+        };
+
+        // Build confirmation + next prompt
+        let languageConfirmation = "";
+        let nextPrompt = "";
+
+        if (language === "fr") {
+            languageConfirmation = "Comme vous m'avez écrit en français, cette session se déroulera en français.";
+            nextPrompt = (project === "E")
+                ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
+                : "Parfait. Parlons de votre projet. Posez-moi vos questions ou laissez-moi vous guider.";
+        } else {
+            languageConfirmation = "Since you've addressed me in English, this session will be handled in English.";
+            nextPrompt = (project === "E")
+                ? "May I ask what type of project you have in mind? Buying, selling, renting or something else?"
+                : "Great. Let's talk about your project. You can ask your questions or let me guide you.";
+        }
+
+        // Send combined confirmation + prompt
+        const combinedMessage = {
+            recipient: { id: senderId },
+            message: { text: `${languageConfirmation}\n\n${nextPrompt}` }
+        };
+
+        await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, combinedMessage, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        // Optionally: ChatGPT answers the question now
+        const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: receivedMessage }],
+            max_tokens: 400,
+            temperature: 0.5
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            }
+        });
+
+        let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+
+        if (!gptReply) {
+            gptReply = (language === "fr")
+                ? "Désolé, je n'ai pas compris votre demande."
+                : "Sorry, I didn't understand your request.";
+        }
+
+        const messageData = {
+            recipient: { id: senderId },
+            message: { text: gptReply }
+        };
+
+        await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, messageData, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        res.status(200).send('EVENT_RECEIVED');
+
+    } catch (error) {
+        console.error("[ERROR] Error handling webhook event:", error.toString());
+        if (error.response?.data) {
+            console.error("[ERROR Details]", JSON.stringify(error.response.data, null, 2));
+        }
+        res.status(500).send('Error handling event');
+    }
+});
+
+// Server setup
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
