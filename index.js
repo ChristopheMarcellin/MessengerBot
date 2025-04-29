@@ -81,7 +81,6 @@ Message: """${receivedMessage}"""
             console.warn("[WARNING] Failed to parse detection JSON. Defaulting to EN/E.");
         }
 
-
         console.log("[STEP 3] Detected Language:", language);
         console.log("[STEP 4] Detected Project:", project);
 
@@ -91,9 +90,7 @@ Message: """${receivedMessage}"""
             projectType: project
         };
 
-        // Optionally: ChatGPT answers the question now
-        const cleanText = text => Buffer.from(text, 'utf-8').toString();
-
+        // ChatGPT: Answer user message
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4o",
             messages: [{ role: "user", content: receivedMessage }],
@@ -110,25 +107,25 @@ Message: """${receivedMessage}"""
 
         if (!gptReply) {
             gptReply = (language === "fr")
-                ? "Désolé, je n'ai pas compris votre demande."
+                ? "DÃ©solÃ©, je n'ai pas compris votre demande."
                 : "Sorry, I didn't understand your request.";
         }
 
         const messageData = {
             recipient: { id: senderId },
-            message: { text: cleanText(gptReply) }
-              };
+            message: { text: gptReply }
+        };
 
         await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, messageData, {
             headers: { 'Content-Type': 'application/json' }
         });
 
-        // Build confirmation + next prompt
+        // Build follow-up prompt
         let nextPrompt = "";
 
         if (language === "fr") {
             nextPrompt = (project === "E")
-                ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
+                ? "Puis-je vous demander quel type de projet vous avez en tÃªte ? Achat, vente, location ou autre ?"
                 : "Parfait. Parlons de votre projet. Posez-moi vos questions ou laissez-moi vous guider.";
         } else {
             nextPrompt = (project === "E")
@@ -136,11 +133,10 @@ Message: """${receivedMessage}"""
                 : "Great. Let's talk about your project. You can ask your questions or let me guide you.";
         }
 
-        // Send combined confirmation + prompt
         const combinedMessage = {
             recipient: { id: senderId },
-            message: { text: cleanText(nextPrompt) }
-         };
+            message: { text: nextPrompt }
+        };
 
         await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, combinedMessage, {
             headers: { 'Content-Type': 'application/json' }
@@ -157,6 +153,5 @@ Message: """${receivedMessage}"""
     }
 });
 
-// Server setup
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
