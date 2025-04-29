@@ -1,4 +1,4 @@
-// index.js (enhanced with specification engine, question limit, and debug logger)
+/ index.js (enhanced with specification engine, question limit, and debug logger)
 require('dotenv').config();
 
 const express = require('express');
@@ -149,7 +149,7 @@ app.post('/webhook', async (req, res) => {
         const session = userSessions[senderId];
 
         // If projectType is not resolved, handle it as a hardcoded question
-        if (!session.specValues.projectType || session.specValues.projectType === "?") {
+        if (!["B", "S", "R"].includes(session.specValues.projectType)) {
             await handleSpecification(senderId, "projectType", receivedMessage);
             return res.status(200).send('EVENT_RECEIVED');
         }
