@@ -13,6 +13,72 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const userSessions = {}; // In-memory user sessions
 
 const SPEC_QUESTIONS = {
+    Pkg: {
+        prompt: {
+            en: "Do you have private parking available?",
+            fr: "Avez-vous un stationnement privé disponible?"
+        },
+        decodePrompt: {
+            en: "Respond with YES or NO based on whether the message confirms the availability of private parking.",
+            fr: "Répondez par OUI ou NON selon que le message confirme la disponibilité d'un stationnement privé."
+        },
+        validValues: ["YES", "NO", "OUI", "NON"]
+    },
+    Bdr: {
+        prompt: {
+            en: "What is your ideal number of bedrooms?",
+            fr: "Quel est votre nombre idéal de chambres?"
+        },
+        decodePrompt: {
+            en: "Extract the number of bedrooms from the following sentence. Respond with only the number.",
+            fr: "Extrayez le nombre de chambres à partir de la phrase suivante. Répondez uniquement avec le nombre."
+        },
+        validValues: []
+    },
+    Bth: {
+        prompt: {
+            en: "What is your ideal number of bathrooms?",
+            fr: "Quel est votre nombre idéal de salles de bain?"
+        },
+        decodePrompt: {
+            en: "Extract the number of bathrooms from the following sentence. Respond with only the number.",
+            fr: "Extrayez le nombre de salles de bain à partir de la phrase suivante. Répondez uniquement avec le nombre."
+        },
+        validValues: []
+    },
+    Grg: {
+        prompt: {
+            en: "What is your ideal number of garages?",
+            fr: "Quel est votre nombre idéal de garages?"
+        },
+        decodePrompt: {
+            en: "Extract the number of garages from the following sentence. Respond with only the number.",
+            fr: "Extrayez le nombre de garages à partir de la phrase suivante. Répondez uniquement avec le nombre."
+        },
+        validValues: []
+    },
+    price: {
+        prompt: {
+            en: "What is your budget?",
+            fr: "Quel est votre budget?"
+        },
+        decodePrompt: {
+            en: "Extract the budget amount from the following sentence. Respond with only the number.",
+            fr: "Extrayez le montant du budget à partir de la phrase suivante. Répondez uniquement avec le nombre."
+        },
+        validValues: []
+    },
+    area: {
+        prompt: {
+            en: "Which area are you looking in?",
+            fr: "Dans quel secteur cherchez-vous?"
+        },
+        decodePrompt: {
+            en: "Extract the name of a city, neighborhood, or area from the following sentence. Respond with only the area name.",
+            fr: "Extrayez le nom d'une ville, d'un quartier ou d'une zone à partir de la phrase suivante. Répondez uniquement avec le nom du secteur."
+        },
+        validValues: [] // No restriction, save whatever is said
+    },
     projectType: {
         prompt: {
             en: "May I ask what type of project you have in mind? Buying, selling, renting or something else?",
@@ -131,6 +197,7 @@ app.post('/webhook', async (req, res) => {
 
             userSessions[senderId] = {
                 language,
+                ProjectDate: new Date().toISOString(),
                 questionCount: 0,
                 maxQuestions: 40,
                 askedSpecs: {},
@@ -150,47 +217,103 @@ app.post('/webhook', async (req, res) => {
         // If projectType has never been asked, ask it once regardless of GPT count
         if (!session.askedSpecs.projectType) {
             await handleSpecification(senderId, "projectType", receivedMessage);
-            return res.status(200).send('EVENT_RECEIVED');
-        }
 
-        // ChatGPT question limit check
-        if (session.questionCount >= session.maxQuestions) {
-            const limitMsg = session.language === "fr"
-                ? "Limite atteinte temporairement."
-                : "Limit exceeded temporarily.";
-            await sendMessage(senderId, limitMsg);
-            return res.status(200).send('EVENT_RECEIVED');
-        }
-
-        // Forward question to GPT
-        session.questionCount++;
-        const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: receivedMessage }],
-            max_tokens: 400,
-            temperature: 0.5
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            // Ask specs for projectType B, R, or S
+            const updatedSession = userSessions[senderId];
+            const type = updatedSession.specValues.projectType;
+            if (["B", "R", "S"].includes(type)) {
+                if (!updatedSession.askedSpecs.area) {
+                    updatedSession.specValues.area = "?";
+                    updatedSession.askedSpecs.area = true;
+                    await sendMessage(senderId, SPEC_QUESTIONS.area.prompt[updatedSession.language]);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
+                if (!updatedSession.askedSpecs.price) {
+                    updatedSession.specValues.price = "?";
+                    updatedSession.askedSpecs.price = true;
+                    const pricePrompt =
+                        type === "B" ? SPEC_QUESTIONS.price.prompt[updatedSession.language] :
+                            type === "R" ? { en: "What is the rental cost per month?", fr: "Quel est le coût mensuel du loyer?" }[updatedSession.language] :
+                                { en: "What is your desired selling price?", fr: "Quel est votre prix de vente souhaité?" }[updatedSession.language];
+                    await sendMessage(senderId, pricePrompt);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
+                if (!updatedSession.askedSpecs.Bdr) {
+                    updatedSession.specValues.Bdr = "?";
+                    updatedSession.askedSpecs.Bdr = true;
+                    const bdrPrompt =
+                        type === "B" ? SPEC_QUESTIONS.Bdr.prompt[updatedSession.language] :
+                            type === "R" ? { en: "How many bedrooms?", fr: "Combien de chambres?" }[updatedSession.language] :
+                                SPEC_QUESTIONS.Bdr.prompt[updatedSession.language];
+                    await sendMessage(senderId, bdrPrompt);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
+                if (!updatedSession.askedSpecs.Bth) {
+                    updatedSession.specValues.Bth = "?";
+                    updatedSession.askedSpecs.Bth = true;
+                    const bthPrompt =
+                        type === "B" ? SPEC_QUESTIONS.Bth.prompt[updatedSession.language] :
+                            type === "R" ? { en: "How many bathrooms?", fr: "Combien de salles de bain?" }[updatedSession.language] :
+                                SPEC_QUESTIONS.Bth.prompt[updatedSession.language];
+                    await sendMessage(senderId, bthPrompt);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
+                if (!updatedSession.askedSpecs.Grg) {
+                    updatedSession.specValues.Grg = "?";
+                    updatedSession.askedSpecs.Grg = true;
+                    await sendMessage(senderId, SPEC_QUESTIONS.Grg.prompt[updatedSession.language]);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
+                if (!updatedSession.askedSpecs.Pkg && type === "R") {
+                    updatedSession.specValues.Pkg = "?";
+                    updatedSession.askedSpecs.Pkg = true;
+                    await sendMessage(senderId, SPEC_QUESTIONS.Pkg.prompt[updatedSession.language]);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
             }
-        });
-
-        let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
-
-        if (!gptReply) {
-            gptReply = session.language === "fr"
-                ? "Désolé, je n'ai pas compris votre demande."
-                : "Sorry, I didn't understand your request.";
         }
-
-        await sendMessage(senderId, gptReply);
-        res.status(200).send('EVENT_RECEIVED');
-
-    } catch (error) {
-        console.error("[ERROR]", error.toString());
-        res.status(500).send('Server Error');
     }
+      return res.status(200).send('EVENT_RECEIVED');
+}
+
+    // ChatGPT question limit check
+    if (session.questionCount >= session.maxQuestions) {
+    const limitMsg = session.language === "fr"
+        ? "Limite atteinte temporairement."
+        : "Limit exceeded temporarily.";
+    await sendMessage(senderId, limitMsg);
+    return res.status(200).send('EVENT_RECEIVED');
+}
+
+// Forward question to GPT
+session.questionCount++;
+const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+    model: "gpt-4o",
+    messages: [{ role: "user", content: receivedMessage }],
+    max_tokens: 400,
+    temperature: 0.5
+}, {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+    }
+});
+
+let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+
+if (!gptReply) {
+    gptReply = session.language === "fr"
+        ? "Désolé, je n'ai pas compris votre demande."
+        : "Sorry, I didn't understand your request.";
+}
+
+await sendMessage(senderId, gptReply);
+res.status(200).send('EVENT_RECEIVED');
+
+  } catch (error) {
+    console.error("[ERROR]", error.toString());
+    res.status(500).send('Server Error');
+}
 });
 
 const PORT = process.env.PORT || 3000;
