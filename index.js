@@ -87,37 +87,13 @@ Message: """${receivedMessage}"""
 
         // Save to session
         userSessions[senderId] = {
-            language: language || "en",
-            projectType: project || "E"
+            language,
+            projectType: project
         };
-
-        // Build confirmation + next prompt
-        let languageConfirmation = "";
-        let nextPrompt = "";
-
-        if (language === "fr") {
-            languageConfirmation = "Comme vous m'avez écrit en français, cette session se déroulera en français.";
-            nextPrompt = (project === "E")
-                ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
-                : "Parfait. Parlons de votre projet. Posez-moi vos questions ou laissez-moi vous guider.";
-        } else {
-            languageConfirmation = "Since you've addressed me in English, this session will be handled in English.";
-            nextPrompt = (project === "E")
-                ? "May I ask what type of project you have in mind? Buying, selling, renting or something else?"
-                : "Great. Let's talk about your project. You can ask your questions or let me guide you.";
-        }
-
-        // Send combined confirmation + prompt
-        const combinedMessage = {
-            recipient: { id: senderId },
-            message: { text: `${languageConfirmation}\n\n${nextPrompt}` }
-        };
-
-        await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, combinedMessage, {
-            headers: { 'Content-Type': 'application/json' }
-        });
 
         // Optionally: ChatGPT answers the question now
+        const cleanText = text => Buffer.from(text, 'utf-8').toString();
+
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4o",
             messages: [{ role: "user", content: receivedMessage }],
@@ -140,10 +116,33 @@ Message: """${receivedMessage}"""
 
         const messageData = {
             recipient: { id: senderId },
-            message: { text: gptReply }
-        };
+            message: { text: cleanText(gptReply) }
+              };
 
         await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, messageData, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        // Build confirmation + next prompt
+        let nextPrompt = "";
+
+        if (language === "fr") {
+            nextPrompt = (project === "E")
+                ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
+                : "Parfait. Parlons de votre projet. Posez-moi vos questions ou laissez-moi vous guider.";
+        } else {
+            nextPrompt = (project === "E")
+                ? "May I ask what type of project you have in mind? Buying, selling, renting or something else?"
+                : "Great. Let's talk about your project. You can ask your questions or let me guide you.";
+        }
+
+        // Send combined confirmation + prompt
+        const combinedMessage = {
+            recipient: { id: senderId },
+            message: { text: cleanText(nextPrompt) }
+         };
+
+        await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, combinedMessage, {
             headers: { 'Content-Type': 'application/json' }
         });
 
