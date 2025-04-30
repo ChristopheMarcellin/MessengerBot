@@ -155,7 +155,7 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
-        // Retry-safe end session
+        // Handle "end session" and suppress retries
         if (receivedMessage.toLowerCase().includes("end session")) {
             if (userSessions[senderId]?.skipNextMessage) {
                 return res.status(200).send('EVENT_RECEIVED');
@@ -170,13 +170,13 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Skip next message silently after end session
+        // Skip next message after end session
         if (userSessions[senderId]?.skipNextMessage) {
             delete userSessions[senderId];
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Session init
+        // Create new session if needed
         if (!userSessions[senderId]) {
             const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -216,12 +216,13 @@ app.post('/webhook', async (req, res) => {
 
         const session = userSessions[senderId];
 
-        // Safety check for broken session objects
+        // Defensive check for broken session
         if (!session || !session.language || !session.specValues) {
             console.warn(`[WARN] Incomplete session for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
+        // Project type clarification flow
         if (session.awaitingProjectType && !session.askedSpecs.projectType) {
             await tryToClassifyProjectType(session, receivedMessage);
             return res.status(200).send('EVENT_RECEIVED');
@@ -264,12 +265,13 @@ app.post('/webhook', async (req, res) => {
         const nextSpec = getNextUnansweredSpec(session.specValues, SPEC_QUESTIONS);
         const isForRent = session.specValues.projectType === "R";
 
-        // Guard clause for invalid spec keys
+        // Safeguard: skip if nextSpec is invalid
         if (!nextSpec || !SPEC_QUESTIONS[nextSpec] || !SPEC_QUESTIONS[nextSpec].decodePrompt) {
-            console.warn(`[WARN] Invalid spec key: "${nextSpec}" — skipping`);
+            console.warn(`[SKIP] Invalid or missing nextSpec: ${nextSpec}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
+        // Handle spec question
         if (nextSpec && (nextSpec !== "Pkg" || !isForRent)) {
             const decodePrompt = `${SPEC_QUESTIONS[nextSpec].decodePrompt[session.language]}\n\n"${receivedMessage}"`;
             const decodeRes = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -377,6 +379,7 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
+        // Fallback to ChatGPT
         session.questionCount++;
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4o",
