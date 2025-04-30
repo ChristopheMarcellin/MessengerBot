@@ -12,7 +12,6 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const userSessions = {};
 
-// Helper to clear all spec values except projectType
 function resetIncompleteSpecs(session) {
     for (const key in session.specValues) {
         if (key !== "projectType") {
@@ -21,12 +20,10 @@ function resetIncompleteSpecs(session) {
         }
     }
 }
-
-// Utility to check if all specs are collected
 function allSpecsCollected(session) {
     const requiredFields = Object.keys(SPEC_QUESTIONS).filter(k => k !== "projectType");
     return requiredFields.every(key => session.specValues[key] && session.specValues[key] !== "?");
-} // In-memory user sessions
+}
 
 const SPEC_QUESTIONS = {
     Pkg: {
@@ -93,7 +90,7 @@ const SPEC_QUESTIONS = {
             en: "Extract the name of a city, neighborhood, or area from the following sentence. Respond with only the area name.",
             fr: "Extrayez le nom d'une ville, d'un quartier ou d'une zone à partir de la phrase suivante. Répondez uniquement avec le nom du secteur."
         },
-        validValues: [] // No restriction, save whatever is said
+        validValues: []
     },
     projectType: {
         prompt: {
@@ -107,7 +104,7 @@ const SPEC_QUESTIONS = {
         validValues: ["B", "S", "R", "E"]
     }
 };
-
+//part 3
 // Unified response sender
 async function sendMessage(senderId, text) {
     await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
@@ -152,15 +149,14 @@ async function handleSpecification(senderId, specName, userMessage) {
         });
 
         const raw = decodeRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
-        const isValid = spec.validValues.includes(raw);
+        const isValid = spec.validValues.length === 0 || spec.validValues.includes(raw);
         session.specValues[specName] = isValid ? raw : "?";
 
-        if (isValid) return; // we have the answer
+        if (isValid) return;
 
-        // If invalid response
         const retry = session.language === "fr"
-            ? "Désolé, je n'ai pas compris. Pouvez-vous clarifier ? Achat, vente, location ou autre ?"
-            : "Sorry, I didn’t understand. Could you clarify? Buying, selling, renting or else?";
+            ? "Désolé, je n'ai pas compris. Pouvez-vous clarifier ?"
+            : "Sorry, I didn’t understand. Could you clarify?";
         return await sendMessage(senderId, retry);
     }
 
@@ -168,7 +164,7 @@ async function handleSpecification(senderId, specName, userMessage) {
     session.askedSpecs[specName] = true;
     return await sendMessage(senderId, spec.prompt[session.language]);
 }
-
+//part 4
 // Main webhook handler
 app.post('/webhook', async (req, res) => {
     try {
@@ -182,13 +178,20 @@ app.post('/webhook', async (req, res) => {
 
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
+        // END SESSION command logic
+        if (receivedMessage.toLowerCase().includes("end session")) {
+            delete userSessions[senderId];
+            console.log(`[RESET] Session ended for sender: ${senderId}`);
+            return res.status(200).send('EVENT_RECEIVED');
+        }
+
         console.log("[STEP 1] Sender ID:", senderId);
         console.log("[STEP 2] Received Message:", receivedMessage);
 
         // Create session if it doesn't exist
         if (!userSessions[senderId]) {
             // Detect language and project type initially
-            const detectionPrompt = `Detect the user's language and intent. Return JSON with \"language\": \"en/fr\" and \"project\": \"B/S/R/E\".\n\n\"${receivedMessage}\"`;
+            const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                 model: "gpt-4o",
                 messages: [{ role: "user", content: detectionPrompt }],
@@ -226,183 +229,130 @@ app.post('/webhook', async (req, res) => {
             }
         }
 
-        logSession(senderId);
-
         const session = userSessions[senderId];
-
+        logSession(senderId);
+        //part 5
         // If projectType has never been asked, ask it once regardless of GPT count
         if (!session.askedSpecs.projectType) {
             await handleSpecification(senderId, "projectType", receivedMessage);
+            return res.status(200).send('EVENT_RECEIVED');
+        }
 
-            // Ask specs for projectType B, R, or S
-            const updatedSession = userSessions[senderId];
-            const type = updatedSession.specValues.projectType;
-            if (["B", "R", "S"].includes(type)) {
-                if (!updatedSession.askedSpecs.area) {
-                    updatedSession.specValues.area = "?";
-                    updatedSession.askedSpecs.area = true;
-                    await sendMessage(senderId, SPEC_QUESTIONS.area.prompt[updatedSession.language]);
-                    return res.status(200).send('EVENT_RECEIVED');
-                }
-                if (!updatedSession.askedSpecs.price) {
-                    updatedSession.specValues.price = "?";
-                    updatedSession.askedSpecs.price = true;
-                    const pricePrompt =
-                        type === "B" ? SPEC_QUESTIONS.price.prompt[updatedSession.language] :
-                            type === "R" ? { en: "What is the rental cost per month?", fr: "Quel est le coût mensuel du loyer?" }[updatedSession.language] :
-                                { en: "What is your desired selling price?", fr: "Quel est votre prix de vente souhaité?" }[updatedSession.language];
-                    await sendMessage(senderId, pricePrompt);
-                    return res.status(200).send('EVENT_RECEIVED');
-                }
-                if (!updatedSession.askedSpecs.Bdr) {
-                    updatedSession.specValues.Bdr = "?";
-                    updatedSession.askedSpecs.Bdr = true;
-                    const bdrPrompt =
-                        type === "B" ? SPEC_QUESTIONS.Bdr.prompt[updatedSession.language] :
-                            type === "R" ? { en: "How many bedrooms?", fr: "Combien de chambres?" }[updatedSession.language] :
-                                SPEC_QUESTIONS.Bdr.prompt[updatedSession.language];
-                    await sendMessage(senderId, bdrPrompt);
-                    return res.status(200).send('EVENT_RECEIVED');
-                }
-                if (!updatedSession.askedSpecs.Bth) {
-                    updatedSession.specValues.Bth = "?";
-                    updatedSession.askedSpecs.Bth = true;
-                    const bthPrompt =
-                        type === "B" ? SPEC_QUESTIONS.Bth.prompt[updatedSession.language] :
-                            type === "R" ? { en: "How many bathrooms?", fr: "Combien de salles de bain?" }[updatedSession.language] :
-                                SPEC_QUESTIONS.Bth.prompt[updatedSession.language];
-                    await sendMessage(senderId, bthPrompt);
-                    return res.status(200).send('EVENT_RECEIVED');
-                }
-                if (!updatedSession.askedSpecs.Grg) {
-                    updatedSession.specValues.Grg = "?";
-                    updatedSession.askedSpecs.Grg = true;
-                    await sendMessage(senderId, SPEC_QUESTIONS.Grg.prompt[updatedSession.language]);
-                    return res.status(200).send('EVENT_RECEIVED');
-                }
-                if (!updatedSession.askedSpecs.Pkg && type === "R") {
-                    updatedSession.specValues.Pkg = "?";
-                    updatedSession.askedSpecs.Pkg = true;
-                    await sendMessage(senderId, SPEC_QUESTIONS.Pkg.prompt[updatedSession.language]);
-                    return res.status(200).send('EVENT_RECEIVED');
-                }
+        // Question limit check
+        if (session.questionCount >= session.maxQuestions) {
+            const limitMsg = session.language === "fr"
+                ? "Limite atteinte temporairement."
+                : "Limit exceeded temporarily.";
+            await sendMessage(senderId, limitMsg);
+            return res.status(200).send('EVENT_RECEIVED');
+        }
+
+        // Ask specification questions in order
+        const order = ["area", "price", "Bdr", "Bth", "Grg", "Pkg"];
+        for (const specKey of order) {
+            const isForRent = session.specValues.projectType === "R";
+            const shouldAskPkg = specKey === "Pkg" && !isForRent;
+            if (specKey === "Pkg" && !isForRent) continue;
+
+            if (!session.askedSpecs[specKey]) {
+                await handleSpecification(senderId, specKey, receivedMessage);
+                return res.status(200).send('EVENT_RECEIVED');
             }
         }
-    }
-      return res.status(200).send('EVENT_RECEIVED');
-}
 
-    // Handle end session command
-    if (receivedMessage.toLowerCase().includes("end session")) {
-    delete userSessions[senderId];
-    console.log(`[RESET] Session ended for sender: ${senderId}`);
-    return res.status(200).send('EVENT_RECEIVED');
-}
+        // If all specs collected, summarize
+        if (!session.completedSpecs && allSpecsCollected(session)) {
+            session.completedSpecs = true;
+            const summaryLines = Object.entries(session.specValues).map(([k, v]) => `${k}: ${v}`);
+            const summary = summaryLines.join("\n");
+            const prompt = session.language === "fr"
+                ? `Voici ce que j'ai compris :\n${summary}\nY a-t-il des erreurs ou des informations manquantes ?`
+                : `Here’s what I’ve gathered so far:\n${summary}\nIs anything incorrect or missing?`;
+            await sendMessage(senderId, prompt);
+            return res.status(200).send('EVENT_RECEIVED');
+        }
 
-// ChatGPT question limit check
-if (session.questionCount >= session.maxQuestions) {
-    const limitMsg = session.language === "fr"
-        ? "Limite atteinte temporairement."
-        : "Limit exceeded temporarily.";
-    await sendMessage(senderId, limitMsg);
-    return res.status(200).send('EVENT_RECEIVED');
-}
+        // After summary, handle yes/no
+        if (session.completedSpecs && receivedMessage.toLowerCase().includes("no")) {
+            resetIncompleteSpecs(session);
+            await sendMessage(senderId, session.language === "fr"
+                ? "Merci de nous l'avoir signalé. Reprenons les informations manquantes."
+                : "Thanks for letting us know. Let's go over the missing details again.");
+            session.completedSpecs = false;
+            return res.status(200).send('EVENT_RECEIVED');
+        }
 
-// After spec collection, check if we're done
-if (session.completedSpecs && receivedMessage.toLowerCase().includes("no")) {
-    resetIncompleteSpecs(session);
-    await sendMessage(senderId, session.language === "fr"
-        ? "Merci de nous l'avoir signalé. Reprenons les informations manquantes."
-        : "Thanks for letting us know. Let's go over the missing details again.");
-    session.completedSpecs = false;
-    return res.status(200).send('EVENT_RECEIVED');
-}
+        if (session.completedSpecs && receivedMessage.toLowerCase().includes("yes")) {
+            session.wantsContact = "Y";
+            session.signoffStep = "firstName";
+            await sendMessage(senderId, session.language === "fr"
+                ? "Merci. Pouvez-vous me donner votre prénom ?"
+                : "Thank you. Can you please tell me your first name?");
+            return res.status(200).send('EVENT_RECEIVED');
+        }
 
-if (session.completedSpecs && receivedMessage.toLowerCase().includes("yes")) {
-    session.wantsContact = "Y";
-    session.signoffStep = "firstName";
-    await sendMessage(senderId, session.language === "fr"
-        ? "Merci. Pouvez-vous me donner votre prénom ?"
-        : "Thank you. Can you please tell me your first name?");
-    return res.status(200).send('EVENT_RECEIVED');
-}
-if (!session.completedSpecs && allSpecsCollected(session)) {
-    session.completedSpecs = true;
-    const summaryLines = Object.entries(session.specValues).map(([k, v]) => `${k}: ${v}`);
-    const summary = summaryLines.join("
-");
-      const prompt = session.language === "fr"
-        ? `Voici ce que j'ai compris :
-${summary}
-Y a-t-il des erreurs ou des informations manquantes ?`
-        : `Here’s what I’ve gathered so far:
-${summary}
-Is anything incorrect or missing?`;
-    await sendMessage(senderId, prompt);
-    return res.status(200).send('EVENT_RECEIVED');
-}
+        // Handle contact info flow
+        if (session.signoffStep) {
+            const step = session.signoffStep;
+            const value = receivedMessage.trim();
+            if (!session.contactInfo) session.contactInfo = {};
+            if (step === "firstName") {
+                session.contactInfo.firstName = value;
+                session.signoffStep = "lastName";
+                await sendMessage(senderId, session.language === "fr" ? "Quel est votre nom de famille ?" : "What is your last name?");
+            } else if (step === "lastName") {
+                session.contactInfo.lastName = value;
+                session.signoffStep = "phone";
+                await sendMessage(senderId, session.language === "fr" ? "Quel est votre numéro de téléphone ?" : "What is your phone number?");
+            } else if (step === "phone") {
+                session.contactInfo.phone = value;
+                session.signoffStep = "email";
+                await sendMessage(senderId, session.language === "fr" ? "Quel est votre courriel ?" : "What is your email?");
+            } else if (step === "email") {
+                session.contactInfo.email = value;
+                session.signoffStep = "message";
+                await sendMessage(senderId, session.language === "fr" ? "Souhaitez-vous ajouter un message ?" : "Would you like to add a message?");
+            } else if (step === "message") {
+                session.contactInfo.message = value;
+                delete session.signoffStep;
+                await sendMessage(senderId, session.language === "fr"
+                    ? "Merci ! Nous vous contacterons dans les prochaines 24 heures. Vous pouvez continuer à poser vos questions si vous le souhaitez."
+                    : "Thank you! We'll contact you within 24 hours. You may continue asking questions if you like.");
+            }
+            return res.status(200).send('EVENT_RECEIVED');
+        }
+        //part 6
+        // Fallback: ChatGPT response if no other handlers triggered
+        session.questionCount++;
+        const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: receivedMessage }],
+            max_tokens: 400,
+            temperature: 0.5
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            }
+        });
 
-// Handle signoff step-by-step
-if (session.signoffStep) {
-    const step = session.signoffStep;
-    const value = receivedMessage.trim();
-    if (!session.contactInfo) session.contactInfo = {};
-    if (step === "firstName") {
-        session.contactInfo.firstName = value;
-        session.signoffStep = "lastName";
-        await sendMessage(senderId, session.language === "fr" ? "Quel est votre nom de famille ?" : "What is your last name?");
-    } else if (step === "lastName") {
-        session.contactInfo.lastName = value;
-        session.signoffStep = "phone";
-        await sendMessage(senderId, session.language === "fr" ? "Quel est votre numéro de téléphone ?" : "What is your phone number?");
-    } else if (step === "phone") {
-        session.contactInfo.phone = value;
-        session.signoffStep = "email";
-        await sendMessage(senderId, session.language === "fr" ? "Quel est votre courriel ?" : "What is your email?");
-    } else if (step === "email") {
-        session.contactInfo.email = value;
-        session.signoffStep = "message";
-        await sendMessage(senderId, session.language === "fr" ? "Souhaitez-vous ajouter un message ?" : "Would you like to add a message?");
-    } else if (step === "message") {
-        session.contactInfo.message = value;
-        delete session.signoffStep;
-        await sendMessage(senderId, session.language === "fr"
-            ? "Merci ! Nous vous contacterons dans les prochaines 24 heures. Vous pouvez continuer à poser vos questions si vous le souhaitez."
-            : "Thank you! We'll contact you within 24 hours. You may continue asking questions if you like.");
-    }
-    return res.status(200).send('EVENT_RECEIVED');
-}
+        let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
 
-// Forward question to GPT
-session.questionCount++;
-const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model: "gpt-4o",
-    messages: [{ role: "user", content: receivedMessage }],
-    max_tokens: 400,
-    temperature: 0.5
-}, {
-    headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        if (!gptReply) {
+            gptReply = session.language === "fr"
+                ? "Désolé, je n'ai pas compris votre demande."
+                : "Sorry, I didn't understand your request.";
+        }
+
+        await sendMessage(senderId, gptReply);
+        res.status(200).send('EVENT_RECEIVED');
+
+    } catch (error) {
+        console.error("[ERROR]", error.toString());
+        res.status(500).send('Server Error');
     }
 });
 
-let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
-
-if (!gptReply) {
-    gptReply = session.language === "fr"
-        ? "Désolé, je n'ai pas compris votre demande."
-        : "Sorry, I didn't understand your request.";
-}
-
-await sendMessage(senderId, gptReply);
-res.status(200).send('EVENT_RECEIVED');
-
-  } catch (error) {
-    console.error("[ERROR]", error.toString());
-    res.status(500).send('Server Error');
-}
-});
-
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
