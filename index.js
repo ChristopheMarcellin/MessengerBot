@@ -158,6 +158,11 @@ app.post('/webhook', async (req, res) => {
 
         // Handle end session (set skip flag)
         if (receivedMessage.toLowerCase().includes("end session")) {
+            if (userSessions[senderId]?.skipNextMessage) {
+                // Already marked, prevent repeat
+                return res.status(200).send('EVENT_RECEIVED');
+            }
+
             userSessions[senderId] = {
                 skipNextMessage: true,
                 language: "en",
@@ -167,7 +172,6 @@ app.post('/webhook', async (req, res) => {
             console.log(`[RESET] Session ended for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
-
         // Skip next message silently
         if (userSessions[senderId]?.skipNextMessage) {
             delete userSessions[senderId];
