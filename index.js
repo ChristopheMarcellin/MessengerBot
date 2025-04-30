@@ -10,7 +10,23 @@ const VERIFY_TOKEN = 'helloworldtoken';
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-const userSessions = {}; // In-memory user sessions
+const userSessions = {};
+
+// Helper to clear all spec values except projectType
+function resetIncompleteSpecs(session) {
+    for (const key in session.specValues) {
+        if (key !== "projectType") {
+            session.specValues[key] = "?";
+            session.askedSpecs[key] = false;
+        }
+    }
+}
+
+// Utility to check if all specs are collected
+function allSpecsCollected(session) {
+    const requiredFields = Object.keys(SPEC_QUESTIONS).filter(k => k !== "projectType");
+    return requiredFields.every(key => session.specValues[key] && session.specValues[key] !== "?");
+} // In-memory user sessions
 
 const SPEC_QUESTIONS = {
     Pkg: {
@@ -276,12 +292,84 @@ app.post('/webhook', async (req, res) => {
       return res.status(200).send('EVENT_RECEIVED');
 }
 
-    // ChatGPT question limit check
-    if (session.questionCount >= session.maxQuestions) {
+    // Handle end session command
+    if (receivedMessage.toLowerCase().includes("end session")) {
+    delete userSessions[senderId];
+    await sendMessage(senderId, "Session ended. You can start a new conversation.");
+    return res.status(200).send('EVENT_RECEIVED');
+}
+
+// ChatGPT question limit check
+if (session.questionCount >= session.maxQuestions) {
     const limitMsg = session.language === "fr"
         ? "Limite atteinte temporairement."
         : "Limit exceeded temporarily.";
     await sendMessage(senderId, limitMsg);
+    return res.status(200).send('EVENT_RECEIVED');
+}
+
+// After spec collection, check if we're done
+if (session.completedSpecs && receivedMessage.toLowerCase().includes("no")) {
+    resetIncompleteSpecs(session);
+    await sendMessage(senderId, session.language === "fr"
+        ? "Merci de nous l'avoir signalé. Reprenons les informations manquantes."
+        : "Thanks for letting us know. Let's go over the missing details again.");
+    session.completedSpecs = false;
+    return res.status(200).send('EVENT_RECEIVED');
+}
+
+if (session.completedSpecs && receivedMessage.toLowerCase().includes("yes")) {
+    session.wantsContact = "Y";
+    session.signoffStep = "firstName";
+    await sendMessage(senderId, session.language === "fr"
+        ? "Merci. Pouvez-vous me donner votre prénom ?"
+        : "Thank you. Can you please tell me your first name?");
+    return res.status(200).send('EVENT_RECEIVED');
+}
+if (!session.completedSpecs && allSpecsCollected(session)) {
+    session.completedSpecs = true;
+    const summaryLines = Object.entries(session.specValues).map(([k, v]) => `${k}: ${v}`);
+    const summary = summaryLines.join("
+");
+      const prompt = session.language === "fr"
+        ? `Voici ce que j'ai compris :
+${summary}
+Y a-t-il des erreurs ou des informations manquantes ?`
+        : `Here’s what I’ve gathered so far:
+${summary}
+Is anything incorrect or missing?`;
+    await sendMessage(senderId, prompt);
+    return res.status(200).send('EVENT_RECEIVED');
+}
+
+// Handle signoff step-by-step
+if (session.signoffStep) {
+    const step = session.signoffStep;
+    const value = receivedMessage.trim();
+    if (!session.contactInfo) session.contactInfo = {};
+    if (step === "firstName") {
+        session.contactInfo.firstName = value;
+        session.signoffStep = "lastName";
+        await sendMessage(senderId, session.language === "fr" ? "Quel est votre nom de famille ?" : "What is your last name?");
+    } else if (step === "lastName") {
+        session.contactInfo.lastName = value;
+        session.signoffStep = "phone";
+        await sendMessage(senderId, session.language === "fr" ? "Quel est votre numéro de téléphone ?" : "What is your phone number?");
+    } else if (step === "phone") {
+        session.contactInfo.phone = value;
+        session.signoffStep = "email";
+        await sendMessage(senderId, session.language === "fr" ? "Quel est votre courriel ?" : "What is your email?");
+    } else if (step === "email") {
+        session.contactInfo.email = value;
+        session.signoffStep = "message";
+        await sendMessage(senderId, session.language === "fr" ? "Souhaitez-vous ajouter un message ?" : "Would you like to add a message?");
+    } else if (step === "message") {
+        session.contactInfo.message = value;
+        delete session.signoffStep;
+        await sendMessage(senderId, session.language === "fr"
+            ? "Merci ! Nous vous contacterons dans les prochaines 24 heures. Vous pouvez continuer à poser vos questions si vous le souhaitez."
+            : "Thank you! We'll contact you within 24 hours. You may continue asking questions if you like.");
+    }
     return res.status(200).send('EVENT_RECEIVED');
 }
 
