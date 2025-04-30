@@ -1,5 +1,12 @@
-// index.js (enhanced with specification engine, question limit, and debug logger)
 require('dotenv').config();
+const {
+    getNextUnansweredSpec,
+    shouldAskNextSpec,
+    updateSpecFromInput,
+    buildSpecSummary,
+    resetInvalidSpecs,
+    getPromptForSpec,
+} = require('./modules/specEngine');
 
 const express = require('express');
 const axios = require('axios');
@@ -11,19 +18,6 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const userSessions = {};
-
-function resetIncompleteSpecs(session) {
-    for (const key in session.specValues) {
-        if (key !== "projectType") {
-            session.specValues[key] = "?";
-            session.askedSpecs[key] = false;
-        }
-    }
-}
-function allSpecsCollected(session) {
-    const requiredFields = Object.keys(SPEC_QUESTIONS).filter(k => k !== "projectType");
-    return requiredFields.every(key => session.specValues[key] && session.specValues[key] !== "?");
-}
 
 const SPEC_QUESTIONS = {
     Pkg: {
@@ -104,93 +98,68 @@ const SPEC_QUESTIONS = {
         validValues: ["B", "S", "R", "E"]
     }
 };
-//part 3
-// Unified response sender
-async function sendMessage(senderId, text) {
-    await axios.post(`https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
-        recipient: { id: senderId },
-        message: { text }
+
+function resetIncompleteSpecs(session) {
+    for (const key in session.specValues) {
+        if (key !== "projectType") {
+            session.specValues[key] = "?";
+            session.askedSpecs[key] = false;
+        }
+    }
+}
+
+function allSpecsCollected(session) {
+    return !shouldAskNextSpec(session.specValues, SPEC_QUESTIONS);
+}
+
+// Helper for classifying fallback project type
+async function tryToClassifyProjectType(session, userMessage) {
+    const classificationPrompt = `${SPEC_QUESTIONS.projectType.decodePrompt[session.language]}\n\n"${userMessage}"`;
+    const classifyRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-4o",
+        messages: [{ role: "user", content: classificationPrompt }],
+        max_tokens: 10,
+        temperature: 0
     }, {
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+        }
     });
-}
 
-// Debug logger
-function logSession(senderId) {
-    const s = userSessions[senderId];
-    console.log("[STEP 3] Detected Language:", s.language);
-    console.log("[STEP 4] Detected Project Type:", s.specValues.projectType);
-    console.log("[STEP 5] Question Count:", s.questionCount, "/", s.maxQuestions);
-}
-
-// Check and handle specification
-async function handleSpecification(senderId, specName, userMessage) {
-    const session = userSessions[senderId];
-    const spec = SPEC_QUESTIONS[specName];
-
-    // Step 1: Check if we already have the value
-    if (session.specValues[specName] !== undefined) {
-        return; // Do nothing, just wait for next user input
+    const raw = classifyRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
+    if (["B", "S", "R"].includes(raw)) {
+        updateSpecFromInput("projectType", raw, session.specValues);
+    } else {
+        updateSpecFromInput("projectType", "E", session.specValues);
     }
-
-    // Step 2: If we already asked but no value yet, try to interpret the reply
-    if (session.askedSpecs[specName]) {
-        const decodePrompt = `${spec.decodePrompt[session.language]}\n\n"${userMessage}"`;
-        const decodeRes = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: decodePrompt }],
-            max_tokens: 10,
-            temperature: 0
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
-            }
-        });
-
-        const raw = decodeRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
-        const isValid = spec.validValues.length === 0 || spec.validValues.includes(raw);
-        session.specValues[specName] = isValid ? raw : "?";
-
-        if (isValid) return;
-
-        const retry = session.language === "fr"
-            ? "Désolé, je n'ai pas compris. Pouvez-vous clarifier ?"
-            : "Sorry, I didn’t understand. Could you clarify?";
-        return await sendMessage(senderId, retry);
-    }
-
-    // Step 3: Ask the question (first time)
-    session.askedSpecs[specName] = true;
-    return await sendMessage(senderId, spec.prompt[session.language]);
+    session.askedSpecs.projectType = true;
+    delete session.awaitingProjectType;
 }
-//part 4
-// Main webhook handler
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
+
         if (!messagingEvent || messagingEvent.message?.is_echo || messagingEvent.delivery || messagingEvent.read) {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
         const senderId = messagingEvent.sender?.id;
-        const receivedMessage = messagingEvent.message?.text;
-
+        const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
-        // END SESSION command logic
         if (receivedMessage.toLowerCase().includes("end session")) {
-            delete userSessions[senderId];
+            userSessions[senderId] = { skipNextMessage: true };
             console.log(`[RESET] Session ended for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        console.log("[STEP 1] Sender ID:", senderId);
-        console.log("[STEP 2] Received Message:", receivedMessage);
-
-        // Create session if it doesn't exist
+        // Skip reply after "end session"
+        if (userSessions[senderId]?.skipNextMessage) {
+            delete userSessions[senderId];
+            return res.status(200).send('EVENT_RECEIVED');
+        }
         if (!userSessions[senderId]) {
-            // Detect language and project type initially
             const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                 model: "gpt-4o",
@@ -207,78 +176,118 @@ app.post('/webhook', async (req, res) => {
             let detectionText = detectionResponse.data.choices?.[0]?.message?.content || "{}";
             detectionText = detectionText.replace(/```json|```/g, "").trim();
 
-            let language = "en", project = "E";
+            let language = "en", project = "?";
             try {
                 const parsed = JSON.parse(detectionText);
                 language = parsed.language || "en";
-                project = parsed.project || "E";
+                project = parsed.project;
+                if (!["B", "S", "R"].includes(project)) project = "?";
             } catch { }
 
             userSessions[senderId] = {
                 language,
                 ProjectDate: new Date().toISOString(),
-                questionCount: 0,
+                questionCount: 1,
                 maxQuestions: 40,
                 askedSpecs: {},
-                specValues: {}
+                specValues: {
+                    projectType: project
+                }
             };
-
-            if (["B", "S", "R"].includes(project)) {
-                userSessions[senderId].specValues.projectType = project;
-                userSessions[senderId].askedSpecs.projectType = true;
-            }
         }
 
         const session = userSessions[senderId];
-        logSession(senderId);
-        //part 5
-        // If projectType has never been asked, ask it once regardless of GPT count
-        if (!session.askedSpecs.projectType) {
-            await handleSpecification(senderId, "projectType", receivedMessage);
+
+        if (session.awaitingProjectType && !session.askedSpecs.projectType) {
+            await tryToClassifyProjectType(session, receivedMessage);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Question limit check
+        if (!session.askedSpecs.projectType && session.specValues.projectType === "?") {
+            const gptReply = await axios.post('https://api.openai.com/v1/chat/completions', {
+                model: "gpt-4o",
+                messages: [{ role: "user", content: receivedMessage }],
+                max_tokens: 400,
+                temperature: 0.5
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                }
+            });
+
+            const content = gptReply.data.choices?.[0]?.message?.content?.trim();
+            await sendMessage(senderId, content || (session.language === "fr"
+                ? "Désolé, je n'ai pas compris votre demande."
+                : "Sorry, I didn't understand your request."));
+
+            const politePrompt = session.language === "fr"
+                ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
+                : "May I ask what type of project you have in mind? Buying, selling, renting, or something else?";
+            await sendMessage(senderId, politePrompt);
+            session.awaitingProjectType = true;
+            return res.status(200).send('EVENT_RECEIVED');
+        }
+
         if (session.questionCount >= session.maxQuestions) {
-            const limitMsg = session.language === "fr"
+            const msg = session.language === "fr"
                 ? "Limite atteinte temporairement."
                 : "Limit exceeded temporarily.";
-            await sendMessage(senderId, limitMsg);
+            await sendMessage(senderId, msg);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Ask specification questions in order
-        const order = ["area", "price", "Bdr", "Bth", "Grg", "Pkg"];
-        for (const specKey of order) {
-            const isForRent = session.specValues.projectType === "R";
-            const shouldAskPkg = specKey === "Pkg" && !isForRent;
-            if (specKey === "Pkg" && !isForRent) continue;
+        const nextSpec = getNextUnansweredSpec(session.specValues, SPEC_QUESTIONS);
+        const isForRent = session.specValues.projectType === "R";
 
-            if (!session.askedSpecs[specKey]) {
-                await handleSpecification(senderId, specKey, receivedMessage);
-                return res.status(200).send('EVENT_RECEIVED');
+        if (nextSpec && (nextSpec !== "Pkg" || !isForRent)) {
+            const decodePrompt = `${SPEC_QUESTIONS[nextSpec].decodePrompt[session.language]}\n\n"${receivedMessage}"`;
+            const decodeRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+                model: "gpt-4o",
+                messages: [{ role: "user", content: decodePrompt }],
+                max_tokens: 10,
+                temperature: 0
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                }
+            });
+
+            const raw = decodeRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
+            const isValid = SPEC_QUESTIONS[nextSpec].validValues.length === 0 || SPEC_QUESTIONS[nextSpec].validValues.includes(raw);
+            updateSpecFromInput(nextSpec, isValid ? raw : "?", session.specValues);
+            session.askedSpecs[nextSpec] = true;
+
+            if (!isValid) {
+                const retry = session.language === "fr"
+                    ? "Désolé, je n'ai pas compris. Pouvez-vous clarifier ?"
+                    : "Sorry, I didn’t understand. Could you clarify?";
+                await sendMessage(senderId, retry);
+            } else {
+                const next = getNextUnansweredSpec(session.specValues, SPEC_QUESTIONS);
+                if (next && (next !== "Pkg" || !isForRent)) {
+                    const prompt = getPromptForSpec(next, session.language, SPEC_QUESTIONS);
+                    session.askedSpecs[next] = true;
+                    await sendMessage(senderId, prompt);
+                }
             }
+            return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // If all specs collected, summarize
         if (!session.completedSpecs && allSpecsCollected(session)) {
             session.completedSpecs = true;
-            const summaryLines = Object.entries(session.specValues).map(([k, v]) => `${k}: ${v}`);
-            const summary = summaryLines.join("\n");
-            const prompt = session.language === "fr"
-                ? `Voici ce que j'ai compris :\n${summary}\nY a-t-il des erreurs ou des informations manquantes ?`
-                : `Here’s what I’ve gathered so far:\n${summary}\nIs anything incorrect or missing?`;
-            await sendMessage(senderId, prompt);
+            const summary = buildSpecSummary(session.specValues);
+            await sendMessage(senderId, summary);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // After summary, handle yes/no
         if (session.completedSpecs && receivedMessage.toLowerCase().includes("no")) {
-            resetIncompleteSpecs(session);
+            resetInvalidSpecs(session);
+            session.completedSpecs = false;
             await sendMessage(senderId, session.language === "fr"
                 ? "Merci de nous l'avoir signalé. Reprenons les informations manquantes."
                 : "Thanks for letting us know. Let's go over the missing details again.");
-            session.completedSpecs = false;
             return res.status(200).send('EVENT_RECEIVED');
         }
 
@@ -291,29 +300,45 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Handle contact info flow
         if (session.signoffStep) {
-            const step = session.signoffStep;
-            const value = receivedMessage.trim();
+            const val = receivedMessage.trim();
             if (!session.contactInfo) session.contactInfo = {};
-            if (step === "firstName") {
-                session.contactInfo.firstName = value;
+
+            if (session.signoffStep === "firstName") {
+                session.contactInfo.firstName = val;
                 session.signoffStep = "lastName";
                 await sendMessage(senderId, session.language === "fr" ? "Quel est votre nom de famille ?" : "What is your last name?");
-            } else if (step === "lastName") {
-                session.contactInfo.lastName = value;
+            } else if (session.signoffStep === "lastName") {
+                session.contactInfo.lastName = val;
                 session.signoffStep = "phone";
                 await sendMessage(senderId, session.language === "fr" ? "Quel est votre numéro de téléphone ?" : "What is your phone number?");
-            } else if (step === "phone") {
-                session.contactInfo.phone = value;
+            } else if (session.signoffStep === "phone") {
+                const phone = val.replace(/\s+/g, '');
+                const isValid = /^\+?\d{7,15}$/.test(phone);
+                if (!isValid) {
+                    const retry = session.language === "fr"
+                        ? "Le numéro de téléphone semble invalide. Pouvez-vous réessayer en chiffres seulement ?"
+                        : "That phone number seems invalid. Please try again using digits only.";
+                    await sendMessage(senderId, retry);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
+                session.contactInfo.phone = phone;
                 session.signoffStep = "email";
                 await sendMessage(senderId, session.language === "fr" ? "Quel est votre courriel ?" : "What is your email?");
-            } else if (step === "email") {
-                session.contactInfo.email = value;
+            } else if (session.signoffStep === "email") {
+                const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+                if (!isValid) {
+                    const retry = session.language === "fr"
+                        ? "L'adresse courriel semble invalide. Pouvez-vous réessayer ?"
+                        : "That email address seems invalid. Could you try again?";
+                    await sendMessage(senderId, retry);
+                    return res.status(200).send('EVENT_RECEIVED');
+                }
+                session.contactInfo.email = val;
                 session.signoffStep = "message";
                 await sendMessage(senderId, session.language === "fr" ? "Souhaitez-vous ajouter un message ?" : "Would you like to add a message?");
-            } else if (step === "message") {
-                session.contactInfo.message = value;
+            } else if (session.signoffStep === "message") {
+                session.contactInfo.message = val;
                 delete session.signoffStep;
                 await sendMessage(senderId, session.language === "fr"
                     ? "Merci ! Nous vous contacterons dans les prochaines 24 heures. Vous pouvez continuer à poser vos questions si vous le souhaitez."
@@ -321,8 +346,7 @@ app.post('/webhook', async (req, res) => {
             }
             return res.status(200).send('EVENT_RECEIVED');
         }
-        //part 6
-        // Fallback: ChatGPT response if no other handlers triggered
+
         session.questionCount++;
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4o",
@@ -337,7 +361,6 @@ app.post('/webhook', async (req, res) => {
         });
 
         let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
-
         if (!gptReply) {
             gptReply = session.language === "fr"
                 ? "Désolé, je n'ai pas compris votre demande."
@@ -353,6 +376,5 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
