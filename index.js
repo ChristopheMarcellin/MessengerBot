@@ -144,7 +144,6 @@ async function sendMessage(senderId, text) {
         headers: { 'Content-Type': 'application/json' }
     });
 }
-
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
@@ -156,13 +155,11 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
-        // Handle end session (set skip flag)
+        // Retry-safe end session
         if (receivedMessage.toLowerCase().includes("end session")) {
             if (userSessions[senderId]?.skipNextMessage) {
-                // Already marked, prevent repeat
                 return res.status(200).send('EVENT_RECEIVED');
             }
-
             userSessions[senderId] = {
                 skipNextMessage: true,
                 language: "en",
@@ -172,12 +169,14 @@ app.post('/webhook', async (req, res) => {
             console.log(`[RESET] Session ended for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
-        // Skip next message silently
+
+        // Skip next message silently after end session
         if (userSessions[senderId]?.skipNextMessage) {
             delete userSessions[senderId];
             return res.status(200).send('EVENT_RECEIVED');
         }
 
+        // Session init
         if (!userSessions[senderId]) {
             const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -217,115 +216,11 @@ app.post('/webhook', async (req, res) => {
 
         const session = userSessions[senderId];
 
-        if (session.awaitingProjectType && !session.askedSpecs.projectType) {
-            await tryToClassifyProjectType(session, receivedMessage);
+        // Safety check for broken session objects
+        if (!session || !session.language || !session.specValues) {
+            console.warn(`[WARN] Incomplete session for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
-
-        if (!session.askedSpecs.projectType && session.specValues.projectType === "?") {
-            const gptReply = await axios.post('https://api.openai.com/v1/chat/completions', {
-                model: "gpt-4o",
-                messages: [{ role: "user", content: receivedMessage }],
-                max_tokens: 400,
-                temperature: 0.5
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
-                }
-            });
-
-            const content = gptReply.data.choices?.[0]?.message?.content?.trim();
-            await sendMessage(senderId, content || (session.language === "fr"
-                ? "Désolé, je n'ai pas compris votre demande."
-                : "Sorry, I didn't understand your request."));
-
-            const politePrompt = session.language === "fr"
-                ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
-                : "May I ask what type of project you have in mind? Buying, selling, renting, or something else?";
-            await sendMessage(senderId, politePrompt);
-            session.awaitingProjectType = true;
-            return res.status(200).send('EVENT_RECEIVED');
-        }
-
-        // [continues with spec handling, contact, fallback, etc...]
-        // I’ve truncated here to focus on the session reset fix — let me know if you want the full tail again
-    } catch (error) {
-        console.error("[ERROR]", error.toString());
-        res.status(500).send('Server Error');
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
-app.post('/webhook', async (req, res) => {
-    try {
-        const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
-        if (!messagingEvent || messagingEvent.message?.is_echo || messagingEvent.delivery || messagingEvent.read) {
-            return res.status(200).send('EVENT_RECEIVED');
-        }
-
-        const senderId = messagingEvent.sender?.id;
-        const receivedMessage = messagingEvent.message?.text?.trim();
-        if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
-
-        // Handle end session (set skip flag)
-        if (receivedMessage.toLowerCase().includes("end session")) {
-            userSessions[senderId] = {
-                skipNextMessage: true,
-                language: "en",
-                specValues: {},
-                askedSpecs: {}
-            };
-            console.log(`[RESET] Session ended for sender: ${senderId}`);
-            return res.status(200).send('EVENT_RECEIVED');
-        }
-
-        // Skip next message silently
-        if (userSessions[senderId]?.skipNextMessage) {
-            delete userSessions[senderId];
-            return res.status(200).send('EVENT_RECEIVED');
-        }
-
-        // Initialize session
-        if (!userSessions[senderId]) {
-            const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
-            const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-                model: "gpt-4o",
-                messages: [{ role: "user", content: detectionPrompt }],
-                max_tokens: 100,
-                temperature: 0.3
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
-                }
-            });
-
-            let detectionText = detectionResponse.data.choices?.[0]?.message?.content || "{}";
-            detectionText = detectionText.replace(/```json|```/g, "").trim();
-
-            let language = "en", project = "?";
-            try {
-                const parsed = JSON.parse(detectionText);
-                language = parsed.language || "en";
-                project = parsed.project;
-                if (!["B", "S", "R"].includes(project)) project = "?";
-            } catch { }
-
-            userSessions[senderId] = {
-                language,
-                ProjectDate: new Date().toISOString(),
-                questionCount: 1,
-                maxQuestions: 40,
-                askedSpecs: {},
-                specValues: {
-                    projectType: project
-                }
-            };
-        }
-
-        const session = userSessions[senderId];
 
         if (session.awaitingProjectType && !session.askedSpecs.projectType) {
             await tryToClassifyProjectType(session, receivedMessage);
@@ -368,6 +263,12 @@ app.post('/webhook', async (req, res) => {
 
         const nextSpec = getNextUnansweredSpec(session.specValues, SPEC_QUESTIONS);
         const isForRent = session.specValues.projectType === "R";
+
+        // Guard clause for invalid spec keys
+        if (!nextSpec || !SPEC_QUESTIONS[nextSpec] || !SPEC_QUESTIONS[nextSpec].decodePrompt) {
+            console.warn(`[WARN] Invalid spec key: "${nextSpec}" — skipping`);
+            return res.status(200).send('EVENT_RECEIVED');
+        }
 
         if (nextSpec && (nextSpec !== "Pkg" || !isForRent)) {
             const decodePrompt = `${SPEC_QUESTIONS[nextSpec].decodePrompt[session.language]}\n\n"${receivedMessage}"`;
