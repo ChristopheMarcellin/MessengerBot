@@ -295,7 +295,7 @@ app.post('/webhook', async (req, res) => {
     // Handle end session command
     if (receivedMessage.toLowerCase().includes("end session")) {
     delete userSessions[senderId];
-    await sendMessage(senderId, "Session ended. You can start a new conversation.");
+    console.log(`[RESET] Session ended for sender: ${senderId}`);
     return res.status(200).send('EVENT_RECEIVED');
 }
 
