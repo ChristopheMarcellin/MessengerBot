@@ -157,16 +157,8 @@ app.post('/webhook', async (req, res) => {
 
         // Handle "end session" and suppress retries
         if (receivedMessage.toLowerCase().includes("end session")) {
-            if (userSessions[senderId]?.skipNextMessage) {
-                return res.status(200).send('EVENT_RECEIVED');
-            }
-            userSessions[senderId] = {
-                skipNextMessage: true,
-                language: "en",
-                specValues: {},
-                askedSpecs: {}
-            };
-            console.log(`[RESET] Session ended for sender: ${senderId}`);
+            delete userSessions[senderId];
+            console.log(`[RESET] Session fully deleted for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
