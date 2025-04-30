@@ -205,7 +205,7 @@ app.post('/webhook', async (req, res) => {
                 }
             };
         }
-
+        console.log("[SESSION CREATED]", JSON.stringify(userSessions[senderId], null, 2));
         const session = userSessions[senderId];
 
         // Defensive check for broken session
@@ -372,6 +372,7 @@ app.post('/webhook', async (req, res) => {
         }
 
         // Fallback to ChatGPT
+        console.log("[SESSION STATE BEFORE FALLBACK]", JSON.stringify(session, null, 2));
         session.questionCount++;
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4o",
