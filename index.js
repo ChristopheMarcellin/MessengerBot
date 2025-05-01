@@ -34,7 +34,7 @@ function allSpecsCollected(session) {
 
 function initializeSpecFields(session) {
     const type = session.specValues?.projectType;
-    const allQuestions = require('./questions');
+    const allQuestions = require('./modules/questions');
     const fields = allQuestions?.[type];
 
     if (!type || !fields) return;
