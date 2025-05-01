@@ -81,9 +81,10 @@ app.post('/webhook', async (req, res) => {
 
         const senderId = messagingEvent.sender?.id;
         const receivedMessage = messagingEvent.message?.text?.trim();
-
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
-        const currentType = userSessions[senderId]?.specValues?.projectType;
+        const session = userSessions[senderId];
+        const currentType = session?.specValues?.projectType;
+
         console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
         console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
         console.log(`[STATE] Specs: ${JSON.stringify(session.specValues, null, 2)}`);
