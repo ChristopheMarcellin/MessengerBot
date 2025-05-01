@@ -86,12 +86,14 @@ app.post('/webhook', async (req, res) => {
 
         console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
         const currentType = userSessions[senderId]?.specValues?.projectType;
-        console.log(`[TRACK] From ${senderId} | Project Type: ${currentType ?? "undefined"} | Message: "${receivedMessage}"`);
+        console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
+        console.log(`[STATE] Specs: ${JSON.stringify(session.specValues, null, 2)}`);
+
 
 
         // Reset session
         if (receivedMessage.toLowerCase().includes("end session")) {
-            console.log(`[RESET] Session for ${senderId} before deletion:`, userSessions[senderId]);
+            console.log(`[RESET] Session for ${senderId} before deletion: ${JSON.stringify(session.specValues, null, 2)}`);
             delete userSessions[senderId];
             console.log(`[RESET] Session deleted for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
