@@ -49,12 +49,12 @@ function initializeSpecFields(session) {
 
 async function tryToClassifyProjectType(session, userMessage) {
     const prompt = session.language === "fr"
-        ? "Quel est le type de projet de l'utilisateur dans ce message ? Répondez uniquement par une lettre :\\n- B pour achat\\n- S pour vente\\n- R pour location\\n- E si ce n’est pas clair ou si le message est une salutation.\\n\\nExemples :\\n- \\\"je veux acheter une maison\\\" → B\\n- \\\"je cherche à vendre mon condo\\\" → S\\n- \\\"je cherche à louer un appartement\\\" → R\\n- \\\"bonjour comment ça va\\\" → E\\n\\nMessage : \\\"" + userMessage + "\\\""
-        : "What is the user's project type in this message? Respond with one letter only:\\n- B for buying\\n- S for selling\\n- R for renting\\n- E if it's unclear or a greeting.\\n\\nExamples:\\n- \\\"I want to buy a house\\\" → B\\n- \\\"I’m selling my condo\\\" → S\\n- \\\"I’m looking to rent\\\" → R\\n- \\\"hello, how are you?\\\" → E\\n\\nMessage: \\\"" + userMessage + "\\\"";
+        ? "Quel est le type de projet de l'utilisateur dans ce message ? Répondez uniquement par une lettre :\\n- B pour achat\\n- S pour vente\\n- R pour location\\n- E si ce n’est pas clair ou si le message est une salutation.\\n\\nExemples :\\n- \\\"je veux acheter une maison\\\" → B\\n- \\\"je cherche à vendre mon condo\\\" → S\\n- \\\"je cherche à louer un appartement\\\" → R\\n- \\\"bonjour comment ça va\\\" → E"
+        : "What is the user's project type in this message? Respond with one letter only:\\n- B for buying\\n- S for selling\\n- R for renting\\n- E if it's unclear or a greeting.\\n\\nExamples:\\n- \\\"I want to buy a house\\\" → B\\n- \\\"I’m selling my condo\\\" → S\\n- \\\"I’m looking to rent\\\" → R\\n- \\\"hello, how are you?\\\" → E";
 
     const classifyRes = await axios.post('https://api.openai.com/v1/chat/completions', {
         model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
+        messages: [{ role: "user", content: prompt + "\\n\\n" + userMessage }],
         max_tokens: 10,
         temperature: 0
     }, {
@@ -69,7 +69,7 @@ async function tryToClassifyProjectType(session, userMessage) {
 
     if (["B", "S", "R"].includes(raw)) {
         session.specValues.projectType = raw;
-        initializeSpecFields(session); //  Now triggers when GPT classification succeeds
+        initializeSpecFields(session);
     } else if (session.awaitingProjectType === "firstTry") {
         session.specValues.projectType = "?";
     } else {
@@ -80,6 +80,7 @@ async function tryToClassifyProjectType(session, userMessage) {
     delete session.awaitingProjectType;
     console.log(`[CLASSIFY] Final projectType: ${session.specValues.projectType}`);
 }
+
 
 
 async function sendMessage(senderId, text) {
