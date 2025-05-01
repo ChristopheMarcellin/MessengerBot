@@ -32,6 +32,20 @@ function allSpecsCollected(session) {
     return !getNextUnansweredSpec(session);
 }
 
+function initializeSpecFields(session) {
+    const type = session.specValues.projectType;
+    if (!["B", "S", "R"].includes(type)) return;
+    if (!session.specValues || Object.keys(session.specValues).length <= 1) {
+        if (type === "B") {
+            session.specValues = { projectType: "B", price: null, bedrooms: null, bathrooms: null, garage: null, location: null };
+        } else if (type === "S") {
+            session.specValues = { projectType: "S", price: null, bedrooms: null, bathrooms: null, garage: null, location: null };
+        } else if (type === "R") {
+            session.specValues = { projectType: "R", price: null, bedrooms: null, bathrooms: null, parking: null, location: null };
+        }
+    }
+}
+
 async function tryToClassifyProjectType(session, userMessage) {
     const prompt = session.language === "fr"
         ? "Quel est le type de projet de l'utilisateur ? Répondez simplement par B, S, R ou E."
@@ -60,6 +74,8 @@ async function tryToClassifyProjectType(session, userMessage) {
     session.askedSpecs.projectType = true;
     delete session.awaitingProjectType;
     console.log(`[CLASSIFY] Final projectType: ${session.specValues.projectType}`);
+
+    initializeSpecFields(session);
 }
 
 async function sendMessage(senderId, text) {
@@ -91,7 +107,6 @@ app.post('/webhook', async (req, res) => {
         console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
         console.log(`[STATE] Specs: ${JSON.stringify(session?.specValues || {}, null, 2)}`);
 
-        // Reset session
         if (receivedMessage.toLowerCase().includes("end session")) {
             console.log(`[RESET] Session for ${senderId} before deletion: ${JSON.stringify(session?.specValues || {}, null, 2)}`);
             delete userSessions[senderId];
@@ -99,7 +114,6 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Initialize session
         if (!userSessions[senderId]) {
             const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -126,7 +140,6 @@ app.post('/webhook', async (req, res) => {
                 console.warn("[DETECT] Failed to parse detection result:", detectionText);
             }
 
-            // Prevent GPT from classifying greetings as project types
             const genericGreetings = ["bonjour", "salut", "hello", "hi", "comment ca va", "comment ça va"];
             const cleanMessage = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
             if (genericGreetings.some(g => cleanMessage.includes(g))) {
@@ -146,6 +159,8 @@ app.post('/webhook', async (req, res) => {
                     projectType: project
                 }
             };
+
+            initializeSpecFields(userSessions[senderId]);
 
             if (typeof project === "undefined") {
                 const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
