@@ -7,32 +7,31 @@ const getPromptForSpec = (projectType, specName, lang = 'en') => {
 };
 
 const getNextUnansweredSpec = (session) => {
-    const projectType = session.projectType;
+    const projectType = session.specValues?.projectType;
     if (!projectType || !questions[projectType]) return undefined;
 
-    return Object.keys(questions[projectType]).find((key) => session.spec[key] === undefined);
+    return Object.keys(questions[projectType]).find((key) => session.specValues[key] === null || session.specValues[key] === "?");
 };
 
 const shouldAskNextSpec = (session) => {
     return !!getNextUnansweredSpec(session);
 };
 
-const updateSpecFromInput = (field, decodedValue, session) => {
-    session.spec[field] = decodedValue || "?";
+const updateSpecFromInput = (field, decodedValue, specValues) => {
+    specValues[field] = decodedValue || "?";
 };
 
 const buildSpecSummary = (session, lang = 'en') => {
-    const projectType = session.projectType;
+    const projectType = session.specValues?.projectType;
     if (!projectType || !questions[projectType]) return "";
 
     const entries = Object.keys(questions[projectType]).map((key) => {
-        const label =
-            questions[projectType][key][lang]
-                .split("?")[0] // Take question before "?" to use as label
-                .replace(/(How many|Do you have|What is|What|Combien|Avez-vous|Quel est|Quel|Dans quelle ville ou quel quartier)( de)?/gi, "")
-                .trim();
+        const label = questions[projectType][key][lang]
+            .split("?")[0]
+            .replace(/(How many|Do you have|What is|What|Combien|Avez-vous|Quel est|Quel|Dans quelle ville ou quel quartier)( de)?/gi, "")
+            .trim();
 
-        return `- ${label} : ${session.spec[key] || "?"}`;
+        return `- ${label} : ${session.specValues[key] || "?"}`;
     });
 
     const intro = lang === 'fr' ? "Voici ce que j’ai compris :" : "Here’s what I’ve gathered:";
@@ -42,9 +41,9 @@ const buildSpecSummary = (session, lang = 'en') => {
 };
 
 const resetInvalidSpecs = (session) => {
-    for (let key in session.spec) {
-        if (session.spec[key] === "?") {
-            delete session.spec[key];
+    for (let key in session.specValues) {
+        if (session.specValues[key] === "?") {
+            delete session.specValues[key];
         }
     }
 };
