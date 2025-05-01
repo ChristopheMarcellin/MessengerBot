@@ -241,7 +241,13 @@ app.post('/webhook', async (req, res) => {
 
         if (!session.completedSpecs && allSpecsCollected(session)) {
             session.completedSpecs = true;
+            console.log(`[SUMMARY] Spec values for ${senderId}:`, JSON.stringify(session.specValues, null, 2));
             const summary = buildSpecSummary(session, session.language || 'en');
+            if (!summary || summary.trim() === "") {
+                console.warn(`[SUMMARY] Skipped empty summary for ${senderId}`);
+                return res.status(200).send('EVENT_RECEIVED');
+            }
+            await sendMessage(senderId, summary);
             console.log(`[SUMMARY]\n${summary}`);
             await sendMessage(senderId, summary);
             return res.status(200).send('EVENT_RECEIVED');
