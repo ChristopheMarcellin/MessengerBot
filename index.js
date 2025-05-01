@@ -75,6 +75,7 @@ async function sendMessage(senderId, text) {
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
+
         if (!messagingEvent || messagingEvent.message?.is_echo || messagingEvent.delivery || messagingEvent.read) {
             return res.status(200).send('EVENT_RECEIVED');
         }
@@ -82,12 +83,14 @@ app.post('/webhook', async (req, res) => {
         const senderId = messagingEvent.sender?.id;
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
+
         const session = userSessions[senderId];
         const currentType = session?.specValues?.projectType;
 
         console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
         console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
-        console.log(`[STATE] Specs: ${JSON.stringify(session.specValues, null, 2)}`);
+        console.log(`[STATE] Specs: ${JSON.stringify(session?.specValues || {}, null, 2)}`);
+
 
 
 
@@ -144,7 +147,7 @@ app.post('/webhook', async (req, res) => {
             };
 
             if (typeof project === "undefined") {
-                // 🧠 PATCH: Answer user's first question before asking project type
+                //  PATCH: Answer user's first question before asking project type
                 const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                     model: "gpt-4o",
                     messages: [{ role: "user", content: receivedMessage }],
