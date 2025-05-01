@@ -33,26 +33,28 @@ function allSpecsCollected(session) {
 }
 
 function initializeSpecFields(session) {
-    const type = session.specValues.projectType;
-    if (!["B", "S", "R"].includes(type)) return;
+    const type = session.specValues?.projectType;
+    const allQuestions = require('./questions');
+    const fields = allQuestions?.[type];
+
+    if (!type || !fields) return;
+
     if (!session.specValues || Object.keys(session.specValues).length <= 1) {
-        if (type === "B") {
-            session.specValues = { projectType: "B", price: null, bedrooms: null, bathrooms: null, garage: null, location: null };
-        } else if (type === "S") {
-            session.specValues = { projectType: "S", price: null, bedrooms: null, bathrooms: null, garage: null, location: null };
-        } else if (type === "R") {
-            session.specValues = { projectType: "R", price: null, bedrooms: null, bathrooms: null, parking: null, location: null };
-        }
+        session.specValues = { projectType: type };
+        Object.keys(fields).forEach(key => {
+            session.specValues[key] = null;
+        });
     }
 }
 
 async function tryToClassifyProjectType(session, userMessage) {
     const prompt = session.language === "fr"
-        ? "Quel est le type de projet de l'utilisateur ? Répondez simplement par B, S, R ou E."
-        : "What is the user's project type? Reply with B, S, R or E.";
+        ? "Quel est le type de projet de l'utilisateur dans ce message ? Répondez uniquement par une lettre :\\n- B pour achat\\n- S pour vente\\n- R pour location\\n- E si ce n’est pas clair ou si le message est une salutation.\\n\\nExemples :\\n- \\\"je veux acheter une maison\\\" → B\\n- \\\"je cherche à vendre mon condo\\\" → S\\n- \\\"je cherche à louer un appartement\\\" → R\\n- \\\"bonjour comment ça va\\\" → E\\n\\nMessage : \\\"" + userMessage + "\\\""
+        : "What is the user's project type in this message? Respond with one letter only:\\n- B for buying\\n- S for selling\\n- R for renting\\n- E if it's unclear or a greeting.\\n\\nExamples:\\n- \\\"I want to buy a house\\\" → B\\n- \\\"I’m selling my condo\\\" → S\\n- \\\"I’m looking to rent\\\" → R\\n- \\\"hello, how are you?\\\" → E\\n\\nMessage: \\\"" + userMessage + "\\\"";
+
     const classifyRes = await axios.post('https://api.openai.com/v1/chat/completions', {
         model: "gpt-4o",
-        messages: [{ role: "user", content: `${prompt}\n\n"${userMessage}"` }],
+        messages: [{ role: "user", content: prompt }],
         max_tokens: 10,
         temperature: 0
     }, {
@@ -91,7 +93,6 @@ async function sendMessage(senderId, text) {
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
-
         if (!messagingEvent || messagingEvent.message?.is_echo || messagingEvent.delivery || messagingEvent.read) {
             return res.status(200).send('EVENT_RECEIVED');
         }
@@ -101,8 +102,6 @@ app.post('/webhook', async (req, res) => {
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
         const session = userSessions[senderId];
-        const currentType = session?.specValues?.projectType;
-
         console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
         console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
         console.log(`[STATE] Specs: ${JSON.stringify(session?.specValues || {}, null, 2)}`);
@@ -140,29 +139,26 @@ app.post('/webhook', async (req, res) => {
                 console.warn("[DETECT] Failed to parse detection result:", detectionText);
             }
 
-            const genericGreetings = ["bonjour", "salut", "hello", "hi", "comment ca va", "comment ça va"];
-            const cleanMessage = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
-            if (genericGreetings.some(g => cleanMessage.includes(g))) {
+            const greetings = ["bonjour", "salut", "hello", "hi", "comment ca va", "comment ça va"];
+            const clean = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+            if (greetings.some(g => clean.includes(g))) {
                 console.log("[DETECT] Greeting detected. Ignoring project classification.");
                 project = undefined;
             }
 
             console.log(`[INIT] New session for ${senderId} | Lang: ${language} | Project: ${project || "undefined"}`);
-
             userSessions[senderId] = {
                 language,
                 ProjectDate: new Date().toISOString(),
                 questionCount: 1,
                 maxQuestions: 40,
                 askedSpecs: {},
-                specValues: {
-                    projectType: project
-                }
+                specValues: { projectType: project }
             };
 
             initializeSpecFields(userSessions[senderId]);
 
-            if (typeof project === "undefined") {
+            if (!project) {
                 const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                     model: "gpt-4o",
                     messages: [{ role: "user", content: receivedMessage }],
@@ -200,10 +196,10 @@ app.post('/webhook', async (req, res) => {
         }
 
         if (!sessionReloaded.askedSpecs.projectType && sessionReloaded.specValues.projectType === "?") {
-            const politePrompt = sessionReloaded.language === "fr"
+            const prompt = sessionReloaded.language === "fr"
                 ? "Pouvez-vous préciser votre type de projet ? Achat, vente, location ou autre ?"
                 : "Could you clarify what type of project you have in mind? Buying, selling, renting, or something else?";
-            await sendMessage(senderId, politePrompt);
+            await sendMessage(senderId, prompt);
             sessionReloaded.awaitingProjectType = "secondTry";
             return res.status(200).send('EVENT_RECEIVED');
         }
@@ -216,11 +212,11 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        const nextSpec = getNextUnansweredSpec(sessionReloaded);
-        console.log(`[NEXT] Next unanswered spec: ${nextSpec}`);
+        const currentSpec = getNextUnansweredSpec(sessionReloaded);
+        console.log(`[NEXT] Next unanswered spec: ${currentSpec}`);
 
-        if (nextSpec) {
-            const decodePrompt = `What is the value for: ${nextSpec}?\n\n"${receivedMessage}"`;
+        if (currentSpec) {
+            const decodePrompt = `What is the value for: ${currentSpec}?\n\n"${receivedMessage}"`;
             const decodeRes = await axios.post('https://api.openai.com/v1/chat/completions', {
                 model: "gpt-4o",
                 messages: [{ role: "user", content: decodePrompt }],
@@ -234,10 +230,10 @@ app.post('/webhook', async (req, res) => {
             });
 
             const raw = decodeRes.data.choices?.[0]?.message?.content?.trim();
-            console.log(`[DECODE] ${nextSpec} → "${raw}"`);
+            console.log(`[DECODE] ${currentSpec} → "${raw}"`);
             const valid = raw && raw !== "?";
-            updateSpecFromInput(nextSpec, valid ? raw : "?", sessionReloaded.specValues);
-            sessionReloaded.askedSpecs[nextSpec] = true;
+            updateSpecFromInput(currentSpec, valid ? raw : "?", sessionReloaded.specValues);
+            sessionReloaded.askedSpecs[currentSpec] = true;
 
             if (!valid) {
                 const retry = sessionReloaded.language === "fr"

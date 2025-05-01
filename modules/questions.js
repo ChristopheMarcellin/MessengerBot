@@ -45,28 +45,28 @@ const questions = {
       fr: "Dans quelle ville ou quel quartier êtes vous situé ?",
     },
   },
-  R: {
-    price: {
-      en: "What rental price target do you have in mind (monthly)?",
-      fr: "Quel prix de location (mensuel) avez-vous en tête ?",
+    R: {
+        price: {
+            en: "What rental price target do you have in mind (monthly)?",
+            fr: "Quel prix de location (mensuel) avez-vous en tête ?",
+        },
+        bedrooms: {
+            en: "How many bedrooms do you have?",
+            fr: "Combien de chambre à coucher avez-vous ?",
+        },
+        bathrooms: {
+            en: "How many bathrooms do you have?",
+            fr: "Combien de salles de bains avez-vous ?",
+        },
+        parking: {
+            en: "Do you have private parking space, how many?",
+            fr: "Avez-vous des places de stationnement privées, combien ?",
+        },
+        location: {
+            en: "In which city or neighborhood are you located?",
+            fr: "Dans quelle ville ou quel quartier êtes vous situé ?",
+        },
     },
-    bedrooms: {
-      en: "How many bedrooms do you have?",
-      fr: "Combien de chambre à coucher avez-vous ?",
-    },
-    bathrooms: {
-      en: "How many bathrooms do you have?",
-      fr: "Combien de salles de bains avez-vous ?",
-    },
-    privateParking: {
-      en: "Do you have private parking space, how many?",
-      fr: "Avez-vous des places de stationnement privées, combien ?",
-    },
-    location: {
-      en: "In which city or neighborhood are you located?",
-      fr: "Dans quelle ville ou quel quartier êtes vous situé ?",
-    },
-  },
   E: {}, // Evaluation: no additional specs needed
 };
 
