@@ -1,46 +1,59 @@
 // modules/specEngine.js
 
-const specQuestions = {
-  projectType: "Quel est le type de projet ? (Achat, Vente, Location, Évaluation)",
-  budget: "Quel est votre budget ?",
-  rooms: "Combien de chambres souhaitez-vous ?",
-  garage: "Avez-vous besoin d’un garage ? Si oui, combien ?",
+const questions = require('./questions');
+
+const getPromptForSpec = (projectType, specName, lang = 'en') => {
+    return questions[projectType]?.[specName]?.[lang] || "Please provide this detail:";
 };
 
 const getNextUnansweredSpec = (session) => {
-  return Object.keys(specQuestions).find((key) => !session[key]);
+    const projectType = session.projectType;
+    if (!projectType || !questions[projectType]) return undefined;
+
+    return Object.keys(questions[projectType]).find((key) => session.spec[key] === undefined);
 };
 
 const shouldAskNextSpec = (session) => {
-  return !!getNextUnansweredSpec(session);
+    return !!getNextUnansweredSpec(session);
 };
 
 const updateSpecFromInput = (field, decodedValue, session) => {
-  session[field] = decodedValue || "?";
+    session.spec[field] = decodedValue || "?";
 };
 
-const buildSpecSummary = (session) => {
-  return `Voici ce que j’ai compris :
-- Type de projet : ${session.projectType || "?"}
-- Budget : ${session.budget || "?"}
-- Chambres : ${session.rooms || "?"}
-- Garage : ${session.garage || "?"}
-Est-ce que tout est correct ?`;
+const buildSpecSummary = (session, lang = 'en') => {
+    const projectType = session.projectType;
+    if (!projectType || !questions[projectType]) return "";
+
+    const entries = Object.keys(questions[projectType]).map((key) => {
+        const label =
+            questions[projectType][key][lang]
+                .split("?")[0] // Take question before "?" to use as label
+                .replace(/(How many|Do you have|What is|What|Combien|Avez-vous|Quel est|Quel|Dans quelle ville ou quel quartier)( de)?/gi, "")
+                .trim();
+
+        return `- ${label} : ${session.spec[key] || "?"}`;
+    });
+
+    const intro = lang === 'fr' ? "Voici ce que j’ai compris :" : "Here’s what I’ve gathered:";
+    const outro = lang === 'fr' ? "Est-ce que tout est correct ?" : "Is everything correct?";
+
+    return [intro, ...entries, outro].join("\n");
 };
 
 const resetInvalidSpecs = (session) => {
-  for (let key of Object.keys(specQuestions)) {
-    if (session[key] === "?") {
-      delete session[key];
+    for (let key in session.spec) {
+        if (session.spec[key] === "?") {
+            delete session.spec[key];
+        }
     }
-  }
 };
 
 module.exports = {
-  specQuestions,
-  getNextUnansweredSpec,
-  shouldAskNextSpec,
-  updateSpecFromInput,
-  buildSpecSummary,
-  resetInvalidSpecs,
+    getPromptForSpec,
+    getNextUnansweredSpec,
+    shouldAskNextSpec,
+    updateSpecFromInput,
+    buildSpecSummary,
+    resetInvalidSpecs,
 };
