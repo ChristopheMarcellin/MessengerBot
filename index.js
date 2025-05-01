@@ -84,25 +84,18 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
-        const session = userSessions[senderId];
-        const currentType = session?.specValues?.projectType;
-
-        console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
-        console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
-        console.log(`[STATE] Specs: ${JSON.stringify(session?.specValues || {}, null, 2)}`);
-
-
-
-
-        // Reset session
+        // Reset session early if asked
         if (receivedMessage.toLowerCase().includes("end session")) {
-            console.log(`[RESET] Session for ${senderId} before deletion: ${JSON.stringify(session.specValues, null, 2)}`);
+            const old = userSessions[senderId];
+            if (old) {
+                console.log(`[RESET] Session for ${senderId} before deletion: ${JSON.stringify(old.specValues, null, 2)}`);
+            }
             delete userSessions[senderId];
             console.log(`[RESET] Session deleted for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Initialize session
+        // Initialize session if not found
         if (!userSessions[senderId]) {
             const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -147,7 +140,6 @@ app.post('/webhook', async (req, res) => {
             };
 
             if (typeof project === "undefined") {
-                //  PATCH: Answer user's first question before asking project type
                 const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                     model: "gpt-4o",
                     messages: [{ role: "user", content: receivedMessage }],
@@ -168,7 +160,6 @@ app.post('/webhook', async (req, res) => {
                 }
                 await sendMessage(senderId, gptReply);
 
-                // Now follow up with project type
                 const politePrompt = language === "fr"
                     ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
                     : "May I ask what type of project you have in mind? Buying, selling, renting, or something else?";
@@ -178,15 +169,17 @@ app.post('/webhook', async (req, res) => {
             }
         }
 
+        // Safe to assign session now
         const session = userSessions[senderId];
+        console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
+        console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
+        console.log(`[STATE] Specs: ${JSON.stringify(session.specValues, null, 2)}`);
 
-        // Classify project type if needed
         if (session.awaitingProjectType) {
             await tryToClassifyProjectType(session, receivedMessage);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Retry clarification if projectType is still "?"
         if (!session.askedSpecs.projectType && session.specValues.projectType === "?") {
             const politePrompt = session.language === "fr"
                 ? "Pouvez-vous préciser votre type de projet ? Achat, vente, location ou autre ?"
@@ -276,7 +269,6 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // GPT fallback
         session.questionCount++;
         console.log(`[FALLBACK] Open-ended GPT query`);
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
