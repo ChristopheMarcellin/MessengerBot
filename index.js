@@ -84,18 +84,22 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
-        // Reset session early if asked
+        const session = userSessions[senderId];
+        const currentType = session?.specValues?.projectType;
+
+        console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
+        console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
+        console.log(`[STATE] Specs: ${JSON.stringify(session?.specValues || {}, null, 2)}`);
+
+        // Reset session
         if (receivedMessage.toLowerCase().includes("end session")) {
-            const old = userSessions[senderId];
-            if (old) {
-                console.log(`[RESET] Session for ${senderId} before deletion: ${JSON.stringify(old.specValues, null, 2)}`);
-            }
+            console.log(`[RESET] Session for ${senderId} before deletion: ${JSON.stringify(session?.specValues || {}, null, 2)}`);
             delete userSessions[senderId];
             console.log(`[RESET] Session deleted for sender: ${senderId}`);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Initialize session if not found
+        // Initialize session
         if (!userSessions[senderId]) {
             const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -122,7 +126,11 @@ app.post('/webhook', async (req, res) => {
                 console.warn("[DETECT] Failed to parse detection result:", detectionText);
             }
 
-            if (!["B", "S", "R"].includes(project)) {
+            // Prevent GPT from classifying greetings as project types
+            const genericGreetings = ["bonjour", "salut", "hello", "hi", "comment ca va", "comment ça va"];
+            const cleanMessage = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+            if (genericGreetings.some(g => cleanMessage.includes(g))) {
+                console.log("[DETECT] Greeting detected. Ignoring project classification.");
                 project = undefined;
             }
 
@@ -169,35 +177,31 @@ app.post('/webhook', async (req, res) => {
             }
         }
 
-        // Safe to assign session now
-        const session = userSessions[senderId];
-        console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
-        console.log(`[TRACK] From ${senderId} | Message: "${receivedMessage}"`);
-        console.log(`[STATE] Specs: ${JSON.stringify(session.specValues, null, 2)}`);
+        const sessionReloaded = userSessions[senderId];
 
-        if (session.awaitingProjectType) {
-            await tryToClassifyProjectType(session, receivedMessage);
+        if (sessionReloaded.awaitingProjectType) {
+            await tryToClassifyProjectType(sessionReloaded, receivedMessage);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        if (!session.askedSpecs.projectType && session.specValues.projectType === "?") {
-            const politePrompt = session.language === "fr"
+        if (!sessionReloaded.askedSpecs.projectType && sessionReloaded.specValues.projectType === "?") {
+            const politePrompt = sessionReloaded.language === "fr"
                 ? "Pouvez-vous préciser votre type de projet ? Achat, vente, location ou autre ?"
                 : "Could you clarify what type of project you have in mind? Buying, selling, renting, or something else?";
             await sendMessage(senderId, politePrompt);
-            session.awaitingProjectType = "secondTry";
+            sessionReloaded.awaitingProjectType = "secondTry";
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        if (session.questionCount >= session.maxQuestions) {
-            const msg = session.language === "fr"
+        if (sessionReloaded.questionCount >= sessionReloaded.maxQuestions) {
+            const msg = sessionReloaded.language === "fr"
                 ? "Limite atteinte temporairement."
                 : "Limit exceeded temporarily.";
             await sendMessage(senderId, msg);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        const nextSpec = getNextUnansweredSpec(session);
+        const nextSpec = getNextUnansweredSpec(sessionReloaded);
         console.log(`[NEXT] Next unanswered spec: ${nextSpec}`);
 
         if (nextSpec) {
@@ -217,59 +221,57 @@ app.post('/webhook', async (req, res) => {
             const raw = decodeRes.data.choices?.[0]?.message?.content?.trim();
             console.log(`[DECODE] ${nextSpec} → "${raw}"`);
             const valid = raw && raw !== "?";
-            updateSpecFromInput(nextSpec, valid ? raw : "?", session.specValues);
-            session.askedSpecs[nextSpec] = true;
+            updateSpecFromInput(nextSpec, valid ? raw : "?", sessionReloaded.specValues);
+            sessionReloaded.askedSpecs[nextSpec] = true;
 
             if (!valid) {
-                const retry = session.language === "fr"
+                const retry = sessionReloaded.language === "fr"
                     ? "Désolé, je n'ai pas compris. Pouvez-vous clarifier ?"
                     : "Sorry, I didn’t understand. Could you clarify?";
                 await sendMessage(senderId, retry);
             } else {
-                const next = getNextUnansweredSpec(session);
+                const next = getNextUnansweredSpec(sessionReloaded);
                 if (next) {
-                    const question = getPromptForSpec(session.specValues.projectType, next, session.language || 'en');
+                    const question = getPromptForSpec(sessionReloaded.specValues.projectType, next, sessionReloaded.language || 'en');
                     console.log(`[PROMPT] Asking for ${next} → "${question}"`);
-                    session.askedSpecs[next] = true;
+                    sessionReloaded.askedSpecs[next] = true;
                     await sendMessage(senderId, question);
                 }
             }
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        if (!session.completedSpecs && allSpecsCollected(session)) {
-            session.completedSpecs = true;
-            console.log(`[SUMMARY] Spec values for ${senderId}:`, JSON.stringify(session.specValues, null, 2));
-            const summary = buildSpecSummary(session, session.language || 'en');
+        if (!sessionReloaded.completedSpecs && allSpecsCollected(sessionReloaded)) {
+            sessionReloaded.completedSpecs = true;
+            console.log(`[SUMMARY] Spec values for ${senderId}:`, JSON.stringify(sessionReloaded.specValues, null, 2));
+            const summary = buildSpecSummary(sessionReloaded, sessionReloaded.language || 'en');
             if (!summary || summary.trim() === "") {
                 console.warn(`[SUMMARY] Skipped empty summary for ${senderId}`);
                 return res.status(200).send('EVENT_RECEIVED');
             }
             await sendMessage(senderId, summary);
-            console.log(`[SUMMARY]\n${summary}`);
-            await sendMessage(senderId, summary);
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        if (session.completedSpecs && receivedMessage.toLowerCase().includes("no")) {
-            resetIncompleteSpecs(session);
-            session.completedSpecs = false;
-            await sendMessage(senderId, session.language === "fr"
+        if (sessionReloaded.completedSpecs && receivedMessage.toLowerCase().includes("no")) {
+            resetIncompleteSpecs(sessionReloaded);
+            sessionReloaded.completedSpecs = false;
+            await sendMessage(senderId, sessionReloaded.language === "fr"
                 ? "Merci de nous l'avoir signalé. Reprenons les informations manquantes."
                 : "Thanks for letting us know. Let's go over the missing details again.");
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        if (session.completedSpecs && receivedMessage.toLowerCase().includes("yes")) {
-            session.wantsContact = "Y";
-            session.signoffStep = "firstName";
-            await sendMessage(senderId, session.language === "fr"
+        if (sessionReloaded.completedSpecs && receivedMessage.toLowerCase().includes("yes")) {
+            sessionReloaded.wantsContact = "Y";
+            sessionReloaded.signoffStep = "firstName";
+            await sendMessage(senderId, sessionReloaded.language === "fr"
                 ? "Merci. Pouvez-vous me donner votre prénom ?"
                 : "Thank you. Can you please tell me your first name?");
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        session.questionCount++;
+        sessionReloaded.questionCount++;
         console.log(`[FALLBACK] Open-ended GPT query`);
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4o",
@@ -285,7 +287,7 @@ app.post('/webhook', async (req, res) => {
 
         let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
         if (!gptReply) {
-            gptReply = session.language === "fr"
+            gptReply = sessionReloaded.language === "fr"
                 ? "Désolé, je n'ai pas compris votre demande."
                 : "Sorry, I didn't understand your request.";
         }
