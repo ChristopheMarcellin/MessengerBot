@@ -81,9 +81,13 @@ app.post('/webhook', async (req, res) => {
 
         const senderId = messagingEvent.sender?.id;
         const receivedMessage = messagingEvent.message?.text?.trim();
+
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
         console.log(`[RECEIVED] From: ${senderId} | Message: ${receivedMessage}`);
+        const currentType = userSessions[senderId]?.specValues?.projectType;
+        console.log(`[TRACK] From ${senderId} | Project Type: ${currentType ?? "undefined"} | Message: "${receivedMessage}"`);
+
 
         // Reset session
         if (receivedMessage.toLowerCase().includes("end session")) {
@@ -138,6 +142,28 @@ app.post('/webhook', async (req, res) => {
             };
 
             if (typeof project === "undefined") {
+                // 🧠 PATCH: Answer user's first question before asking project type
+                const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+                    model: "gpt-4o",
+                    messages: [{ role: "user", content: receivedMessage }],
+                    max_tokens: 400,
+                    temperature: 0.5
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    }
+                });
+
+                let gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+                if (!gptReply) {
+                    gptReply = language === "fr"
+                        ? "Désolé, je n'ai pas compris votre demande."
+                        : "Sorry, I didn't understand your request.";
+                }
+                await sendMessage(senderId, gptReply);
+
+                // Now follow up with project type
                 const politePrompt = language === "fr"
                     ? "Puis-je vous demander quel type de projet vous avez en tête ? Achat, vente, location ou autre ?"
                     : "May I ask what type of project you have in mind? Buying, selling, renting, or something else?";
@@ -173,7 +199,6 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Handle spec decoding
         const nextSpec = getNextUnansweredSpec(session);
         console.log(`[NEXT] Next unanswered spec: ${nextSpec}`);
 
