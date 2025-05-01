@@ -60,25 +60,27 @@ async function tryToClassifyProjectType(session, userMessage) {
     }, {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
         }
     });
 
     const raw = classifyRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
     console.log(`[CLASSIFY] Raw classification result: ${raw}`);
+
     if (["B", "S", "R"].includes(raw)) {
         session.specValues.projectType = raw;
+        initializeSpecFields(session); //  Now triggers when GPT classification succeeds
     } else if (session.awaitingProjectType === "firstTry") {
         session.specValues.projectType = "?";
     } else {
         session.specValues.projectType = "E";
     }
+
     session.askedSpecs.projectType = true;
     delete session.awaitingProjectType;
     console.log(`[CLASSIFY] Final projectType: ${session.specValues.projectType}`);
-
-    initializeSpecFields(session);
 }
+
 
 async function sendMessage(senderId, text) {
     console.log(`[SEND] To: ${senderId} | Message: ${text}`);
