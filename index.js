@@ -151,6 +151,7 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
+        // ✅ SESSION INIT
         if (!userSessions[senderId]) {
             const detectionPrompt = `Detect the user's language and intent. Return JSON with "language": "en/fr" and "project": "B/S/R/E".\n\n"${receivedMessage}"`;
             const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -194,13 +195,16 @@ app.post('/webhook', async (req, res) => {
                 specValues: {}
             };
 
+            const session = userSessions[senderId];
+
             if (["B", "S", "R"].includes(project)) {
-                setProjectType(userSessions[senderId], project, "GPT session init (confident)");
-                initializeSpecFields(userSessions[senderId]);
+                setProjectType(session, project, "GPT session init (confident)");
+                initializeSpecFields(session);
             } else {
-                setProjectType(userSessions[senderId], "?", project === "E"
+                setProjectType(session, "?", project === "E"
                     ? "GPT session init: E → forced ?"
                     : "GPT session init: fallback → ?");
+                session.awaitingProjectType = "firstTry";
 
                 const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                     model: "gpt-4o",
@@ -227,7 +231,6 @@ app.post('/webhook', async (req, res) => {
                     : "May I ask what type of project you have in mind? Buying, selling, renting, or something else?";
                 await sendMessage(senderId, politePrompt);
 
-                userSessions[senderId].awaitingProjectType = "firstTry";
                 return res.status(200).send('EVENT_RECEIVED');
             }
         }
