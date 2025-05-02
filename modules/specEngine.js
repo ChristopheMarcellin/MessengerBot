@@ -29,6 +29,14 @@ const getNextUnansweredSpec = (session) => {
         (key) => session.specValues[key] === null || session.specValues[key] === "?"
     );
 };
+// fait une trace des changements aux specs
+const updateSpecFromInput = (field, decodedValue, specValues) => {
+    const previous = specValues[field] ?? "undefined";
+    const next = (decodedValue && decodedValue.trim() !== "") ? decodedValue : "?";
+
+    specValues[field] = next;
+    console.log(`[UPDATE] spec field "${field}" changed from "${previous}" to "${next}"`);
+};
 
 // Faut-il poser une nouvelle question ?
 const shouldAskNextSpec = (session) => {
