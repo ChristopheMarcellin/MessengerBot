@@ -98,6 +98,7 @@ async function sendMessage(senderId, text) {
         headers: { 'Content-Type': 'application/json' }
     });
 }
+
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
@@ -188,7 +189,6 @@ app.post('/webhook', async (req, res) => {
         }
 
         const session = userSessions[senderId];
-
         // PROJECT TYPE clarification
         if (session.awaitingProjectType) {
             const guess = await tryToClassifyProjectType(session, receivedMessage);
@@ -219,6 +219,7 @@ app.post('/webhook', async (req, res) => {
         }
 
         const currentSpec = getNextUnansweredSpec(session);
+
         if (currentSpec) {
             const decodePrompt = `${getPromptForSpec(session.specValues.projectType, currentSpec, session.language)}\n\n"${receivedMessage}"`;
 
@@ -254,8 +255,18 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // All specs done: summary
-        if (!session.completedSpecs && allSpecsCollected(session)) {
+        // 🔁 Relancer le type de projet si toujours indéfini et aucune spec posable
+        if (!currentSpec && session.specValues.projectType === "?" && !session.awaitingProjectType) {
+            const ask = session.language === "fr"
+                ? "Quelle est le but de votre projet 1-acheter, 2-vendre, 3-louer, 4-autre raison, svp indiquer seulement le numéro de votre but."
+                : "What is the goal of your project? 1-buying, 2-selling, 3-renting, 4-other. Please reply with the number.";
+            await sendMessage(senderId, ask);
+            session.awaitingProjectType = "repeat";
+            return res.status(200).send('EVENT_RECEIVED');
+        }
+
+        // Résumé final
+        if (!session.completedSpecs && allSpecsCollected(session) && session.specValues.projectType !== "?") {
             session.completedSpecs = true;
             const summary = buildSpecSummary(session, session.language);
             if (summary && summary.trim()) {
@@ -274,7 +285,7 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-        // Collect contact
+        // Collecte des coordonnées
         if (session.completedSpecs && receivedMessage.toLowerCase().includes("yes")) {
             session.wantsContact = "Y";
             session.signoffStep = "firstName";
@@ -284,8 +295,7 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 
-
-
+        // Question ouverte GPT (fallback)
         session.questionCount++;
         const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4o",
