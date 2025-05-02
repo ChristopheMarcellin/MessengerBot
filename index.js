@@ -1,4 +1,9 @@
 require('dotenv').config();
+const express = require('express');
+const axios = require('axios');
+const app = express();
+app.use(express.json());
+
 const {
     getNextUnansweredSpec,
     shouldAskNextSpec,
@@ -10,15 +15,11 @@ const {
 } = require('./modules/specEngine');
 const displayMap = require('./modules/displayMap');
 
-const express = require('express');
-const axios = require('axios');
-const app = express();
-app.use(express.json());
-
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
 const userSessions = {};
+
+// === Session & Type Management ===
 
 function setProjectType(session, value, reason = "unspecified") {
     const previous = session.specValues?.projectType ?? "undefined";
@@ -57,7 +58,7 @@ async function tryToClassifyProjectType(session, userMessage) {
         ? `Déterminez le type de projet exprimé par l'utilisateur. Répondez par B, S, R ou E.\n\n"${userMessage}"`
         : `Determine the user's project type. Reply with B, S, R, or E.\n\n"${userMessage}"`;
 
-    const classifyRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+    const res = await axios.post('https://api.openai.com/v1/chat/completions', {
         model: "gpt-4o",
         messages: [{ role: "user", content: prompt }],
         max_tokens: 10,
@@ -69,7 +70,7 @@ async function tryToClassifyProjectType(session, userMessage) {
         }
     });
 
-    return classifyRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
+    return res.data.choices?.[0]?.message?.content?.trim().toUpperCase();
 }
 
 async function sendMessage(senderId, text) {
@@ -81,6 +82,8 @@ async function sendMessage(senderId, text) {
         headers: { 'Content-Type': 'application/json' }
     });
 }
+
+// === Entry Point ===
 
 app.post('/webhook', async (req, res) => {
     try {
@@ -108,6 +111,7 @@ app.post('/webhook', async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 async function launchSteps(context) {
     if (!(await stepCheckEndSession(context))) return;
     if (!(await stepInitializeSession(context))) return;
@@ -116,6 +120,7 @@ async function launchSteps(context) {
     if (!(await stepSummarizeIfComplete(context))) return;
     await stepFallback(context);
 }
+// === Step Logic ===
 
 async function stepCheckEndSession({ senderId, cleanText, res }) {
     if (cleanText.includes("end session")) {
@@ -133,6 +138,7 @@ async function stepInitializeSession(context) {
     if (userSessions[senderId]) return true;
 
     const prompt = `Detect user's language and project intent. Return JSON like: {"language": "en/fr", "project": "B/S/R/E"}\n\n"${message}"`;
+
     const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
         model: "gpt-4o",
         messages: [{ role: "user", content: prompt }],
@@ -160,7 +166,7 @@ async function stepInitializeSession(context) {
         questionCount: 1,
         maxQuestions: 40,
         askedSpecs: {},
-        specValues: {},
+        specValues: {}
     };
 
     const session = userSessions[senderId];
@@ -172,25 +178,22 @@ async function stepInitializeSession(context) {
         setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
         session.awaitingProjectType = "firstTry";
 
- const gptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model: "gpt-4o",
-    messages: [{
-        role: "user",
-        content: (lang === "fr"
-            ? "Répondez en français : "
-            : "Please answer in English: ") + context.message
-    }],
-    max_tokens: 400,
-    temperature: 0.5
-}, {
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-});
+        const gptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{
+                role: "user",
+                content: (lang === "fr" ? "Répondez en français : " : "Please answer in English: ") + message
+            }],
+            max_tokens: 400,
+            temperature: 0.5
+        }, {
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
+        });
 
-const fallback = gptResponse.data.choices?.[0]?.message?.content?.trim() || (
-    lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn't understand."
-);
-await sendMessage(senderId, fallback);
-
+        const fallback = gptResponse.data.choices?.[0]?.message?.content?.trim() || (
+            lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn't understand."
+        );
+        await sendMessage(senderId, fallback);
         return false;
     }
 
@@ -284,26 +287,27 @@ async function stepFallback({ senderId, session, message }) {
     }
 
     const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model: "gpt-4o",
-    messages: [{
-        role: "user",
-        content: (session.language === "fr"
-            ? "Répondez en français : "
-            : "Please answer in English: ") + message
-    }],
-    max_tokens: 400,
-    temperature: 0.5
-}, {
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-});
+        model: "gpt-4o",
+        messages: [{
+            role: "user",
+            content: (session.language === "fr"
+                ? "Répondez en français : "
+                : "Please answer in English: ") + message
+        }],
+        max_tokens: 400,
+        temperature: 0.5
+    }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
+    });
 
-const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim() || (
-    session.language === "fr"
-        ? "Désolé, je n'ai pas compris."
-        : "Sorry, I didn’t understand."
-);
-await sendMessage(senderId, gptReply);
+    const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim() || (
+        session.language === "fr"
+            ? "Désolé, je n'ai pas compris."
+            : "Sorry, I didn’t understand."
+    );
+    await sendMessage(senderId, gptReply);
 }
 
+// === Server Init ===
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
