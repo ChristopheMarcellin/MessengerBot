@@ -1,11 +1,9 @@
 const questions = require('./questions');
 const displayMap = require('./displayMap');
 
-// Génère la question avec les choix dynamiques selon la langue
 function getPromptForSpec(projectType, specKey, lang = "en") {
     const questionSet = questions?.[projectType];
     const rawQuestion = questionSet?.[specKey]?.text || `${specKey}?`;
-
     const options = displayMap?.[specKey]?.[lang];
     let formattedChoices = "";
 
@@ -15,12 +13,9 @@ function getPromptForSpec(projectType, specKey, lang = "en") {
             .join("\n");
     }
 
-    return formattedChoices
-        ? `${rawQuestion}\n${formattedChoices}`
-        : rawQuestion;
+    return formattedChoices ? `${rawQuestion}\n${formattedChoices}` : rawQuestion;
 }
 
-// Retourne le prochain champ non répondu
 const getNextUnansweredSpec = (session) => {
     const projectType = session.specValues?.projectType;
     if (!projectType || !questions[projectType]) return undefined;
@@ -30,12 +25,10 @@ const getNextUnansweredSpec = (session) => {
     );
 };
 
-// Faut-il poser une nouvelle question ?
 const shouldAskNextSpec = (session) => {
     return !!getNextUnansweredSpec(session);
 };
 
-// Mise à jour d'un champ avec trace des changements
 const updateSpecFromInput = (field, decodedValue, specValues) => {
     const previous = specValues[field] ?? "undefined";
     const next = (decodedValue && decodedValue.trim() !== "") ? decodedValue : "?";
@@ -43,7 +36,11 @@ const updateSpecFromInput = (field, decodedValue, specValues) => {
     console.log(`[UPDATE] spec field "${field}" changed from "${previous}" to "${next}"`);
 };
 
-// Construction du résumé final
+function getDisplayValue(field, value, lang = "en") {
+    const map = displayMap[field]?.[lang];
+    return map?.[value] ?? value;
+}
+
 function buildSpecSummary(session, lang = "en") {
     const fields = session.specValues;
     let summary = lang === "fr"
@@ -60,7 +57,6 @@ function buildSpecSummary(session, lang = "en") {
     return summary;
 }
 
-// Nettoie les champs invalides
 const resetInvalidSpecs = (session) => {
     for (let key in session.specValues) {
         if (session.specValues[key] === "?") {
@@ -69,10 +65,12 @@ const resetInvalidSpecs = (session) => {
     }
 };
 
-// Transforme une valeur stockée en libellé utilisateur lisible
-function getDisplayValue(field, value, lang = "en") {
-    const map = displayMap[field]?.[lang];
-    return map?.[value] ?? value;
+// ✅ Fonction ajoutée pour valider une réponse
+function isValidAnswer(value, projectType, field) {
+    if (!value) return false;
+    const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
+    const map = displayMap?.[field]?.[lang];
+    return map ? Object.keys(map).includes(value) : true;
 }
 
 module.exports = {
@@ -83,4 +81,5 @@ module.exports = {
     buildSpecSummary,
     resetInvalidSpecs,
     getDisplayValue,
+    isValidAnswer // 
 };
