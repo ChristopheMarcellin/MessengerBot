@@ -218,7 +218,9 @@ app.post('/webhook', async (req, res) => {
         console.log(`[NEXT] Next unanswered spec: ${currentSpec}`);
 
         if (currentSpec) {
-            const decodePrompt = `What is the value for: ${currentSpec}?\n\n"${receivedMessage}"`;
+
+            const decodePrompt = `${getPromptForSpec(sessionReloaded.specValues.projectType, currentSpec, sessionReloaded.language || 'en')}\n\n"${receivedMessage}"`;
+
             const decodeRes = await axios.post('https://api.openai.com/v1/chat/completions', {
                 model: "gpt-4o",
                 messages: [{ role: "user", content: decodePrompt }],
