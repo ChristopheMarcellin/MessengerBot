@@ -19,6 +19,13 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const userSessions = {};
 
+// ✅ Unified projectType setter with tracking
+function setProjectType(session, value, reason = "unspecified") {
+    const previous = session.specValues?.projectType ?? "undefined";
+    session.specValues.projectType = value;
+    console.log(`[TRACK] projectType changed from ${previous} to ${value} | reason: ${reason}`);
+}
+
 function resetIncompleteSpecs(session) {
     for (const key in session.specValues) {
         if (key !== "projectType") {
@@ -40,21 +47,22 @@ function initializeSpecFields(session) {
     if (!type || !fields) return;
 
     if (!session.specValues || Object.keys(session.specValues).length <= 1) {
-        session.specValues = { projectType: type };
+        const preservedType = type;
+        session.specValues = { projectType: preservedType };
         Object.keys(fields).forEach(key => {
-            session.specValues[key] = null;
+            session.specValues[key] = "?";
         });
     }
 }
 
 async function tryToClassifyProjectType(session, userMessage) {
     const prompt = session.language === "fr"
-        ? "Quel est le type de projet de l'utilisateur dans ce message ? Répondez uniquement par une lettre :\\n- B pour achat\\n- S pour vente\\n- R pour location\\n- E si ce n’est pas clair ou si le message est une salutation.\\n\\nExemples :\\n- \\\"je veux acheter une maison\\\" → B\\n- \\\"je cherche à vendre mon condo\\\" → S\\n- \\\"je cherche à louer un appartement\\\" → R\\n- \\\"bonjour comment ça va\\\" → E"
-        : "What is the user's project type in this message? Respond with one letter only:\\n- B for buying\\n- S for selling\\n- R for renting\\n- E if it's unclear or a greeting.\\n\\nExamples:\\n- \\\"I want to buy a house\\\" → B\\n- \\\"I’m selling my condo\\\" → S\\n- \\\"I’m looking to rent\\\" → R\\n- \\\"hello, how are you?\\\" → E";
+        ? "Quel est le type de projet de l'utilisateur dans ce message ? Répondez uniquement par une lettre :\n- B pour achat\n- S pour vente\n- R pour location\n- E si ce n’est pas clair ou si le message est une salutation.\n\nExemples :\n- \"je veux acheter une maison\" → B\n- \"je cherche à vendre mon condo\" → S\n- \"je cherche à louer un appartement\" → R\n- \"bonjour comment ça va\" → E"
+        : "What is the user's project type in this message? Respond with one letter only:\n- B for buying\n- S for selling\n- R for renting\n- E if it's unclear or a greeting.\n\nExamples:\n- \"I want to buy a house\" → B\n- \"I’m selling my condo\" → S\n- \"I’m looking to rent\" → R\n- \"hello, how are you?\" → E";
 
     const classifyRes = await axios.post('https://api.openai.com/v1/chat/completions', {
         model: "gpt-4o",
-        messages: [{ role: "user", content: prompt + "\\n\\n" + userMessage }],
+        messages: [{ role: "user", content: prompt + "\n\n" + userMessage }],
         max_tokens: 10,
         temperature: 0
     }, {
@@ -68,20 +76,17 @@ async function tryToClassifyProjectType(session, userMessage) {
     console.log(`[CLASSIFY] Raw classification result: ${raw}`);
 
     if (["B", "S", "R"].includes(raw)) {
-        session.specValues.projectType = raw;
+        setProjectType(session, raw, "GPT classification");
         initializeSpecFields(session);
     } else if (session.awaitingProjectType === "firstTry") {
-        session.specValues.projectType = "?";
+        setProjectType(session, "?", "classification firstTry");
     } else {
-        session.specValues.projectType = "E";
+        setProjectType(session, "E", "classification secondTry");
     }
 
     session.askedSpecs.projectType = true;
     delete session.awaitingProjectType;
-    console.log(`[CLASSIFY] Final projectType: ${session.specValues.projectType}`);
 }
-
-
 
 async function sendMessage(senderId, text) {
     console.log(`[SEND] To: ${senderId} | Message: ${text}`);
@@ -156,12 +161,14 @@ app.post('/webhook', async (req, res) => {
                 questionCount: 1,
                 maxQuestions: 40,
                 askedSpecs: {},
-                specValues: { projectType: project }
+                specValues: {}
             };
 
+            // ✅ Only accept B/S/R, else set to "?"
+            setProjectType(userSessions[senderId], ["B", "S", "R"].includes(project) ? project : "?", "GPT session init");
             initializeSpecFields(userSessions[senderId]);
 
-            if (!project) {
+            if (!["B", "S", "R"].includes(project)) {
                 const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                     model: "gpt-4o",
                     messages: [{ role: "user", content: receivedMessage }],
@@ -195,7 +202,7 @@ app.post('/webhook', async (req, res) => {
 
         if (sessionReloaded.awaitingProjectType) {
             await tryToClassifyProjectType(sessionReloaded, receivedMessage);
-           }
+        }
 
         if (!sessionReloaded.askedSpecs.projectType && sessionReloaded.specValues.projectType === "?") {
             const prompt = sessionReloaded.language === "fr"
@@ -218,7 +225,6 @@ app.post('/webhook', async (req, res) => {
         console.log(`[NEXT] Next unanswered spec: ${currentSpec}`);
 
         if (currentSpec) {
-
             const decodePrompt = `${getPromptForSpec(sessionReloaded.specValues.projectType, currentSpec, sessionReloaded.language || 'en')}\n\n"${receivedMessage}"`;
 
             const decodeRes = await axios.post('https://api.openai.com/v1/chat/completions', {
