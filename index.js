@@ -19,7 +19,7 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const userSessions = {};
 
-// === Session & Type Management ===
+// === Utils ===
 
 function setProjectType(session, value, reason = "unspecified") {
     const previous = session.specValues?.projectType ?? "undefined";
@@ -83,7 +83,7 @@ async function sendMessage(senderId, text) {
     });
 }
 
-// === Entry Point ===
+// === Webhook ===
 
 app.post('/webhook', async (req, res) => {
     try {
@@ -120,7 +120,8 @@ async function launchSteps(context) {
     if (!(await stepSummarizeIfComplete(context))) return;
     await stepFallback(context);
 }
-// === Step Logic ===
+
+// === Steps ===
 
 async function stepCheckEndSession({ senderId, cleanText, res }) {
     if (cleanText.includes("end session")) {
@@ -171,6 +172,7 @@ async function stepInitializeSession(context) {
 
     const session = userSessions[senderId];
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
+
     if (finalProject !== "?") {
         setProjectType(session, finalProject, "GPT session init (confident)");
         initializeSpecFields(session);
@@ -194,6 +196,8 @@ async function stepInitializeSession(context) {
             lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn't understand."
         );
         await sendMessage(senderId, fallback);
+
+        // STOP CYCLE IF PROJECT UNDETERMINED
         return false;
     }
 
@@ -201,6 +205,10 @@ async function stepInitializeSession(context) {
 }
 
 async function stepHandleProjectType({ senderId, session, message }) {
+    if (!session) {
+        console.warn(`[WARN] stepHandleProjectType called with undefined session for ${senderId}`);
+        return false;
+    }
     if (!session.awaitingProjectType) return true;
 
     const guess = await tryToClassifyProjectType(session, message);
@@ -218,9 +226,7 @@ async function stepHandleProjectType({ senderId, session, message }) {
     return true;
 }
 
-async function stepAskNextSpec(context) {
-    const { senderId, session, message } = context;
-
+async function stepAskNextSpec({ senderId, session, message }) {
     if (session.specValues.projectType === "?") return true;
 
     const currentSpec = getNextUnansweredSpec(session);
@@ -308,6 +314,6 @@ async function stepFallback({ senderId, session, message }) {
     await sendMessage(senderId, gptReply);
 }
 
-// === Server Init ===
+// === Start Server ===
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
