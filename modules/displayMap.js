@@ -3,10 +3,12 @@ module.exports = {
         fr: { B: "Achat", S: "Vente", R: "Location", E: "Autre" },
         en: { B: "Buying", S: "Selling", R: "Renting", E: "Other" }
     },
+
     intention: {
         fr: { 1: "Acheter", 2: "Vendre", 3: "Louer", 4: "Autre raison" },
         en: { 1: "Buy", 2: "Sell", 3: "Rent", 4: "Other reason" }
     },
+
     bedrooms: {
         fr: {
             1: "1 chambre ou plus",
@@ -23,6 +25,7 @@ module.exports = {
             5: "5 bedrooms or more"
         }
     },
+
     bathrooms: {
         fr: {
             1: "1 salle de bain ou plus",
@@ -35,6 +38,7 @@ module.exports = {
             3: "3 bathrooms or more"
         }
     },
+
     garage: {
         fr: {
             0: "Aucun garage",
@@ -49,6 +53,7 @@ module.exports = {
             3: "2+ garages"
         }
     },
+
     parking: {
         fr: {
             0: "Pas de stationnement privé",
@@ -59,10 +64,34 @@ module.exports = {
             1: "Yes, private parking"
         }
     },
+
     price: {
         fr: {
-            1: "Moins de 200 000$"
+            1: "Moins de 200 000$",
+            2: "Entre 200 000$ et 400 000$",
+            3: "Entre 400 000$ et 600 000$",
+            4: "Plus de 600 000$"
+        },
+        en: {
+            1: "Less than $200,000",
+            2: "$200,000 to $400,000",
+            3: "$400,000 to $600,000",
+            4: "More than $600,000"
+        }
+    },
+
+    location: {
+        fr: {
+            "Montreal": "Montréal",
+            "Laval": "Laval",
+            "Quebec City": "Québec",
+            "Other": "Autre localisation"
+        },
+        en: {
+            "Montreal": "Montreal",
+            "Laval": "Laval",
+            "Quebec City": "Quebec City",
+            "Other": "Other location"
         }
     }
-}    ;
-   
+};
