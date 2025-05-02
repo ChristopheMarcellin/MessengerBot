@@ -8,7 +8,7 @@ const {
     getPromptForSpec,
     isValidAnswer
 } = require('./modules/specEngine');
-const displayMap = require('./displayMap');
+const displayMap = require('.modules/displayMap');
 const express = require('express');
 const axios = require('axios');
 const app = express();
@@ -283,7 +283,7 @@ app.post('/webhook', async (req, res) => {
             return res.status(200).send('EVENT_RECEIVED');
         }
 //
-function getDisplayValue(field, value, lang) {
+function getDisplayValue(field, value, session.language) {
   const map = displayMap[field]?.[lang];
   return map?.[value] ?? value;
 }
