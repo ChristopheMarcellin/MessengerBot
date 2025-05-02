@@ -195,8 +195,7 @@ app.post('/webhook', async (req, res) => {
 
         if (sessionReloaded.awaitingProjectType) {
             await tryToClassifyProjectType(sessionReloaded, receivedMessage);
-            return res.status(200).send('EVENT_RECEIVED');
-        }
+           }
 
         if (!sessionReloaded.askedSpecs.projectType && sessionReloaded.specValues.projectType === "?") {
             const prompt = sessionReloaded.language === "fr"
