@@ -172,24 +172,25 @@ async function stepInitializeSession(context) {
         setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
         session.awaitingProjectType = "firstTry";
 
-        const gptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: context.message }],
-            max_tokens: 400,
-            temperature: 0.5
-        }, {
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-        });
+ const gptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+    model: "gpt-4o",
+    messages: [{
+        role: "user",
+        content: (lang === "fr"
+            ? "Répondez en français : "
+            : "Please answer in English: ") + context.message
+    }],
+    max_tokens: 400,
+    temperature: 0.5
+}, {
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
+});
 
-        const fallback = gptResponse.data.choices?.[0]?.message?.content?.trim() || (
-            lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn't understand."
-        );
-        await sendMessage(senderId, fallback);
+const fallback = gptResponse.data.choices?.[0]?.message?.content?.trim() || (
+    lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn't understand."
+);
+await sendMessage(senderId, fallback);
 
-        const ask = lang === "fr"
-            ? "Quelle est le but de votre projet 1-acheter, 2-vendre, 3-louer, 4-autre raison, svp indiquer seulement le numéro de votre but."
-            : "What is the goal of your project? 1-buying, 2-selling, 3-renting, 4-other. Please reply with the number.";
-        await sendMessage(senderId, ask);
         return false;
     }
 
@@ -283,18 +284,25 @@ async function stepFallback({ senderId, session, message }) {
     }
 
     const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: "gpt-4o",
-        messages: [{ role: "user", content: message }],
-        max_tokens: 400,
-        temperature: 0.5
-    }, {
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-    });
+    model: "gpt-4o",
+    messages: [{
+        role: "user",
+        content: (session.language === "fr"
+            ? "Répondez en français : "
+            : "Please answer in English: ") + message
+    }],
+    max_tokens: 400,
+    temperature: 0.5
+}, {
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
+});
 
-    const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim() || (
-        session.language === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn’t understand."
-    );
-    await sendMessage(senderId, gptReply);
+const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim() || (
+    session.language === "fr"
+        ? "Désolé, je n'ai pas compris."
+        : "Sorry, I didn’t understand."
+);
+await sendMessage(senderId, gptReply);
 }
 
 const PORT = process.env.PORT || 3000;
