@@ -1,0 +1,8 @@
+// sessionHelpers.js
+
+function noSpecStarted(session) {
+  const specs = session.specValues || {};
+  return Object.values(specs).every(value => value === "?");
+}
+
+module.exports = { noSpecStarted };

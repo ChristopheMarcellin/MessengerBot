@@ -1,7 +1,7 @@
 // stepHandleProjectType.js
 
 const { tryToClassifyProjectType } = require('../utils/gptTools');
-const { noSpecStarted } = require('../utils/sessionHelpers');
+const { noSpecStarted } = require('../sessionHelpers');
 
 module.exports = async function stepHandleProjectType(session, userMessage) {
   const previousValue = session.projectType || "undefined";
