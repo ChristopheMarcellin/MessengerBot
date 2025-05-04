@@ -32,8 +32,8 @@ module.exports = async function stepHandleProjectType(context) {
     const previousValue = session.projectType || "undefined";
     const isFirstMessage = previousValue === undefined;
 
-    // ✅ Bypass GPT if numeric answer to project type
-    if (session.projectType === "?" && /^[1-4]$/.test(userMessage.trim())) {
+    // ✅ Bypass GPT if numeric answer to project type, even if projectType is undefined
+    if ((session.projectType === undefined || session.projectType === "?") && /^[1-4]$/.test(userMessage.trim())) {
         const mapped = { "1": "B", "2": "S", "3": "R", "4": "E" };
         session.projectType = mapped[userMessage.trim()];
         console.log(`[TRACK] projectType changed from ${previousValue} to ${session.projectType} | reason: numeric response`);
