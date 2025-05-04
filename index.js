@@ -1,14 +1,23 @@
-// === Load env + dependencies ===
 require('dotenv').config();
 const express = require('express');
 const app = express();
 app.use(express.json());
 
 const axios = require('axios');
-const { getNextUnansweredSpec, updateSpecFromInput, buildSpecSummary, getPromptForSpec, isValidAnswer } = require('./modules/specEngine');
-const { setProjectType, initializeSpecFields } = require('./modules/utils');
-const { resetIncompleteSpecs } = require('./modules/resetUtils');
-const { sendMessage } = require('./modules/messenger');
+const {
+    getNextUnansweredSpec,
+    updateSpecFromInput,
+    buildSpecSummary,
+    getPromptForSpec,
+    isValidAnswer
+} = require('./modules/specEngine');
+
+const {
+    setProjectType,
+    initializeSpecFields,
+    tryToClassifyProjectType
+} = require('./modules/utils');
+
 const {
     stepInitializeSession,
     stepHandleProjectType,
@@ -17,30 +26,37 @@ const {
     stepCheckEndSession,
     stepFallback
 } = require('./modules/steps');
+
 const {
     getSession,
     setSession,
     deleteSession
 } = require('./modules/sessionStore');
 
+const { sendMessage } = require('./modules/messenger');
+
 // === Webhook ===
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
-
         if (!messagingEvent) return res.sendStatus(200);
+
         if (messagingEvent.message?.is_echo) {
             console.log(`[ECHO] Skipping bot echo: "${messagingEvent.message.text}"`);
             return res.sendStatus(200);
         }
-        if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
+
+        if (messagingEvent.delivery || messagingEvent.read) {
+            return res.sendStatus(200);
+        }
 
         const senderId = messagingEvent.sender?.id;
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.sendStatus(200);
 
+        // Deduplication
         const session = getSession(senderId);
-        if (session && session.lastMessage === receivedMessage) {
+        if (session?.lastMessage === receivedMessage) {
             console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
             return res.sendStatus(200);
         }
@@ -52,9 +68,9 @@ app.post('/webhook', async (req, res) => {
         const context = {
             senderId,
             message: receivedMessage,
-            session,
+            session: getSession(senderId),
             cleanText,
-            greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
+            greetings: ["bonjour", "salut", "hello", "hi", "comment ca va", "comment ca va"],
             res
         };
 
@@ -65,7 +81,7 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-// === Main Launch Sequence ===
+// === Launch Sequence ===
 async function launchSteps(context) {
     if (!(await stepCheckEndSession(context))) return;
     if (!(await stepInitializeSession(context))) return;
