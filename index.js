@@ -5,18 +5,8 @@ const app = express();
 app.use(express.json());
 
 const axios = require('axios');
-const {
-    getNextUnansweredSpec,
-    updateSpecFromInput,
-    buildSpecSummary,
-    getPromptForSpec,
-    isValidAnswer
-} = require('./modules/specEngine');
-const {
-    setProjectType,
-    initializeSpecFields,
-    tryToClassifyProjectType
-} = require('./modules/utils');
+const { getNextUnansweredSpec, updateSpecFromInput, buildSpecSummary, getPromptForSpec, isValidAnswer } = require('./modules/specEngine');
+const { setProjectType, initializeSpecFields } = require('./modules/utils');
 const { resetIncompleteSpecs } = require('./modules/resetUtils');
 const { sendMessage } = require('./modules/messenger');
 const {
@@ -27,27 +17,11 @@ const {
     stepCheckEndSession,
     stepFallback
 } = require('./modules/steps');
-
-const userSessions = {};
-
-// === Debugging Helper ===
-function logSessionState(senderId, session) {
-    if (!session) {
-        console.log(`[STATE] No session found for ${senderId}`);
-        return;
-    }
-
-    console.log(`[STATE] Session summary for ${senderId}:`);
-    console.log(`  - projectType: ${session.specValues?.projectType}`);
-    const keys = Object.keys(session.specValues || {});
-    for (const key of keys) {
-        if (key !== 'projectType') {
-            const val = session.specValues[key];
-            const asked = session.askedSpecs?.[key] ? 'asked' : 'not asked';
-            console.log(`    - ${key}: "${val}" (${asked})`);
-        }
-    }
-}
+const {
+    getSession,
+    setSession,
+    deleteSession
+} = require('./modules/sessionStore');
 
 // === Webhook ===
 app.post('/webhook', async (req, res) => {
@@ -65,7 +39,7 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.sendStatus(200);
 
-        const session = userSessions[senderId];
+        const session = getSession(senderId);
         if (session && session.lastMessage === receivedMessage) {
             console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
             return res.sendStatus(200);
@@ -93,22 +67,11 @@ app.post('/webhook', async (req, res) => {
 
 // === Main Launch Sequence ===
 async function launchSteps(context) {
-    logSessionState(context.senderId, context.session);
     if (!(await stepCheckEndSession(context))) return;
-
-    logSessionState(context.senderId, context.session);
     if (!(await stepInitializeSession(context))) return;
-
-    logSessionState(context.senderId, context.session);
     if (!(await stepHandleProjectType(context))) return;
-
-    logSessionState(context.senderId, context.session);
     if (!(await stepAskNextSpec(context))) return;
-
-    logSessionState(context.senderId, context.session);
     if (!(await stepSummarizeIfComplete(context))) return;
-
-    logSessionState(context.senderId, context.session);
     await stepFallback(context);
 }
 
