@@ -31,8 +31,17 @@ module.exports = async function stepHandleProjectType(session, userMessage) {
   const previousValue = session.projectType || "undefined";
   const isFirstMessage = previousValue === undefined;
 
+  // ✅ Bypass GPT if numeric answer to project type
+  if (session.projectType === "?" && /^[1-4]$/.test(userMessage.trim())) {
+    const mapped = { "1": "B", "2": "S", "3": "R", "4": "E" };
+    session.projectType = mapped[userMessage.trim()];
+    console.log(`[TRACK] projectType changed from ${previousValue} to ${session.projectType} | reason: numeric response`);
+    return true;
+  }
+
   const classified = await tryToClassifyProjectType(session, userMessage);
 
+  // ✅ Fallback: if GPT returns E on first vague message → ?
   if (classified === "E" && isFirstMessage && noSpecStarted(session)) {
     session.projectType = "?";
     console.log(`[TRACK] projectType changed from ${previousValue} to ? | reason: fallback on vague first message`);
