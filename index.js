@@ -162,6 +162,7 @@ async function stepInitializeSession(context) {
     const { senderId, message, cleanText, greetings } = context;
     if (userSessions[senderId]) return true;
 
+    // Step 1 – Detect language + project intent
     const prompt = `Detect user's language and project intent. Return JSON like: {"language": "en/fr", "project": "B/S/R/E"}\n\n"${message}"`;
 
     const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -173,6 +174,7 @@ async function stepInitializeSession(context) {
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
     });
 
+    // Parse response
     let lang = "en", project;
     try {
         const parsed = JSON.parse(detectionResponse.data.choices?.[0]?.message?.content?.replace(/```json|```/g, "").trim());
@@ -182,9 +184,12 @@ async function stepInitializeSession(context) {
         console.warn("[DETECT] Failed to parse detection result.");
     }
 
+    // If it's a greeting, force undefined project
     if (greetings.some(g => cleanText.includes(g))) project = undefined;
+
     console.log(`[INIT] New session for ${senderId} | Lang: ${lang} | Project: ${project || "undefined"}`);
 
+    // Create session
     userSessions[senderId] = {
         language: lang,
         ProjectDate: new Date().toISOString(),
@@ -197,36 +202,49 @@ async function stepInitializeSession(context) {
     const session = userSessions[senderId];
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
 
+    // Case 1: project detected with confidence
     if (finalProject !== "?") {
         setProjectType(session, finalProject, "GPT session init (confident)");
         initializeSpecFields(session);
-    } else {
-        setProjectType(session, "?", project === "E" ? "E -> forced ?" : "fallback -> ?");
-        session.awaitingProjectType = "firstTry";
-
-        const gptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{
-                role: "user",
-                content: (lang === "fr" ? "Repondez en francais : " : "Please answer in English: ") + message
-            }],
-            max_tokens: 400,
-            temperature: 0.5
-        }, {
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-        });
-
-        const fallback = gptResponse.data.choices?.[0]?.message?.content?.trim() || (
-            lang === "fr" ? "Desole, je n'ai pas compris." : "Sorry, I didn't understand."
-        );
-        await sendMessage(senderId, fallback);
-
-        // STOP CYCLE IF PROJECT UNDETERMINED
-        return false;
+        return true;
     }
 
-    return true;
-} async function stepHandleProjectType({ senderId, session, message }) {
+    // Case 2: project undetermined -> polite GPT answer + ask closed question
+    setProjectType(session, "?", project === "E" ? "E -> forced ?" : "fallback -> ?");
+    session.awaitingProjectType = "firstTry";
+
+    const gptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-4o",
+        messages: [{
+            role: "user",
+            content: (lang === "fr"
+                ? "Repondez en francais : "
+                : "Please answer in English: ") + message
+        }],
+        max_tokens: 400,
+        temperature: 0.5
+    }, {
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
+    });
+
+    const fallback = gptResponse.data.choices?.[0]?.message?.content?.trim() || (
+        lang === "fr" ? "Desole, je n'ai pas compris." : "Sorry, I didn't understand."
+    );
+
+    await sendMessage(senderId, fallback);
+
+    // Then ask the project type question
+    const question = lang === "fr"
+        ? "Quel est le but de votre projet ? 1-acheter, 2-vendre, 3-louer, 4-autre raison (svp repondez avec un chiffre seulement)."
+        : "What is the purpose of your project? 1-buy, 2-sell, 3-rent, 4-other reason (please reply with a number only).";
+
+    session.askedSpecs.projectType = true;
+    await sendMessage(senderId, question);
+
+    return false;
+}
+
+async function stepHandleProjectType({ senderId, session, message }) {
     if (!session) {
         console.warn(`[WARN] stepHandleProjectType called with undefined session for ${senderId}`);
         return false;
