@@ -1,6 +1,6 @@
 // stepHandleProjectType.js
 
-const { tryToClassifyProjectType } = require('../utils/gptTools');
+const { tryToClassifyProjectType } = require('../gptTools');
 const { noSpecStarted } = require('../sessionHelpers');
 
 module.exports = async function stepHandleProjectType(session, userMessage) {
