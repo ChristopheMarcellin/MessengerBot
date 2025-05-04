@@ -1,13 +1,13 @@
+// === Load env + dependencies ===
 require('dotenv').config();
 const express = require('express');
-const axios = require('axios');
 const app = express();
 app.use(express.json());
 
+const axios = require('axios');
 const { getNextUnansweredSpec, updateSpecFromInput, buildSpecSummary, getPromptForSpec, isValidAnswer } = require('./modules/specEngine');
-const { setProjectType, initializeSpecFields } = require('./modules/utils');
+const { setProjectType, initializeSpecFields, tryToClassifyProjectType } = require('./modules/utils');
 const { sendMessage } = require('./modules/messenger');
-const { resetIncompleteSpecs } = require('./modules/resetUtils');
 const {
     stepInitializeSession,
     stepHandleProjectType,
@@ -17,6 +17,7 @@ const {
     stepFallback
 } = require('./modules/steps');
 const { getSession, setSession, deleteSession } = require('./modules/sessionStore');
+
 
 // === Webhook ===
 app.post('/webhook', async (req, res) => {
@@ -39,10 +40,7 @@ app.post('/webhook', async (req, res) => {
             console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
             return res.sendStatus(200);
         }
-        if (session) {
-            session.lastMessage = receivedMessage;
-            setSession(senderId, session);
-        }
+        if (session) session.lastMessage = receivedMessage;
 
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
@@ -63,8 +61,22 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
+
+// === Logger ===
+function logSessionState(senderId, session) {
+    if (!session) return;
+    console.log(`[STATE] Session ${senderId}`);
+    console.log(` - projectType: ${session.specValues?.projectType}`);
+    console.log(` - currentSpec: ${session.currentSpec || "(none)"}`);
+    console.log(` - specValues:`, JSON.stringify(session.specValues, null, 2));
+}
+
+
 // === Main Launch Sequence ===
 async function launchSteps(context) {
+    const { senderId, session } = context;
+    logSessionState(senderId, session);
+
     if (!(await stepCheckEndSession(context))) return;
     if (!(await stepInitializeSession(context))) return;
     if (!(await stepHandleProjectType(context))) return;
@@ -73,6 +85,7 @@ async function launchSteps(context) {
     await stepFallback(context);
 }
 
-// === Server ===
+
+// === Start Server ===
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
