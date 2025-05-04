@@ -1,5 +1,6 @@
-const { allSpecsCollected, buildSpecSummary } = require('../specEngine');
 const { sendMessage } = require('../messenger');
+const { buildSpecSummary } = require('../specEngine');
+const { allSpecsCollected } = require('../utils');
 
 async function stepSummarizeIfComplete({ senderId, session }) {
     if (!session.completedSpecs && allSpecsCollected(session) && session.specValues.projectType !== "?") {

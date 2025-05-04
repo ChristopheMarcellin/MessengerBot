@@ -1,7 +1,5 @@
-const axios = require('axios');
+const { getNextUnansweredSpec } = require('./specEngine');
 const allQuestions = require('./questions');
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 function setProjectType(session, value, reason = "unspecified") {
     const previous = session.specValues?.projectType ?? "undefined";
@@ -22,12 +20,16 @@ function initializeSpecFields(session) {
     }
 }
 
+function allSpecsCollected(session) {
+    return !getNextUnansweredSpec(session);
+}
+
 async function tryToClassifyProjectType(session, userMessage) {
     const prompt = session.language === "fr"
         ? `Determinez le type de projet exprime par l'utilisateur. Repondez par B, S, R ou E.\n\n"${userMessage}"`
         : `Determine the user's project type. Reply with B, S, R, or E.\n\n"${userMessage}"`;
 
-    const res = await axios.post('https://api.openai.com/v1/chat/completions', {
+    const res = await require('axios').post('https://api.openai.com/v1/chat/completions', {
         model: "gpt-4o",
         messages: [{ role: "user", content: prompt }],
         max_tokens: 10,
@@ -35,7 +37,7 @@ async function tryToClassifyProjectType(session, userMessage) {
     }, {
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
         }
     });
 
@@ -45,5 +47,6 @@ async function tryToClassifyProjectType(session, userMessage) {
 module.exports = {
     setProjectType,
     initializeSpecFields,
+    allSpecsCollected,
     tryToClassifyProjectType
 };
