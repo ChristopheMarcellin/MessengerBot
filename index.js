@@ -103,6 +103,18 @@ app.post('/webhook', async (req, res) => {
 
         const senderId = messagingEvent.sender?.id;
         const receivedMessage = messagingEvent.message?.text?.trim();
+        const session = userSessions[senderId];
+        if (session && session.lastMessage === receivedMessage) {
+            console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
+            return res.sendStatus(200);
+        }
+
+        // Save the message for future deduplication
+        if (session) {
+            session.lastMessage = receivedMessage;
+        }
+
+
         if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
 
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
