@@ -18,7 +18,6 @@ const {
 } = require('./modules/steps');
 const { getSession, setSession, deleteSession } = require('./modules/sessionStore');
 
-
 // === Webhook ===
 app.post('/webhook', async (req, res) => {
     try {
@@ -36,11 +35,19 @@ app.post('/webhook', async (req, res) => {
         if (!receivedMessage || !senderId) return res.sendStatus(200);
 
         const session = getSession(senderId);
-        if (session && session.lastMessage === receivedMessage) {
-            console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
-            return res.sendStatus(200);
+
+        // ✅ Filtrage intelligent des doublons
+        if (session && session.lastUserMessage === receivedMessage) {
+            const waitingForInput =
+                session.currentSpec !== null ||
+                session.specValues?.projectType === "?";
+            if (!waitingForInput) {
+                console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
+                return res.sendStatus(200);
+            }
         }
-        if (session) session.lastMessage = receivedMessage;
+
+        if (session) session.lastUserMessage = receivedMessage;
 
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
@@ -61,7 +68,6 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-
 // === Logger ===
 function logSessionState(senderId, session) {
     if (!session) return;
@@ -70,7 +76,6 @@ function logSessionState(senderId, session) {
     console.log(` - currentSpec: ${session.currentSpec || "(none)"}`);
     console.log(` - specValues:`, JSON.stringify(session.specValues, null, 2));
 }
-
 
 // === Main Launch Sequence ===
 async function launchSteps(context) {
@@ -84,7 +89,6 @@ async function launchSteps(context) {
     if (!(await stepSummarizeIfComplete(context))) return;
     await stepFallback(context);
 }
-
 
 // === Start Server ===
 const PORT = process.env.PORT || 3000;
