@@ -1,41 +1,37 @@
 // stepHandleProjectType.js
 
-const { Configuration, OpenAIApi } = require('openai');
+const axios = require('axios');
 
 function noSpecStarted(session) {
   const specs = session.specValues || {};
   return Object.values(specs).every(value => value === "?");
 }
 
-async function tryToClassifyProjectType(userMessage) {
-  const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  const openai = new OpenAIApi(configuration);
+async function tryToClassifyProjectType(session, userMessage) {
+  const prompt = session.language === "fr"
+    ? `Déterminez le type de projet exprimé par l'utilisateur. Répondez par B, S, R ou E.\n\n"${userMessage}"`
+    : `Determine the user's project type. Reply with B, S, R, or E.\n\n"${userMessage}"`;
 
-  const prompt = `Catégorise le projet en répondant par une seule lettre :
-B pour acheter,
-S pour vendre,
-R pour louer,
-E si ce n’est pas clair.
-Message utilisateur : "${userMessage}"`;
-
-  const response = await openai.createChatCompletion({
-    model: 'gpt-4',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0,
+  const res = await axios.post('https://api.openai.com/v1/chat/completions', {
+    model: "gpt-4o",
+    messages: [{ role: "user", content: prompt }],
+    max_tokens: 10,
+    temperature: 0
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+    }
   });
 
-  const answer = response.data.choices[0].message.content.trim().toUpperCase();
-  if (["B", "S", "R"].includes(answer)) return answer;
-  return "E";
+  return res.data.choices?.[0]?.message?.content?.trim().toUpperCase();
 }
 
 module.exports = async function stepHandleProjectType(session, userMessage) {
   const previousValue = session.projectType || "undefined";
   const isFirstMessage = previousValue === undefined;
 
-  const classified = await tryToClassifyProjectType(userMessage);
+  const classified = await tryToClassifyProjectType(session, userMessage);
 
   if (classified === "E" && isFirstMessage && noSpecStarted(session)) {
     session.projectType = "?";
