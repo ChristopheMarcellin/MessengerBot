@@ -89,33 +89,32 @@ app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
 
-        //  IGNORE bot echo messages
+        // IGNORE bot echo messages
         if (!messagingEvent) return res.sendStatus(200);
         if (messagingEvent.message?.is_echo) {
             console.log(`[ECHO] Skipping bot echo: "${messagingEvent.message.text}"`);
             return res.sendStatus(200);
         }
 
-        //  IGNORE delivery/read confirmations
+        // IGNORE delivery/read confirmations
         if (messagingEvent.delivery || messagingEvent.read) {
             return res.sendStatus(200);
         }
 
         const senderId = messagingEvent.sender?.id;
         const receivedMessage = messagingEvent.message?.text?.trim();
+        if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
+
         const session = userSessions[senderId];
+
+        // IGNORE duplicate messages (loop or resend protection)
         if (session && session.lastMessage === receivedMessage) {
             console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
             return res.sendStatus(200);
         }
 
-        // Save the message for future deduplication
-        if (session) {
-            session.lastMessage = receivedMessage;
-        }
-
-
-        if (!receivedMessage || !senderId) return res.status(200).send('EVENT_RECEIVED');
+        // Save message for deduplication
+        if (session) session.lastMessage = receivedMessage;
 
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
@@ -123,7 +122,7 @@ app.post('/webhook', async (req, res) => {
         const context = {
             senderId,
             message: receivedMessage,
-            session: userSessions[senderId],
+            session,
             cleanText,
             greetings: ["bonjour", "salut", "hello", "hi", "comment ca va", "comment ca va"],
             res
@@ -135,6 +134,7 @@ app.post('/webhook', async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 
 async function launchSteps(context) {
     if (!(await stepCheckEndSession(context))) return;
@@ -226,29 +226,44 @@ async function stepInitializeSession(context) {
     }
 
     return true;
-}
-
-async function stepHandleProjectType({ senderId, session, message }) {
+} async function stepHandleProjectType({ senderId, session, message }) {
     if (!session) {
         console.warn(`[WARN] stepHandleProjectType called with undefined session for ${senderId}`);
         return false;
     }
-    if (!session.awaitingProjectType) return true;
 
-    const guess = await tryToClassifyProjectType(session, message);
-    if (["B", "S", "R"].includes(guess)) {
-        setProjectType(session, guess, "GPT classification (follow-up)");
-        initializeSpecFields(session);
-    } else if (guess === "E" && session.awaitingProjectType === "firstTry") {
-        setProjectType(session, "?", "E -> forced ?");
-    } else {
-        setProjectType(session, "E", "classification fallback");
+    // Si le projectType est déjà défini, ne rien faire
+    if (["B", "S", "R"].includes(session.specValues.projectType)) return true;
+
+    // Cas où on attend toujours une première tentative de classification
+    if (session.awaitingProjectType) {
+        const guess = await tryToClassifyProjectType(session, message);
+        if (["B", "S", "R"].includes(guess)) {
+            setProjectType(session, guess, "GPT classification (follow-up)");
+            initializeSpecFields(session);
+        } else if (guess === "E" && session.awaitingProjectType === "firstTry") {
+            setProjectType(session, "?", "E -> forced ?");
+        } else {
+            setProjectType(session, "E", "classification fallback");
+        }
+
+        delete session.awaitingProjectType;
+        session.askedSpecs.projectType = true;
     }
 
-    session.askedSpecs.projectType = true;
-    delete session.awaitingProjectType;
+    // Si projectType est toujours "?" => poser la question fermée si pas encore posée
+    if (session.specValues.projectType === "?" && !session.askedSpecs.projectType) {
+        const question = session.language === "fr"
+            ? "Quel est le but de votre projet ? 1-acheter, 2-vendre, 3-louer, 4-autre raison (svp repondez avec un chiffre seulement)."
+            : "What is the purpose of your project? 1-buy, 2-sell, 3-rent, 4-other reason (please reply with a number only).";
+
+        session.askedSpecs.projectType = true;
+        await sendMessage(senderId, question);
+    }
+
     return true;
 }
+
 
 async function stepAskNextSpec({ senderId, session, message }) {
     if (session.specValues.projectType === "?") return true;
