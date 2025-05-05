@@ -1,3 +1,5 @@
+// bon dernier backup
+
 // === Load env + dependencies ===
 require('dotenv').config();
 const express = require('express');
@@ -6,7 +8,7 @@ app.use(express.json());
 
 const axios = require('axios');
 const { getNextUnansweredSpec, updateSpecFromInput, buildSpecSummary, getPromptForSpec, isValidAnswer } = require('./modules/specEngine');
-const { setProjectType, initializeSpecFields, tryToClassifyProjectType } = require('./modules/utils');
+const { setProjectType, initializeSpecFields } = require('./modules/utils');
 const { sendMessage } = require('./modules/messenger');
 const {
     stepInitializeSession,
