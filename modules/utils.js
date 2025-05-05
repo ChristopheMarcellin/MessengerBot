@@ -1,7 +1,6 @@
 const { getSpecFieldsForProjectType } = require('./specEngine');
 
 // Initialise tous les champs de spec à "?" sauf projectType.
-// Ne modifie rien si les champs sont déjà initialisés.
 function initializeSpecFields(session) {
     if (!session.specValues) {
         session.specValues = {};
@@ -18,6 +17,13 @@ function initializeSpecFields(session) {
     }
 }
 
+function setProjectType(session, value, reason = "unspecified") {
+    const previous = session.specValues?.projectType ?? "undefined";
+    session.specValues.projectType = value;
+    console.log(`[TRACK] projectType changed from ${previous} to ${value} | reason: ${reason}`);
+}
+
 module.exports = {
     initializeSpecFields,
+    setProjectType,
 };

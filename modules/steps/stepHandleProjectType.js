@@ -1,5 +1,6 @@
-const { setProjectType, initializeSpecFields } = require('./utils');
+const { setProjectType, initializeSpecFields } = require('../utils');
 const { sendMessage } = require('./messenger');
+
 
 async function stepHandleProjectType({ senderId, session, message }) {
     if (session.specValues?.projectType !== "?") return true;
