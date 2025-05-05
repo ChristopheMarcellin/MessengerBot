@@ -1,55 +1,46 @@
-// stepHandleProjectType.js
+const { setProjectType, initializeSpecFields } = require('./utils');
+const { sendMessage } = require('./messenger');
 
-const axios = require('axios');
+async function stepHandleProjectType({ senderId, session, message }) {
+    if (session.specValues?.projectType !== "?") return true;
 
-function noSpecStarted(session) {
-    const specs = session.specValues || {};
-    return Object.values(specs).every(value => value === "?");
-}
+    const lang = session.language || "fr";
+    const isFirstTry = !session.awaitingProjectTypeAttempt;
+    const attempt = isFirstTry ? 1 : session.awaitingProjectTypeAttempt + 1;
 
-async function tryToClassifyProjectType(session, userMessage) {
-    const prompt = session.language === "fr"
-        ? `Déterminez le type de projet exprimé par l'utilisateur. Répondez par B, S, R ou E.\n\n"${userMessage}"`
-        : `Determine the user's project type. Reply with B, S, R, or E.\n\n"${userMessage}"`;
+    const number = parseInt(message.trim(), 10);
+    let mapped;
 
-    const res = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: "gpt-4o",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 10,
-        temperature: 0
-    }, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-        }
-    });
+    switch (number) {
+        case 1: mapped = "B"; break;
+        case 2: mapped = "S"; break;
+        case 3: mapped = "R"; break;
+        case 4: mapped = "E"; break;
+        default: mapped = "?";
+    }
 
-    return res.data.choices?.[0]?.message?.content?.trim().toUpperCase();
-}
-
-module.exports = async function stepHandleProjectType(context) {
-    const { session, message: userMessage } = context;
-    const previousValue = session.projectType || "undefined";
-    const isFirstMessage = previousValue === undefined;
-
-    // ✅ Bypass GPT if numeric answer to project type, even if projectType is undefined
-    if ((session.projectType === undefined || session.projectType === "?") && /^[1-4]$/.test(userMessage.trim())) {
-        const mapped = { "1": "B", "2": "S", "3": "R", "4": "E" };
-        session.projectType = mapped[userMessage.trim()];
-        console.log(`[TRACK] projectType changed from ${previousValue} to ${session.projectType} | reason: numeric response`);
+    if (["B", "S", "R", "E"].includes(mapped)) {
+        setProjectType(session, mapped, `user numeric selection (attempt ${attempt})`);
+        initializeSpecFields(session);
+        delete session.awaitingProjectTypeAttempt;
         return true;
     }
 
-    const classified = await tryToClassifyProjectType(session, userMessage);
-
-    // ✅ Fallback: if GPT returns E on first vague message → ?
-    if (classified === "E" && isFirstMessage && noSpecStarted(session)) {
-        session.projectType = "?";
-        console.log(`[TRACK] projectType changed from ${previousValue} to ? | reason: fallback on vague first message`);
-    } else {
-        session.projectType = classified;
-        console.log(`[TRACK] projectType changed from ${previousValue} to ${classified} | reason: GPT session init`);
+    if (attempt >= 2) {
+        setProjectType(session, "E", "failed 2 attempts");
+        delete session.awaitingProjectTypeAttempt;
+        return true;
     }
 
-    return true;
-};
+    // Repose la question une dernière fois
+    session.awaitingProjectTypeAttempt = attempt;
+
+    const retry = lang === "fr"
+        ? "Veuillez répondre en indiquant seulement le chiffre correspondant :\n1-acheter, 2-vendre, 3-louer, 4-autre raison."
+        : "Please answer by typing only the number:\n1-buy, 2-sell, 3-rent, 4-other reason.";
+
+    await sendMessage(senderId, retry);
+    return false;
+}
+
+module.exports = { stepHandleProjectType };
