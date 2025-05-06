@@ -101,8 +101,10 @@ async function launchSteps(context) {
 
     logSessionState(senderId, getSession(senderId));
 
-    // protection supplémentaire
-    if (!context.session || typeof context.session.projectType === 'undefined') {
+    // Protection supplémentaire (corrigée)
+    const projectType = context.session?.specValues?.projectType;
+    console.log(`[DEBUG] Protection check ? projectType: ${projectType}`);
+    if (typeof projectType === 'undefined') {
         console.warn(`[ERROR] Session initialized but projectType still undefined.`);
         return;
     }
