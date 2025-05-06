@@ -1,21 +1,42 @@
-const { getSession, deleteSession } = require('../sessionStore');
-const { sendMessage } = require('../messenger');
+const {
+    deleteSession,
+    setSession,
+    logSessionState
+} = require('../sessionStore');
 
-async function stepCheckEndSession({ senderId, message }) {
-    const lower = message.trim().toLowerCase();
-    if (lower === "end session") {
-        const session = getSession(senderId);
-        if (session) {
-            console.log(`[RESET] Session for ${senderId}:`, JSON.stringify(session.specValues, null, 2));
-        } else {
-            console.log(`[RESET] No session found for ${senderId}`);
-        }
+function stepCheckEndSession({ senderId, message }) {
+    // Sécurité minimale : vérifier que le message est bien une chaîne
+    if (typeof message !== 'string') return true;
 
+    const trimmedMessage = message.trim().toLowerCase();
+
+    if (trimmedMessage.includes('end session')) {
+        console.log(`[END] Session reset triggered by user: ${senderId}`);
+
+        // Log AVANT réinitialisation
+        console.log(`--- BEFORE RESET ---`);
+        logSessionState(senderId);
+
+        // Suppression de l’ancienne session
         deleteSession(senderId);
-        await sendMessage(senderId, "Votre session a été réinitialisée. Démarrons une nouvelle conversation.");
+
+        // Réinitialisation propre avec valeurs par défaut
+        setSession(senderId, {
+            projectType: undefined,
+            specValues: {},
+            questionCount: 0,
+            lang: undefined
+        });
+
+        // Log APRÈS réinitialisation
+        console.log(`--- AFTER RESET ---`);
+        logSessionState(senderId);
+
+        // Stopper toute autre étape
         return false;
     }
-    return true;
+
+    return true; // Continuer le flow normalement
 }
 
-module.exports = stepCheckEndSession;
+module.exports = { stepCheckEndSession };

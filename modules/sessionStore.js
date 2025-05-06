@@ -16,9 +16,17 @@ function getAllSessions() {
     return userSessions;
 }
 
+
+function logSessionState(senderId) {
+    const session = userSessions[senderId];
+    console.log(`[DEBUG] Session state for ${senderId}:\n`, JSON.stringify(session, null, 2));
+}
+
+
 module.exports = {
     getSession,
     setSession,
     deleteSession,
-    getAllSessions
+    getAllSessions,
+    logSessionState
 };
