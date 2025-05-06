@@ -96,25 +96,34 @@ async function launchSteps(context) {
     if (!stepCheckEndSession(context)) return;
     logSessionState(senderId, getSession(senderId));
 
-    if (!await stepInitializeSession(context)) return;
+    const okInit = await stepInitializeSession(context);
+    if (!okInit) return;
+
     logSessionState(senderId, getSession(senderId));
 
-    if (!stepHandleProjectType(context)) return;
-    logSessionState(senderId, getSession(senderId));
-/*
-    if (!stepHandleSpecAnswer(context)) return;
+    // protection supplémentaire
+    if (!context.session || typeof context.session.projectType === 'undefined') {
+        console.warn(`[ERROR] Session initialized but projectType still undefined.`);
+        return;
+    }
+
+    if (!await stepHandleProjectType(context)) return;
     logSessionState(senderId, getSession(senderId));
 
-    if (!stepAskNextSpec(context)) return;
+    /*
+    if (!await stepHandleSpecAnswer(context)) return;
     logSessionState(senderId, getSession(senderId));
 
-    if (!stepSummarizeAndConfirm(context)) return;
+    if (!await stepAskNextSpec(context)) return;
     logSessionState(senderId, getSession(senderId));
 
-    if (!stepCollectContact(context)) return;
+    if (!await stepSummarizeAndConfirm(context)) return;
     logSessionState(senderId, getSession(senderId));
 
-    if (!stepHandleFallback(context)) return;
+    if (!await stepCollectContact(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!await stepHandleFallback(context)) return;
     logSessionState(senderId, getSession(senderId));
     */
 }
