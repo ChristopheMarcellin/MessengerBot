@@ -3,7 +3,7 @@ const { sendMessage } = require('../messenger');
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-async function stepFallback({ senderId, session, message }) {
+async function stepHandleFallback({ senderId, session, message }) {
     session.questionCount++;
     if (session.questionCount >= session.maxQuestions) {
         await sendMessage(senderId, session.language === "fr"
