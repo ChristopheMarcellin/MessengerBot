@@ -1,4 +1,5 @@
 module.exports = {
+
   stepCheckEndSession: require('./stepCheckEndSession').stepCheckEndSession,
   stepInitializeSession: require('./stepInitializeSession').stepInitializeSession,
   stepHandleProjectType: require('./stepHandleProjectType').stepHandleProjectType,
