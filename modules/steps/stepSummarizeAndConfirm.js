@@ -20,4 +20,4 @@ async function stepSummarizeAndConfirm({ senderId, message }) {
     return true;
 }
 
-module.exports = { stepSummarizeAndConfirm };
+module.exports = {stepSummarizeAndConfirm};

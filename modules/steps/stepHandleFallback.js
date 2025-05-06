@@ -34,4 +34,4 @@ async function stepHandleFallback({ senderId, session, message }) {
     await sendMessage(senderId, gptReply);
 }
 
-module.exports = stepHandleFallback;
+module.exports = {stepHandleFallback};
