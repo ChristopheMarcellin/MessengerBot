@@ -101,7 +101,7 @@ async function launchSteps(context) {
 
     if (!stepHandleProjectType(context)) return;
     logSessionState(senderId, getSession(senderId));
-
+/*
     if (!stepHandleSpecAnswer(context)) return;
     logSessionState(senderId, getSession(senderId));
 
@@ -116,6 +116,7 @@ async function launchSteps(context) {
 
     if (!stepHandleFallback(context)) return;
     logSessionState(senderId, getSession(senderId));
+    */
 }
 
 /*
