@@ -13,11 +13,16 @@ const { sendMessage } = require('./modules/messenger');
 const {
     stepInitializeSession,
     stepHandleProjectType,
+    stepHandleSpecAnswer,       
     stepAskNextSpec,
-    stepSummarizeIfComplete,
+    stepSummarizeAndConfirm,     
+    stepCollectContact,          
     stepCheckEndSession,
-    stepFallback
+    stepHandleFallback
 } = require('./modules/steps');
+
+
+
 const { getSession, setSession, deleteSession } = require('./modules/sessionStore');
 
 // === Webhook ===
