@@ -64,16 +64,14 @@ Message : "${message}"`.trim();
     }
 
     // Initialisation session
-    session = {
-        language,
-        ProjectDate: new Date().toISOString(),
-        questionCount: 1,
-        maxQuestions: 40,
-        askedSpecs: {},
-        specValues: {}
-    };
+    session.language = language;
+    session.ProjectDate = new Date().toISOString();
+    session.questionCount = 1;
+    session.maxQuestions = 40;
+    session.askedSpecs = {};
+    session.specValues = {};
 
-    // 🔁 Tracking GPT classification
+    //Tracking GPT classification
     console.log(`[TRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
 
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
