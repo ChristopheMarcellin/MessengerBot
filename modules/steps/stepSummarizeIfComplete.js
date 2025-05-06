@@ -1,6 +1,5 @@
 const { sendMessage } = require('../messenger');
 const { buildSpecSummary } = require('../specEngine');
-const { allSpecsCollected } = require('../utils');
 const { allSpecsCollected } = require('../specEngine');
 
 async function stepSummarizeIfComplete({ senderId, session }) {
