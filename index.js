@@ -43,7 +43,7 @@ app.post('/webhook', async (req, res) => {
 
         const session = getSession(senderId);
 
-        // filtrage intelligent des doublons (mise à jour avec protection élargie)
+        // filtrage intelligent des doublons (mise Ã  jour avec protection Ã©largie)
         if (session && session.lastUserMessage === receivedMessage) {
             const waitingForInput =
                 session.currentSpec !== null ||
@@ -101,9 +101,9 @@ async function launchSteps(context) {
 
     logSessionState(senderId, getSession(senderId));
 
-    // Protection supplémentaire (corrigée)
+    // Protection supplÃ©mentaire (corrigÃ©e)
     const projectType = context.session?.specValues?.projectType;
-    console.log(`[DEBUG] Protection check ? projectType: ${projectType}`);
+    console.log(`[DEBUG] Protection check â†’ projectType: ${projectType}`);
     if (typeof projectType === 'undefined') {
         console.warn(`[ERROR] Session initialized but projectType still undefined.`);
         return;
