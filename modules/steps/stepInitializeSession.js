@@ -6,14 +6,17 @@ const axios = require('axios');
 async function stepInitializeSession(context) {
     const { senderId, message, cleanText, res } = context;
 
-    let session = getSession(senderId);
-    if (session) {
-        context.session = session;
+    let existing = getSession(senderId);
+    if (existing) {
+        context.session = existing;
         return true;
-
     }
 
-    // Nouvelle session
+    // Nouvelle session : liaison immédiate au store
+    const session = {};
+    setSession(senderId, session);
+    context.session = session;
+
     const vagueInputs = [
         "bonjour", "allo", "salut", "hello", "hi", "cc", "ça va",
         "comment ca va", "comment ça va", "yo", "hey", "coucou", "re"
@@ -58,13 +61,12 @@ Message : "${message}"`.trim();
         console.warn(`[GPT ERROR] Unable to classify project type:`, err.message);
     }
 
-    // Si message vague → override GPT
     if (isVagueMessage) {
         console.log(`[DETECT] Message vague détecté → projectType annulé (était: ${project})`);
         project = "E";
     }
 
-    // Initialisation session
+    // Remplissage contrôlé de la session
     session.language = language;
     session.ProjectDate = new Date().toISOString();
     session.questionCount = 1;
@@ -72,7 +74,6 @@ Message : "${message}"`.trim();
     session.askedSpecs = {};
     session.specValues = {};
 
-    //Tracking GPT classification
     console.log(`[TRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
 
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
@@ -96,13 +97,9 @@ Message : "${message}"`.trim();
         console.log(`[MESSAGE] → ${retry}`);
 
         await sendMessage(senderId, retry);
-        setSession(senderId, session);
-        context.session = session;
         return false;
     }
 
-    setSession(senderId, session);
-    context.session = session;
     console.log(`[INIT] New session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
     return true;
 }

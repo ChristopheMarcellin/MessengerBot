@@ -1,150 +1,107 @@
-// bon dernier backup
-
-// === Load env + dependencies ===
-require('dotenv').config();
-const express = require('express');
-const app = express();
-app.use(express.json());
-
+const { setProjectType, initializeSpecFields } = require('../utils');
+const { sendMessage } = require('../messenger');
+const { getSession, setSession } = require('../sessionStore');
 const axios = require('axios');
-const { getNextUnansweredSpec, updateSpecFromInput, buildSpecSummary, getPromptForSpec, isValidAnswer } = require('./modules/specEngine');
-const { setProjectType, initializeSpecFields } = require('./modules/utils');
-const { sendMessage } = require('./modules/messenger');
-const {
-    stepInitializeSession,
-    stepHandleProjectType,
-    stepHandleSpecAnswer,       
-    stepAskNextSpec,
-    stepSummarizeAndConfirm,     
-    stepCollectContact,          
-    stepCheckEndSession,
-    stepHandleFallback
-} = require('./modules/steps');
 
+async function stepInitializeSession(context) {
+    const { senderId, message, cleanText, res } = context;
 
+    let existing = getSession(senderId);
+    if (existing) {
+        context.session = existing;
+        return true;
+    }
 
-const { getSession, setSession, deleteSession } = require('./modules/sessionStore');
+    // Nouvelle session : liaison immédiate au store
+    const session = {};
+    setSession(senderId, session);
+    context.session = session;
 
-// === Webhook ===
-app.post('/webhook', async (req, res) => {
+    const vagueInputs = [
+        "bonjour", "allo", "salut", "hello", "hi", "cc", "ça va",
+        "comment ca va", "comment ça va", "yo", "hey", "coucou", "re"
+    ];
+
+    const isVagueMessage = vagueInputs.some(g => cleanText === g || cleanText.startsWith(g));
+
+    // Prompt structuré pour GPT
+    const prompt = `
+Tu es un assistant spécialisé en immobilier. Classe le message de l'utilisateur dans l'une des catégories suivantes :
+- B : l'utilisateur veut acheter une propriété
+- S : l'utilisateur veut vendre une propriété
+- R : l'utilisateur veut louer une propriété
+- E : toute autre situation (salutation, question, humour, etc.)
+
+Réponds uniquement par : B, S, R ou E.
+
+Message : "${message}"`.trim();
+
+    let project = "E";
+    let language = "fr";
+
     try {
-        const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
-
-        if (!messagingEvent) return res.sendStatus(200);
-        if (messagingEvent.message?.is_echo) {
-            console.log(`[ECHO] Skipping bot echo: "${messagingEvent.message.text}"`);
-            return res.sendStatus(200);
-        }
-        if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
-
-        const senderId = messagingEvent.sender?.id;
-        const receivedMessage = messagingEvent.message?.text?.trim();
-        if (!receivedMessage || !senderId) return res.sendStatus(200);
-
-        const session = getSession(senderId);
-
-        // filtrage intelligent des doublons (mise à jour avec protection élargie)
-        if (session && session.lastUserMessage === receivedMessage) {
-            const waitingForInput =
-                session.currentSpec !== null ||
-                ["?", "E"].includes(session.specValues?.projectType) ||
-                session.awaitingProjectTypeAttempt;
-            if (!waitingForInput) {
-                console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
-                return res.sendStatus(200);
+        const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 10,
+            temperature: 0
+        }, {
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json'
             }
+        });
+
+        const content = gptRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
+        if (["B", "S", "R", "E"].includes(content)) {
+            project = content;
         }
 
-        if (session) session.lastUserMessage = receivedMessage;
-
-        const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
-        console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
-
-        const context = {
-            senderId,
-            message: receivedMessage,
-            session,
-            cleanText,
-            greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
-            res
-        };
-
-        await launchSteps(context);
-    } catch (error) {
-        console.error("[ERROR]", error);
-        res.status(500).send('Server Error');
-    }
-});
-
-// === Logger ===
-function logSessionState(senderId, session) {
-    if (!session) return;
-    console.log(`[STATE] Session ${senderId}`);
-    console.log(` - projectType: ${session.specValues?.projectType}`);
-    console.log(` - currentSpec: ${session.currentSpec || "(none)"}`);
-    console.log(` - specValues:`, JSON.stringify(session.specValues, null, 2));
-}
-
-// === Main Launch Sequence ===
-
-async function launchSteps(context) {
-    const { senderId } = context;
-
-    console.log(`\n=== [LAUNCH STEPS for ${senderId}] ===`);
-    logSessionState(senderId, getSession(senderId));
-
-    if (!stepCheckEndSession(context)) return;
-    logSessionState(senderId, getSession(senderId));
-
-    const okInit = await stepInitializeSession(context);
-    if (!okInit) return;
-
-    logSessionState(senderId, getSession(senderId));
-
-    // Protection supplémentaire (corrigée)
-    const projectType = context.session?.specValues?.projectType;
-    console.log(`[DEBUG] Protection check → projectType: ${projectType}`);
-    if (typeof projectType === 'undefined') {
-        console.warn(`[ERROR] Session initialized but projectType still undefined.`);
-        return;
+    } catch (err) {
+        console.warn(`[GPT ERROR] Unable to classify project type:`, err.message);
     }
 
-    if (!await stepHandleProjectType(context)) return;
-    logSessionState(senderId, getSession(senderId));
+    if (isVagueMessage) {
+        console.log(`[DETECT] Message vague détecté → projectType annulé (était: ${project})`);
+        project = "E";
+    }
 
-    /*
-    if (!await stepHandleSpecAnswer(context)) return;
-    logSessionState(senderId, getSession(senderId));
+    // Remplissage contrôlé de la session
+    session.language = language;
+    session.ProjectDate = new Date().toISOString();
+    session.questionCount = 1;
+    session.maxQuestions = 40;
+    session.askedSpecs = {};
+    session.specValues = {};
 
-    if (!await stepAskNextSpec(context)) return;
-    logSessionState(senderId, getSession(senderId));
+    console.log(`[TRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
 
-    if (!await stepSummarizeAndConfirm(context)) return;
-    logSessionState(senderId, getSession(senderId));
+    const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
 
-    if (!await stepCollectContact(context)) return;
-    logSessionState(senderId, getSession(senderId));
+    if (finalProject !== "?") {
+        setProjectType(session, finalProject, "GPT session init (contexte structuré)");
+        initializeSpecFields(session);
+    } else {
+        if (project === "E") {
+            console.log(`[TRACK] projectType changed from E to ? | reason: fallback → ?`);
+        }
 
-    if (!await stepHandleFallback(context)) return;
-    logSessionState(senderId, getSession(senderId));
-    */
+        setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
+        session.awaitingProjectTypeAttempt = 1;
+
+        const retry = language === "fr"
+            ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
+            : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
+
+        console.log(`[SEND] Asking for projectType after vague or unclear message (lang=${language}, GPT=${project})`);
+        console.log(`[MESSAGE] → ${retry}`);
+
+        await sendMessage(senderId, retry);
+        return false;
+    }
+
+    console.log(`[INIT] New session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
+    return true;
 }
 
-/*
-async function launchSteps({ senderId, message }) {
-    logSessionState(senderId); // Facultatif pour debug
-
-    if (!stepCheckEndSession({ senderId, message })) return;
-    if (!await stepInitializeSession({ senderId, message })) return;
-    if (!stepHandleProjectType({ senderId, message })) return;
-    if (!stepHandleSpecAnswer({ senderId, message })) return;
-    if (!stepAskNextSpec({ senderId })) return;
-    if (!stepSummarizeAndConfirm({ senderId, message })) return;
-    if (!stepCollectContact({ senderId, message })) return;
-    if (!stepHandleFallback({ senderId, message })) return;
-}
-*/
-
-// === Start Server ===
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
+module.exports = { stepInitializeSession };
