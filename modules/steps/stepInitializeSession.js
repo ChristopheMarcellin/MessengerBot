@@ -10,6 +10,7 @@ async function stepInitializeSession(context) {
     if (session) {
         context.session = session;
         return true;
+
     }
 
     // Nouvelle session
