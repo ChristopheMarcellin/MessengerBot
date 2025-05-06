@@ -3,6 +3,11 @@ const { sendMessage } = require('../messenger');
 
 
 async function stepHandleProjectType({ senderId, session, message }) {
+
+    if (!session) {
+        console.warn(`[WARN] stepHandleProjectType called with undefined session for ${senderId}`);
+        return false;
+    }
     if (session.specValues?.projectType !== "?") return true;
 
     const lang = session.language || "fr";

@@ -1,84 +1,101 @@
-const axios = require('axios');
-const { setSession, getSession } = require('../sessionStore');
 const { setProjectType, initializeSpecFields } = require('../utils');
 const { sendMessage } = require('../messenger');
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const { getSession, setSession } = require('../sessionStore');
+const axios = require('axios');
 
 async function stepInitializeSession(context) {
-  const { senderId, message, cleanText, greetings } = context;
-  if (getSession(senderId)) return true;
+    const { senderId, message, cleanText, res } = context;
 
-  const prompt = `Detect user's language and project intent. Return JSON like: {"language": "en/fr", "project": "B/S/R/E"}\n\n"${message}"`;
+    let session = getSession(senderId);
+    if (session) {
+        context.session = session;
+        return true;
+    }
 
-  const detectionResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model: "gpt-4o",
-    messages: [{ role: "user", content: prompt }],
-    max_tokens: 100,
-    temperature: 0
-  }, {
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-  });
+    // Nouvelle session
+    const vagueInputs = [
+        "bonjour", "allo", "salut", "hello", "hi", "cc", "ça va",
+        "comment ca va", "comment ça va", "yo", "hey", "coucou", "re"
+    ];
 
-  let lang = "en", project;
-  try {
-    const parsed = JSON.parse(detectionResponse.data.choices?.[0]?.message?.content?.replace(/```json|```/g, "").trim());
-    lang = parsed.language || "en";
-    project = parsed.project;
-  } catch {
-    console.warn("[DETECT] Failed to parse detection result.");
-  }
+    const isVagueMessage = vagueInputs.some(g => cleanText === g || cleanText.startsWith(g));
 
-  if (greetings.some(g => cleanText.includes(g))) project = undefined;
+    // Prompt structuré pour GPT
+    const prompt = `
+Tu es un assistant spécialisé en immobilier. Classe le message de l'utilisateur dans l'une des catégories suivantes :
+- B : l'utilisateur veut acheter une propriété
+- S : l'utilisateur veut vendre une propriété
+- R : l'utilisateur veut louer une propriété
+- E : toute autre situation (salutation, question, humour, etc.)
 
-  console.log(`[INIT] New session for ${senderId} | Lang: ${lang} | Project: ${project || "undefined"}`);
+Réponds uniquement par : B, S, R ou E.
 
-  setSession(senderId, {
-    language: lang,
-    ProjectDate: new Date().toISOString(),
-    questionCount: 1,
-    maxQuestions: 40,
-    askedSpecs: {},
-    specValues: {}
-  });
+Message : "${message}"`.trim();
 
-  const session = getSession(senderId);
-  const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
+    let project = "E";
+    let language = "fr";
 
-  if (finalProject !== "?") {
-    setProjectType(session, finalProject, "GPT session init (confident)");
-    initializeSpecFields(session);
+    try {
+        const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 10,
+            temperature: 0
+        }, {
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const content = gptRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
+        if (["B", "S", "R", "E"].includes(content)) {
+            project = content;
+        }
+
+    } catch (err) {
+        console.warn(`[GPT ERROR] Unable to classify project type:`, err.message);
+    }
+
+    // Si message vague → override GPT
+    if (isVagueMessage) {
+        console.log(`[DETECT] Message vague détecté → projectType annulé (était: ${project})`);
+        project = "E";
+    }
+
+    // Langue par défaut : fr
+    session = {
+        language,
+        ProjectDate: new Date().toISOString(),
+        questionCount: 1,
+        maxQuestions: 40,
+        askedSpecs: {},
+        specValues: {}
+    };
+
+    const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
+
+    if (finalProject !== "?") {
+        setProjectType(session, finalProject, "GPT session init (contexte structuré)");
+        initializeSpecFields(session);
+    } else {
+        setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
+        session.awaitingProjectTypeAttempt = 1;
+
+        const retry = language === "fr"
+            ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
+            : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
+
+        await sendMessage(senderId, retry);
+        setSession(senderId, session);
+        context.session = session;
+        return false;
+    }
+
+    setSession(senderId, session);
+    context.session = session;
+    console.log(`[INIT] New session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
     return true;
-  }
-
-  setProjectType(session, "?", project === "E" ? "E -> forced ?" : "fallback -> ?");
-  session.awaitingProjectType = "firstTry";
-
-  const gptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-    model: "gpt-4o",
-    messages: [{
-      role: "user",
-      content: (lang === "fr" ? "Repondez en francais : " : "Please answer in English: ") + message
-    }],
-    max_tokens: 400,
-    temperature: 0.5
-  }, {
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` }
-  });
-
-  const fallback = gptResponse.data.choices?.[0]?.message?.content?.trim() || (
-    lang === "fr" ? "Desole, je n'ai pas compris." : "Sorry, I didn't understand."
-  );
-  await sendMessage(senderId, fallback);
-
-  const question = lang === "fr"
-    ? "Quel est le but de votre projet ? 1-acheter, 2-vendre, 3-louer, 4-autre raison (svp repondez avec un chiffre seulement)."
-    : "What is the purpose of your project? 1-buy, 2-sell, 3-rent, 4-other reason (please reply with a number only).";
-
-  session.askedSpecs.projectType = true;
-  await sendMessage(senderId, question);
-
-  return false;
 }
 
-module.exports = stepInitializeSession;
+module.exports = { stepInitializeSession };
