@@ -65,7 +65,7 @@ const resetInvalidSpecs = (session) => {
     }
 };
 
-// ✅ Fonction ajoutée pour valider une réponse
+//Fonction ajoutée pour valider une réponse
 function isValidAnswer(value, projectType, field) {
     if (!value) return false;
     const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";

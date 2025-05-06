@@ -38,11 +38,12 @@ app.post('/webhook', async (req, res) => {
 
         const session = getSession(senderId);
 
-        //Filtrage intelligent des doublons
+        // filtrage intelligent des doublons (mise à jour avec protection élargie)
         if (session && session.lastUserMessage === receivedMessage) {
             const waitingForInput =
                 session.currentSpec !== null ||
-                session.specValues?.projectType === "?";
+                ["?", "E"].includes(session.specValues?.projectType) ||
+                session.awaitingProjectTypeAttempt;
             if (!waitingForInput) {
                 console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
                 return res.sendStatus(200);
