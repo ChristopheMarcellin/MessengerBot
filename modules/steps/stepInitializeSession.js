@@ -74,4 +74,38 @@ Message : "${message}"`.trim();
     };
 
     // 🔁 Tracking GPT classification
-    console.log(`[TRACK] projectType changed from undefined to ${project} | re
+    console.log(`[TRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
+
+    const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
+
+    if (finalProject !== "?") {
+        setProjectType(session, finalProject, "GPT session init (contexte structuré)");
+        initializeSpecFields(session);
+    } else {
+        if (project === "E") {
+            console.log(`[TRACK] projectType changed from E to ? | reason: fallback → ?`);
+        }
+
+        setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
+        session.awaitingProjectTypeAttempt = 1;
+
+        const retry = language === "fr"
+            ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
+            : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
+
+        console.log(`[SEND] Asking for projectType after vague or unclear message (lang=${language}, GPT=${project})`);
+        console.log(`[MESSAGE] → ${retry}`);
+
+        await sendMessage(senderId, retry);
+        setSession(senderId, session);
+        context.session = session;
+        return false;
+    }
+
+    setSession(senderId, session);
+    context.session = session;
+    console.log(`[INIT] New session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
+    return true;
+}
+
+module.exports = { stepInitializeSession };
