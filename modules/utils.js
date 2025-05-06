@@ -1,6 +1,7 @@
 const { getSpecFieldsForProjectType } = require('./specEngine');
 
-// Initialise tous les champs de spec à "?" sauf projectType.
+//Initialise tous les champs de spec à "?" sauf projectType.
+
 function initializeSpecFields(session) {
     if (!session.specValues) {
         session.specValues = {};
