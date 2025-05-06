@@ -72,6 +72,9 @@ function isValidAnswer(value, projectType, field) {
     const map = displayMap?.[field]?.[lang];
     return map ? Object.keys(map).includes(value) : true;
 }
+function getSpecFieldsForProjectType(projectType) {
+    return Object.keys(questions?.[projectType] || {});
+}
 
 module.exports = {
     getPromptForSpec,
@@ -81,5 +84,6 @@ module.exports = {
     buildSpecSummary,
     resetInvalidSpecs,
     getDisplayValue,
-    isValidAnswer // 
+    isValidAnswer,
+    getSpecFieldsForProjectType
 };
