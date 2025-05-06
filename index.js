@@ -22,6 +22,10 @@ const {
     stepHandleUserQuestions,
     stepHandleProjectType,
     stepHandleSpecAnswer,
+    stepAskNextSpec,
+    stepSummarizeAndConfirm,
+    stepCollectContact,
+    stepHandleFallback
 } = require('./steps');
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
