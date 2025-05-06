@@ -55,4 +55,4 @@ async function stepAskNextSpec({ senderId, session, message }) {
     return false;
 }
 
-module.exports = stepAskNextSpec;
+module.exports = { stepAskNextSpec };

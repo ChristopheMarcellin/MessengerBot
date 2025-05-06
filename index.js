@@ -87,7 +87,38 @@ function logSessionState(senderId, session) {
 
 // === Main Launch Sequence ===
 
+async function launchSteps(context) {
+    const { senderId } = context;
 
+    console.log(`\n=== [LAUNCH STEPS for ${senderId}] ===`);
+    logSessionState(senderId, getSession(senderId));
+
+    if (!stepCheckEndSession(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!await stepInitializeSession(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!stepHandleProjectType(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!stepHandleSpecAnswer(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!stepAskNextSpec(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!stepSummarizeAndConfirm(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!stepCollectContact(context)) return;
+    logSessionState(senderId, getSession(senderId));
+
+    if (!stepHandleFallback(context)) return;
+    logSessionState(senderId, getSession(senderId));
+}
+
+/*
 async function launchSteps({ senderId, message }) {
     logSessionState(senderId); // Facultatif pour debug
 
@@ -100,6 +131,7 @@ async function launchSteps({ senderId, message }) {
     if (!stepCollectContact({ senderId, message })) return;
     if (!stepHandleFallback({ senderId, message })) return;
 }
+*/
 
 // === Start Server ===
 const PORT = process.env.PORT || 3000;
