@@ -81,16 +81,19 @@ function logSessionState(senderId, session) {
 }
 
 // === Main Launch Sequence ===
-async function launchSteps(context) {
-    const { senderId, session } = context;
-    logSessionState(senderId, session);
 
-    if (!(await stepCheckEndSession(context))) return;
-    if (!(await stepInitializeSession(context))) return;
-    if (!(await stepHandleProjectType(context))) return;
-    if (!(await stepAskNextSpec(context))) return;
-    if (!(await stepSummarizeIfComplete(context))) return;
-    await stepFallback(context);
+
+async function launchSteps({ senderId, message }) {
+    logSessionState(senderId); // Facultatif pour debug
+
+    if (!stepCheckEndSession({ senderId, message })) return;
+    if (!await stepInitializeSession({ senderId, message })) return;
+    if (!stepHandleProjectType({ senderId, message })) return;
+    if (!stepHandleSpecAnswer({ senderId, message })) return;
+    if (!stepAskNextSpec({ senderId })) return;
+    if (!stepSummarizeAndConfirm({ senderId, message })) return;
+    if (!stepCollectContact({ senderId, message })) return;
+    if (!stepHandleFallback({ senderId, message })) return;
 }
 
 // === Start Server ===
