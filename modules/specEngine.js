@@ -75,7 +75,9 @@ function isValidAnswer(value, projectType, field) {
 function getSpecFieldsForProjectType(projectType) {
     return Object.keys(questions?.[projectType] || {});
 }
-
+function allSpecsCollected(session) {
+    return !getNextUnansweredSpec(session);
+}
 module.exports = {
     getPromptForSpec,
     getNextUnansweredSpec,
@@ -85,5 +87,6 @@ module.exports = {
     resetInvalidSpecs,
     getDisplayValue,
     isValidAnswer,
-    getSpecFieldsForProjectType
+    getSpecFieldsForProjectType,
+    allSpecsCollected
 };
