@@ -1,6 +1,6 @@
-const { setProjectType, initializeSpecFields } = require('../utils');
-const { sendMessage } = require('../messenger');
-const { getSession, setSession } = require('../sessionStore');
+const { setProjectType, initializeSpecFields } = require('./modules/utils');
+const { sendMessage } = require('./modules/messenger');
+const { getSession, setSession } = require('./modules/sessionStore');
 const axios = require('axios');
 
 async function stepInitializeSession(context) {
