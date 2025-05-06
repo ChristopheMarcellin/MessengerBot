@@ -63,7 +63,7 @@ Message : "${message}"`.trim();
         project = "E";
     }
 
-    // Langue par défaut : fr
+    // Initialisation session
     session = {
         language,
         ProjectDate: new Date().toISOString(),
@@ -73,12 +73,19 @@ Message : "${message}"`.trim();
         specValues: {}
     };
 
+    // 🔁 Tracking GPT classification
+    console.log(`[TRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
+
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
 
     if (finalProject !== "?") {
         setProjectType(session, finalProject, "GPT session init (contexte structuré)");
         initializeSpecFields(session);
     } else {
+        if (project === "E") {
+            console.log(`[TRACK] projectType changed from E to ? | reason: fallback → ?`);
+        }
+
         setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
         session.awaitingProjectTypeAttempt = 1;
 
