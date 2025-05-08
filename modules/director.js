@@ -17,6 +17,10 @@ const { stepInitializeSession } = require('./steps/index');
 // Fonction principale du directeur
 async function runDirector(context) {
     const { message, senderId, session } = context;
+    if (!session || !session.askedSpecs) {
+        console.log('[DIRECTOR] Session incomplète ou absente. Ignoré.');
+        return false;
+    }
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
     // SCÉNARIO 1 : Requête explicite de fin de session
     

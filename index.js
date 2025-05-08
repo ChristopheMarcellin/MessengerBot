@@ -56,8 +56,12 @@ app.post('/webhook', async (req, res) => {
             return res.sendStatus(200);
         }
 
-        // 🧠 Récupération passive de la session
-        const session = getSession(senderId) || null;
+        // 🧠 Récupération et initialisation de la session
+        let session = getSession(senderId);
+        if (!session) {
+            session = {};
+            setSession(senderId, session);
+        }
 
         // 🔒 Blocage strict : si message déjà reçu → ignorer
         if (session?.lastUserMessage === receivedMessage) {
@@ -66,7 +70,7 @@ app.post('/webhook', async (req, res) => {
         }
 
         // 🧠 Stockage immédiat du message reçu
-        if (session) session.lastUserMessage = receivedMessage;
+        session.lastUserMessage = receivedMessage;
 
         // 👁 Accusé de réception silencieux
         await sendMarkSeen(senderId);
