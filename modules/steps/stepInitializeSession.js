@@ -7,17 +7,31 @@ async function stepInitializeSession(context) {
     const { senderId, message, cleanText, res } = context;
 
     let existing = getSession(senderId);
-    if (existing) {
+
+    const isInitialized = existing &&
+        typeof existing.projectType !== 'undefined' &&
+        typeof existing.askedSpecs !== 'undefined' &&
+        typeof existing.specValues !== 'undefined';
+
+    if (isInitialized) {
         context.session = existing;
         return true;
     }
 
-
     if (context.message.trim().toLowerCase() === 'end session') {
         console.log('[InitBLOCK] Commande "end session" détectée ne pas traiter ce message avec GPT');
 
-        // On crée quand même une session vide pour éviter une erreur plus tard
-        const session = {};
+        const session = {
+            language: 'fr',
+            ProjectDate: new Date().toISOString(),
+            questionCount: 0,
+            maxQuestions: 40,
+            askedSpecs: {},
+            specValues: {},
+            projectType: undefined,
+            currentSpec: null
+        };
+
         setSession(context.senderId, session);
         context.session = session;
 
