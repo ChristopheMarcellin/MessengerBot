@@ -1,4 +1,3 @@
-const { getSession } = require('./sessionStore');
 const { getNextUnansweredSpec } = require('./specEngine');
 const { initializeSpecFields, setProjectType } = require('./utils');
 const { sendMessage } = require('./messenger');
@@ -15,7 +14,6 @@ const {
 } = require('./steps');
 const { stepInitializeSession } = require('./steps/index');
 
-
 // Fonction principale du directeur
 async function runDirector(context) {
     const { message, senderId, session } = context;
@@ -29,9 +27,7 @@ async function runDirector(context) {
         console.log('[DIRECTOR] Session absente ou corrompue → initialisation automatique.');
         initializeSpecFields(senderId);
 
-        const freshSession = getSession(senderId);     // ✅ Correction ici
-        context.session = freshSession;
-
+        // 🔄 Session déjà initialisée par index.js, on utilise le context actuel
         setProjectType(senderId, "?");
         await sendMessage(senderId, "Quel est le but de votre projet ? (1-acheter, 2-vendre, 3-louer, 4-autre)");
         return true;
