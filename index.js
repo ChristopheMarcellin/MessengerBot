@@ -11,6 +11,7 @@ const { sendMessage, sendMarkSeen, sendTypingOn } = require('./modules/messenger
 const { getSession, setSession } = require('./modules/sessionStore');
 const { setProjectType, initializeSpecFields } = require('./modules/utils');
 const { runDirector } = require('./modules/director');
+const { stepInitializeSession } = require('./modules/steps');
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
@@ -56,12 +57,9 @@ app.post('/webhook', async (req, res) => {
             return res.sendStatus(200);
         }
 
-        // 🧠 Récupération et initialisation de la session
-        let session = getSession(senderId);
-        if (!session) {
-            session = {};
-            setSession(senderId, session);
-        }
+        // ✅ Initialisation complète de la session
+        await stepInitializeSession(context);
+        const session = context.session;
 
         // 🔒 Blocage strict : si message déjà reçu → ignorer
         if (session?.lastUserMessage === receivedMessage) {
@@ -72,6 +70,7 @@ app.post('/webhook', async (req, res) => {
         // 🧠 Stockage immédiat du message reçu
         session.lastUserMessage = receivedMessage;
 
+
         // 👁 Accusé de réception silencieux
         await sendMarkSeen(senderId);
 
@@ -81,11 +80,26 @@ app.post('/webhook', async (req, res) => {
         const context = {
             senderId,
             message: receivedMessage,
-            session,
             cleanText,
             greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
             res
         };
+
+        // ✅ Initialisation complète de la session
+        await stepInitializeSession(context);
+        const session = context.session;
+
+        // 🔒 Blocage strict : si message déjà reçu → ignorer
+        if (session?.lastUserMessage === receivedMessage) {
+            console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
+            return res.sendStatus(200);
+        }
+
+        // 🧠 Stockage immédiat du message reçu
+        session.lastUserMessage = receivedMessage;
+
+        // ✅ Appel obligatoire pour garantir une session propre
+        await stepInitializeSession(context);
 
         console.log(`[DEBUG] Message transmis au directeur: "${context.message}"`);
 
