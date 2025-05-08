@@ -25,10 +25,15 @@ async function runDirector(context) {
 
     if (sessionIsMissing || sessionIsEmpty || sessionIsCorrupted) {
         console.log('[DIRECTOR] Session absente ou corrompue → initialisation automatique.');
-        initializeSpecFields(senderId);
 
-        // 🔄 Session déjà initialisée par index.js, on utilise le context actuel
-        setProjectType(senderId, "?");
+        if (!session) {
+            console.warn('[DIRECTOR] ERREUR: session est undefined → impossible de corriger');
+            return false;
+        }
+
+        initializeSpecFields(session);
+        setProjectType(session, "?");
+
         await sendMessage(senderId, "Quel est le but de votre projet ? (1-acheter, 2-vendre, 3-louer, 4-autre)");
         return true;
     }
