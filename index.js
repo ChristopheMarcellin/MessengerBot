@@ -40,7 +40,6 @@ app.get('/webhook', (req, res) => {
 });
 
 // === Webhook ===
-// === Webhook ===
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
@@ -64,14 +63,14 @@ app.post('/webhook', async (req, res) => {
             return res.sendStatus(200);
         }
 
-        // filtrage intelligent des doublons (mise à jour avec protection élargie)
+        // 🔁 Filtrage des messages répétés (utilisateur ou Messenger)
         if (session && session.lastUserMessage === receivedMessage) {
             const waitingForInput =
                 session.currentSpec !== null ||
-                ["?", "E"].includes(session.specValues?.projectType) ||
+                ["?", "E"].includes(session.projectType) ||
                 session.awaitingProjectTypeAttempt;
             if (!waitingForInput) {
-                console.log(`[SKIP] Duplicate message ignored: "${receivedMessage}"`);
+                console.log(`[SKIP] Message répété ignoré: "${receivedMessage}"`);
                 return res.sendStatus(200);
             }
         }
@@ -103,8 +102,8 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-
 /*
+// === Optionnel : séquence de steps (désactivée actuellement)
 async function launchSteps(context) {
     const steps = [
         stepCheckEndSession,
