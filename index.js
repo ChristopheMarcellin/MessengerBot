@@ -1,121 +1,77 @@
-// bon dernier backup 2025-05-08 1h48 am
+const { getNextUnansweredSpec } = require('./specEngine');
+const { initializeSpecFields, setProjectType } = require('./utils');
+const { sendMessage } = require('./messenger');
 
-// === Load env + dependencies ===
-require('dotenv').config();
-const express = require('express');
-const axios = require('axios');
-const app = express();
-app.use(express.json());
+const {
+    stepCheckEndSession,
+    stepHandleUserQuestions,
+    stepHandleProjectType,
+    stepHandleSpecAnswer,
+    stepAskNextSpec,
+    stepSummarizeAndConfirm,
+    stepCollectContact,
+    stepHandleFallback
+} = require('./steps');
+const { stepInitializeSession } = require('./steps/index');
 
-const { sendMessage, sendMarkSeen, sendTypingOn } = require('./modules/messenger');
-const { getSession, setSession } = require('./modules/sessionStore');
-const { setProjectType, initializeSpecFields } = require('./modules/utils');
-const { runDirector } = require('./modules/director');
-const { stepInitializeSession } = require('./modules/steps');
+// Fonction principale du directeur
+async function runDirector(context) {
+    const { message, senderId, session } = context;
 
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
+    // 🔎 Si session absente, vide, ou incomplète → réinitialisation automatique
+    const sessionIsMissing = !session;
+    const sessionIsEmpty = session && Object.keys(session).length === 0;
+    const sessionIsCorrupted = !session?.projectType || !session?.specValues;
 
-// === Webhook Verification ===
-app.get('/webhook', (req, res) => {
-    const mode = req.query['hub.mode'];
-    const token = req.query['hub.verify_token'];
-    const challenge = req.query['hub.challenge'];
+    if (sessionIsMissing || sessionIsEmpty || sessionIsCorrupted) {
+        console.log('[DIRECTOR] Session absente ou corrompue → initialisation automatique.');
+        initializeSpecFields(senderId);
 
-    if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-        console.log('[VERIFY] Webhook verified');
-        res.status(200).send(challenge);
-    } else {
-        res.sendStatus(403);
+        // 🔄 Session déjà initialisée par index.js, on utilise le context actuel
+        setProjectType(senderId, "?");
+        await sendMessage(senderId, "Quel est le but de votre projet ? (1-acheter, 2-vendre, 3-louer, 4-autre)");
+        return true;
     }
-});
 
-// === Webhook POST ===
-app.post('/webhook', async (req, res) => {
-    try {
-        const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
+    console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
-        if (!messagingEvent) return res.sendStatus(200);
-        if (messagingEvent.message?.is_echo) {
-            console.log(`[ECHO] Skipping bot echo: "${messagingEvent.message.text}"`);
-            return res.sendStatus(200);
-        }
-        if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
-
-        const senderId = messagingEvent.sender?.id;
-        const receivedMessage = messagingEvent.message?.text?.trim();
-        const timestamp = messagingEvent.timestamp;
-
-        if (!receivedMessage || !senderId || !timestamp) return res.sendStatus(200);
-
-        // 🕓 Vérification de l'âge du message
-        const ageMs = Date.now() - timestamp;
-        const ageMin = Math.floor(ageMs / 60000);
-        if (ageMin > 10) {
-            console.log(`[SKIP] Message ancien ignoré (age: ${ageMin} min)`);
-            await sendMarkSeen(senderId);
-            return res.sendStatus(200);
-        }
-
-        // ✅ Initialisation complète de la session
+    // SCÉNARIO 1 : Requête explicite de fin de session
+    if (message && typeof message === 'string' && message.trim().toLowerCase() === 'end session') {
+        console.log('[DIRECTOR] SCÉNARIO 1 → end session détecté, session à rebâtir');
+        session.lastUserMessage = null;
         await stepInitializeSession(context);
-        const session = context.session;
-
-        // 🔒 Blocage strict : si message déjà reçu → ignorer
-        if (session?.lastUserMessage === receivedMessage) {
-            console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
-            return res.sendStatus(200);
-        }
-
-        // 🧠 Stockage immédiat du message reçu
-        session.lastUserMessage = receivedMessage;
-
-
-        // 👁 Accusé de réception silencieux
-        await sendMarkSeen(senderId);
-
-        const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
-        console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
-
-        const context = {
-            senderId,
-            message: receivedMessage,
-            cleanText,
-            greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
-            res
-        };
-
-        // ✅ Initialisation complète de la session
-        await stepInitializeSession(context);
-        const session = context.session;
-
-        // 🔒 Blocage strict : si message déjà reçu → ignorer
-        if (session?.lastUserMessage === receivedMessage) {
-            console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
-            return res.sendStatus(200);
-        }
-
-        // 🧠 Stockage immédiat du message reçu
-        session.lastUserMessage = receivedMessage;
-
-        // ✅ Appel obligatoire pour garantir une session propre
-        await stepInitializeSession(context);
-
-        console.log(`[DEBUG] Message transmis au directeur: "${context.message}"`);
-
-        const triggered = await runDirector(context);
-        if (triggered) {
-            console.log('[INDEX] Le directeur a détecté un scénario actif.');
-        } else {
-            console.log('[INDEX] Aucun scénario détecté par le directeur.');
-        }
-
-    } catch (error) {
-        console.error("[ERROR]", error);
-        res.status(500).send('Server Error');
+        return true;
     }
-});
 
-// === Start Server ===
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
+    // SCÉNARIO 2 : Il est temps de détecter l’intention
+    const noSpecsCommenced = Object.values(session.askedSpecs || {}).every(v => !v);
+
+    if ((session.projectType === undefined || session.projectType === '?') &&
+        noSpecsCommenced &&
+        session.currentSpec === null) {
+        console.log('[DIRECTOR] SCÉNARIO 2 → projectType indéfini ou "?" + specs jamais posées + aucune question en cours → poser la question projet');
+        await stepHandleProjectType(context); // <- ici le step clé
+        return true;
+    }
+
+    const nextSpec = getNextUnansweredSpec(session);
+
+    console.log('[DEBUG] specValues =', session.specValues);
+    console.log('[DEBUG] askedSpecs =', session.askedSpecs);
+    console.log('[DEBUG] currentSpec =', session.currentSpec);
+    console.log('[DEBUG] projectType =', session.projectType);
+    console.log('[DEBUG] nextSpec =', nextSpec);
+
+    // SCÉNARIO 3 : Intention connue, on cherche la prochaine spec
+    if (['B', 'S', 'R'].includes(session.projectType) &&
+        nextSpec &&
+        session.currentSpec === null) {
+        console.log(`[DIRECTOR] SCÉNARIO 3 → Prochaine question spec à poser : "${nextSpec}"`);
+        return true;
+    }
+
+    console.log('[DIRECTOR] Aucun scénario détecté');
+    return false;
+}
+
+module.exports = { runDirector };
