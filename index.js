@@ -56,6 +56,8 @@ app.post('/webhook', async (req, res) => {
         if (!receivedMessage || !senderId) return res.sendStatus(200);
 
         const session = getSession(senderId);
+        console.log(`[DEBUG] lastUserMessage = "${session?.lastUserMessage}"`);
+        console.log(`[DEBUG] message reçu = "${receivedMessage}"`);
 
         // 🔒 Boucle spéciale: blocage répété de "end session"
         if (session && receivedMessage.toLowerCase() === 'end session' && session.lastUserMessage === receivedMessage) {
@@ -88,7 +90,8 @@ app.post('/webhook', async (req, res) => {
             greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
             res
         };
-
+        context.message = receivedMessage; // protection absolue
+        console.log(`[DEBUG] Message transmis au directeur: "${context.message}"`);
         const triggered = await runDirector(context);
         if (triggered) {
             console.log('[INDEX] Le directeur a détecté un scénario actif.');
