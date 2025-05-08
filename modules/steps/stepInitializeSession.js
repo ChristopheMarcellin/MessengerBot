@@ -11,8 +11,16 @@ async function stepInitializeSession(context) {
         context.session = existing;
         return true;
     }
+
+
     if (context.message.trim().toLowerCase() === 'end session') {
         console.log('[InitBLOCK] Commande "end session" détectée ne pas traiter ce message avec GPT');
+
+        // On crée quand même une session vide pour éviter une erreur plus tard
+        const session = {};
+        setSession(context.senderId, session);
+        context.session = session;
+
         return false;
     }
 
