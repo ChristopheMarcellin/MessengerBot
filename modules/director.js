@@ -1,7 +1,7 @@
 const { getSession } = require('./sessionStore');
 const { getNextUnansweredSpec } = require('./specEngine');
-const { initializeSpecFields, setProjectType } = require('./utils');           // ✅ Ajouté
-const { sendMessage } = require('./messenger');                                // ✅ Ajouté
+const { initializeSpecFields, setProjectType } = require('./utils');
+const { sendMessage } = require('./messenger');
 
 const {
     stepCheckEndSession,
@@ -28,9 +28,13 @@ async function runDirector(context) {
     if (sessionIsMissing || sessionIsEmpty || sessionIsCorrupted) {
         console.log('[DIRECTOR] Session absente ou corrompue → initialisation automatique.');
         initializeSpecFields(senderId);
+
+        const freshSession = getSession(senderId);     // ✅ Correction ici
+        context.session = freshSession;
+
         setProjectType(senderId, "?");
         await sendMessage(senderId, "Quel est le but de votre projet ? (1-acheter, 2-vendre, 3-louer, 4-autre)");
-        return true; // On a pris en charge le message
+        return true;
     }
 
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
