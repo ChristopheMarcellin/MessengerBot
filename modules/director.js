@@ -19,18 +19,14 @@ async function runDirector(context) {
     const { message, senderId, session } = context;
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
     // SCÉNARIO 1 : Requête explicite de fin de session
-/*
-    if (message && typeof message === 'string' && message.trim().toLowerCase() === 'end session') {
-      
-        console.log('[DIRECTOR] SCÉNARIO 1 → end session détecté, session à rebâtir');
-        await stepInitializeSession(context);
-        return true;
-    }
-    */
-    if (message && typeof message === 'string' && message.trim().toLowerCase() === 'end session') {
-        console.log(`[DIRECTOR] SCÉNARIO 1 déclenché sur message: "${message}"`);
-        return true;
-    }
+    
+        if (message && typeof message === 'string' && message.trim().toLowerCase() === 'end session') {
+          
+            console.log('[DIRECTOR] SCÉNARIO 1 → end session détecté, session à rebâtir');
+            await stepInitializeSession(context);
+            return true;
+        }
+        
 
     // SCÉNARIO 2 : Il est temps de détecter l’intention
     const noSpecsCommenced = Object.values(session.askedSpecs || {}).every(v => !v);
@@ -40,9 +36,7 @@ async function runDirector(context) {
         session.currentSpec === null) {
         console.log('[DIRECTOR] SCÉNARIO 2 → projectType indéfini ou "?" + specs jamais posées + aucune question en cours → poser la question projet');
 
-            await stepHandleProjectType(context); // <- ici le step clé
-            return true;
-        }
+        await stepHandleProjectType(context); // <- ici le step clé
         return true;
     }
 
