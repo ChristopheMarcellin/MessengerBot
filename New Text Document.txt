@@ -1,0 +1,33 @@
+const { runDirector } = require('./modules/director');
+
+// 🧪 === DÉFINIS ICI MANUELLEMENT TES VARIABLES DE SESSION ===
+const session = {
+  projectType: 'B',
+  specValues: {
+    price: '5000000',
+    bedrooms: '6',
+    bathrooms: '3',
+  },
+  askedSpecs: {
+    price: true,
+    bedrooms: true,
+    bathrooms: true,
+  },
+  currentSpec: null,
+  summarySent: false,
+};
+
+// Le message est requis par l'interface du directeur mais ici on peut le laisser vide
+const message = '';
+
+const context = {
+  senderId: 'SIMULATED_USER_001',
+  session,
+  message,
+};
+
+// 🚀 Lance le test
+(async () => {
+  console.log('=== TEST DIRECTEUR AVEC SESSION MANUELLE ===');
+  await runDirector(context);
+})();

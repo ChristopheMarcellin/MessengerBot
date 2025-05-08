@@ -17,7 +17,7 @@ function getPromptForSpec(projectType, specKey, lang = "en") {
 }
 
 const getNextUnansweredSpec = (session) => {
-    const projectType = session.specValues?.projectType;
+    const projectType = session.projectType;
     if (!projectType || !questions[projectType]) return undefined;
 
     return Object.keys(questions[projectType]).find(

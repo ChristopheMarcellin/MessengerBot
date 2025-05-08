@@ -8,6 +8,9 @@ app.use(express.json());
 const { sendMessage } = require('./modules/messenger');
 const { getSession, setSession, clearSession } = require('./modules/sessionStore');
 const { setProjectType, initializeSpecFields } = require('./modules/utils');
+const { runDirector } = require('./modules/director');
+
+/*
 const {
     getNextUnansweredSpec,
     shouldAskNextSpec,
@@ -27,6 +30,7 @@ const {
     stepCollectContact,
     stepHandleFallback
 } = require('./modules/steps');
+*/
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
@@ -90,17 +94,25 @@ app.post('/webhook', async (req, res) => {
             res
         };
 
-        await launchSteps(context);
+      //  await launchSteps(context);
+
+        const triggered = await runDirector(context);
+        if (triggered) {
+            console.log('[INDEX] Le directeur a détecté un scénario actif.');
+        } else {
+            console.log('[INDEX] Aucun scénario détecté par le directeur.');
+        }
+
     } catch (error) {
         console.error("[ERROR]", error);
         res.status(500).send('Server Error');
     }
 });
-
+/*
 async function launchSteps(context) {
     const steps = [
-        stepInitializeSession,
         stepCheckEndSession,
+        stepInitializeSession,
         stepHandleUserQuestions,
         stepHandleProjectType,
         stepHandleSpecAnswer,
@@ -116,21 +128,8 @@ async function launchSteps(context) {
         if (!proceed) break;
     }
 }
+*/
 
-async function stepInitializeSession(context) {
-    const { senderId, message, cleanText } = context;
-
-    let session = getSession(senderId);
-    if (!session) {
-        session = { lang: 'fr', projectType: undefined, specValues: {}, questionCount: 0 };
-        setProjectType(session, undefined, 'initial');
-        initializeSpecFields(session);
-        setSession(senderId, session);
-        console.log(`[INIT] New session for ${senderId} | Lang: ${session.lang} | Project: ${session.projectType}`);
-    }
-    context.session = session;
-    return true;
-}
 
 // === Start Server ===
 const PORT = process.env.PORT || 3000;
