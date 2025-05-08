@@ -23,6 +23,7 @@ async function runDirector(context) {
         if (message && typeof message === 'string' && message.trim().toLowerCase() === 'end session') {
           
             console.log('[DIRECTOR] SCÉNARIO 1 → end session détecté, session à rebâtir');
+            session.lastUserMessage = null;
             await stepInitializeSession(context);
             return true;
         }
