@@ -125,8 +125,10 @@ Message : "${message}"`.trim();
         await sendMessage(senderId, retry);
         return false;
     }
-
+    delete session.lastUserMessage;
     console.log(`[INIT] Starting new session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
+ 
+
     return true;
 }
 
