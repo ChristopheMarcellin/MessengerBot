@@ -39,6 +39,10 @@ async function runDirector(context) {
         noSpecsCommenced &&
         session.currentSpec === null) {
         console.log('[DIRECTOR] SCÉNARIO 2 → projectType indéfini ou "?" + specs jamais posées + aucune question en cours → poser la question projet');
+
+            await stepHandleProjectType(context); // <- ici le step clé
+            return true;
+        }
         return true;
     }
 

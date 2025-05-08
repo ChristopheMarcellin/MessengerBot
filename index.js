@@ -1,65 +1,103 @@
-//TEMP POUR TESTER MESSENGER
+// bon dernier backup 2025-05-08 1h48 am
 
+// === Load env + dependencies ===
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN || 'your_page_token_here right here';
-const PORT = process.env.PORT || 10000 ;
+const { sendMessage, sendMarkSeen, sendTypingOn } = require('./modules/messenger');
+const { getSession, setSession } = require('./modules/sessionStore');
+const { setProjectType, initializeSpecFields } = require('./modules/utils');
+const { runDirector } = require('./modules/director');
 
-app.post('/webhook', async (req, res) => {
-    const entries = req.body.entry || [];
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
-    for (const entry of entries) {
-        const messagingEvents = entry.messaging || [];
-        for (const event of messagingEvents) {
-            const senderId = event.sender?.id;
-            const timestamp = event.timestamp;
-            const text = event.message?.text;
-
-            if (senderId && timestamp) {
-                const now = Date.now();
-                const ageMs = now - timestamp;
-                const ageMin = Math.floor(ageMs / 60000);
-                const dateSent = new Date(timestamp).toISOString();
-
-                console.log(`[RECEIVED] Message: "${text}"`);
-                console.log(`[DEBUG] Sent at: ${dateSent}`);
-                console.log(`[DEBUG] Age: ${ageMin} minutes (${ageMs} ms)`);
-
-                // Envoi silencieux d'un mark_seen
-                try {
-                    await axios.post(`https://graph.facebook.com/v17.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`, {
-                        recipient: { id: senderId },
-                        sender_action: 'mark_seen'
-                    });
-                    console.log(`[ACK] Sent mark_seen to ${senderId}`);
-                } catch (err) {
-                    console.error('[ERROR] mark_seen failed:', err?.response?.data || err.message);
-                }
-            }
-        }
-    }
-
-    res.sendStatus(200);
-});
-
+// === Webhook Verification ===
 app.get('/webhook', (req, res) => {
-    const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'helloworldtoken';
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-        console.log('[WEBHOOK] Verified');
+        console.log('[VERIFY] Webhook verified');
         res.status(200).send(challenge);
     } else {
         res.sendStatus(403);
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`[INIT] Test server running on port ${PORT}`);
+// === Webhook POST ===
+app.post('/webhook', async (req, res) => {
+    try {
+        const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
+
+        if (!messagingEvent) return res.sendStatus(200);
+        if (messagingEvent.message?.is_echo) {
+            console.log(`[ECHO] Skipping bot echo: "${messagingEvent.message.text}"`);
+            return res.sendStatus(200);
+        }
+        if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
+
+        const senderId = messagingEvent.sender?.id;
+        const receivedMessage = messagingEvent.message?.text?.trim();
+        const timestamp = messagingEvent.timestamp;
+
+        if (!receivedMessage || !senderId || !timestamp) return res.sendStatus(200);
+
+        // 🕓 Vérification de l'âge du message
+        const ageMs = Date.now() - timestamp;
+        const ageMin = Math.floor(ageMs / 60000);
+        if (ageMin > 10) {
+            console.log(`[SKIP] Message ancien ignoré (age: ${ageMin} min)`);
+            await sendMarkSeen(senderId);
+            return res.sendStatus(200);
+        }
+
+        // 🧠 Récupération passive de la session
+        const session = getSession(senderId) || null;
+
+        // 🔒 Blocage strict : si message déjà reçu → ignorer
+        if (session?.lastUserMessage === receivedMessage) {
+            console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
+            return res.sendStatus(200);
+        }
+
+        // 🧠 Stockage immédiat du message reçu
+        if (session) session.lastUserMessage = receivedMessage;
+
+        // 👁 Accusé de réception silencieux
+        await sendMarkSeen(senderId);
+
+        const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+        console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
+
+        const context = {
+            senderId,
+            message: receivedMessage,
+            session,
+            cleanText,
+            greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
+            res
+        };
+
+        console.log(`[DEBUG] Message transmis au directeur: "${context.message}"`);
+
+        const triggered = await runDirector(context);
+        if (triggered) {
+            console.log('[INDEX] Le directeur a détecté un scénario actif.');
+        } else {
+            console.log('[INDEX] Aucun scénario détecté par le directeur.');
+        }
+
+    } catch (error) {
+        console.error("[ERROR]", error);
+        res.status(500).send('Server Error');
+    }
 });
+
+// === Start Server ===
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
