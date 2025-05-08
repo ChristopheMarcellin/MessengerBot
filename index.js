@@ -55,27 +55,21 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();
         if (!receivedMessage || !senderId) return res.sendStatus(200);
 
-        const session = getSession(senderId);
+        // 🔐 Toujours initialiser une session AVANT tout filtrage
+        let session = getSession(senderId);
+        if (!session) {
+            session = {};
+            setSession(senderId, session);
+        }
 
-        // 🔒 Protection absolue : bloque immédiatement toute répétition de "end session"
-        if (session && receivedMessage.toLowerCase() === 'end session' && session.lastUserMessage === receivedMessage) {
-            console.log(`[HARD BLOCK] Répétition bloquée de "end session"`);
+        // 🔒 Blocage strict : si message déjà reçu → ignorer
+        if (session.lastUserMessage === receivedMessage) {
+            console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
             return res.sendStatus(200);
         }
 
-        // 🔁 Filtrage des messages répétés (utilisateur ou Messenger)
-        if (session && session.lastUserMessage === receivedMessage) {
-            const waitingForInput =
-                session.currentSpec !== null ||
-                ["?", "E"].includes(session.projectType) ||
-                session.awaitingProjectTypeAttempt;
-            if (!waitingForInput) {
-                console.log(`[SKIP] Message répété ignoré: "${receivedMessage}"`);
-                return res.sendStatus(200);
-            }
-        }
-
-        if (session) session.lastUserMessage = receivedMessage;
+        // 🧠 Stockage immédiat du message reçu
+        session.lastUserMessage = receivedMessage;
 
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
@@ -89,7 +83,7 @@ app.post('/webhook', async (req, res) => {
             res
         };
 
-        context.message = receivedMessage; // sécurité absolue du message transmis
+        context.message = receivedMessage; // Sécurité : pas d'ambiguïté
         console.log(`[DEBUG] Message transmis au directeur: "${context.message}"`);
 
         const triggered = await runDirector(context);
