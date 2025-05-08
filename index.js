@@ -6,8 +6,8 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN || 'your_page_token_here';
-const PORT = process.env.PORT || 10000;
+const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN || 'your_page_token_here right here';
+const PORT = process.env.PORT || 10000 ;
 
 app.post('/webhook', async (req, res) => {
     const entries = req.body.entry || [];
