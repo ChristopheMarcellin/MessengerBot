@@ -1,13 +1,28 @@
 const { getSession } = require('./sessionStore');
 const { getNextUnansweredSpec } = require('./specEngine');
 
+const {
+    stepCheckEndSession,
+    stepHandleUserQuestions,
+    stepHandleProjectType,
+    stepHandleSpecAnswer,
+    stepAskNextSpec,
+    stepSummarizeAndConfirm,
+    stepCollectContact,
+    stepHandleFallback
+} = require('./steps');
+const { stepInitializeSession } = require('./steps/index');
+
+
 // Fonction principale du directeur
 async function runDirector(context) {
     const { message, senderId, session } = context;
 
     // SCÉNARIO 1 : Requête explicite de fin de session
     if (message && typeof message === 'string' && message.trim().toLowerCase() === 'end session') {
-        console.log('[DIRECTOR] SCÉNARIO 1 → end session détecté → session à détruire');
+      
+        console.log('[DIRECTOR] SCÉNARIO 1 → end session détecté, session à rebâtir');
+        await stepInitializeSession(context);
         return true;
     }
 

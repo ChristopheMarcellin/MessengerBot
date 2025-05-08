@@ -20,16 +20,7 @@ const {
     getPromptForSpec,
 } = require('./modules/specEngine');
 
-const {
-    stepCheckEndSession,
-    stepHandleUserQuestions,
-    stepHandleProjectType,
-    stepHandleSpecAnswer,
-    stepAskNextSpec,
-    stepSummarizeAndConfirm,
-    stepCollectContact,
-    stepHandleFallback
-} = require('./modules/steps');
+
 */
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;

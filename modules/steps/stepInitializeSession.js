@@ -58,11 +58,11 @@ Message : "${message}"`.trim();
         }
 
     } catch (err) {
-        console.warn(`[GPT ERROR] Unable to classify project type:`, err.message);
+        console.warn(`[Init GPT ERROR] Unable to classify project type:`, err.message);
     }
 
     if (isVagueMessage) {
-        console.log(`[DETECT] Message vague détecté → projectType annulé (était: ${project})`);
+        console.log(`[InitDETECT] Message vague détecté → projectType annulé (était: ${project})`);
         project = "E";
     }
 
@@ -74,7 +74,7 @@ Message : "${message}"`.trim();
     session.askedSpecs = {};
     session.specValues = {};
 
-    console.log(`[TRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
+    console.log(`[InitTRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
 
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
 
@@ -83,7 +83,7 @@ Message : "${message}"`.trim();
         initializeSpecFields(session);
     } else {
         if (project === "E") {
-            console.log(`[TRACK] projectType changed from E to ? | reason: fallback → ?`);
+            console.log(`[InitTRACK] projectType changed from E to ? | reason: fallback → ?`);
         }
 
         setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
@@ -93,14 +93,14 @@ Message : "${message}"`.trim();
             ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
             : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
 
-        console.log(`[SEND] Asking for projectType after vague or unclear message (lang=${language}, GPT=${project})`);
-        console.log(`[MESSAGE] → ${retry}`);
+        console.log(`[InitSent] Asking for projectType after vague or unclear message (lang=${language}, GPT=${project})`);
 
+        console.log(`[InitMessenger] → ${retry}`);
         await sendMessage(senderId, retry);
         return false;
     }
 
-    console.log(`[INIT] New session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
+    console.log(`[INIT] Starting new session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
     return true;
 }
 
