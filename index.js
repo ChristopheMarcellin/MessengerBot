@@ -19,8 +19,6 @@ const {
     resetInvalidSpecs,
     getPromptForSpec,
 } = require('./modules/specEngine');
-
-
 */
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
@@ -59,6 +57,12 @@ app.post('/webhook', async (req, res) => {
 
         const session = getSession(senderId);
 
+        // protection contre retour Messenger d'un message bot (ex: redéploiement)
+        if (session && session.lastBotMessage === receivedMessage) {
+            console.log(`[ECHO?] Ignoring message identical to last bot response: "${receivedMessage}"`);
+            return res.sendStatus(200);
+        }
+
         // filtrage intelligent des doublons (mise à jour avec protection élargie)
         if (session && session.lastUserMessage === receivedMessage) {
             const waitingForInput =
@@ -85,7 +89,7 @@ app.post('/webhook', async (req, res) => {
             res
         };
 
-      //  await launchSteps(context);
+        //  await launchSteps(context);
 
         const triggered = await runDirector(context);
         if (triggered) {
@@ -99,6 +103,7 @@ app.post('/webhook', async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 /*
 async function launchSteps(context) {
     const steps = [
@@ -120,7 +125,6 @@ async function launchSteps(context) {
     }
 }
 */
-
 
 // === Start Server ===
 const PORT = process.env.PORT || 3000;
