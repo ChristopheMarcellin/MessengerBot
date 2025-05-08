@@ -40,6 +40,7 @@ app.get('/webhook', (req, res) => {
 });
 
 // === Webhook ===
+// === Webhook ===
 app.post('/webhook', async (req, res) => {
     try {
         const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
@@ -57,9 +58,9 @@ app.post('/webhook', async (req, res) => {
 
         const session = getSession(senderId);
 
-        // protection contre retour Messenger d'un message bot (ex: redéploiement)
-        if (session && session.lastBotMessage === receivedMessage) {
-            console.log(`[ECHO?] Ignoring message identical to last bot response: "${receivedMessage}"`);
+        // 🔒 Boucle spéciale: blocage répété de "end session"
+        if (session && receivedMessage.toLowerCase() === 'end session' && session.lastUserMessage === receivedMessage) {
+            console.log(`[SKIP] Boucle bloquée pour "end session" répété`);
             return res.sendStatus(200);
         }
 
@@ -89,8 +90,6 @@ app.post('/webhook', async (req, res) => {
             res
         };
 
-        //  await launchSteps(context);
-
         const triggered = await runDirector(context);
         if (triggered) {
             console.log('[INDEX] Le directeur a détecté un scénario actif.');
@@ -103,6 +102,7 @@ app.post('/webhook', async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 
 /*
 async function launchSteps(context) {
