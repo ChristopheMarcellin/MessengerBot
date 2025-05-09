@@ -1,7 +1,6 @@
 // === Load env + dependencies ===
 require('dotenv').config();
 const express = require('express');
-const axios = require('axios');
 const app = express();
 app.use(express.json());
 
@@ -38,14 +37,16 @@ app.post('/webhook', async (req, res) => {
 
         if (!senderId || !receivedMessage || !timestamp) return res.sendStatus(200);
 
+        // 1️⃣ ÉCHO — on bloque immédiatement
         if (messagingEvent.message?.is_echo) {
             console.log(`[ECHO] Skipping bot echo: "${messagingEvent.message.text}"`);
             return res.sendStatus(200);
         }
 
+        // 2️⃣ Système → pas un vrai message utilisateur
         if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
 
-        // 🕓 Vérification de l'âge du message
+        // 3️⃣ Message trop vieux
         const ageMs = Date.now() - timestamp;
         const ageMin = Math.floor(ageMs / 60000);
         if (ageMin > 10) {
@@ -54,21 +55,24 @@ app.post('/webhook', async (req, res) => {
             return res.sendStatus(200);
         }
 
-        // 🧠 Préparation du contexte brut
-        const session = getSession(senderId) || {};
-        const isEndSession = receivedMessage.toLowerCase() === 'end session';
+        // 4️⃣ Ack immédiat pour éviter l'empilement côté Messenger
+        await sendMarkSeen(senderId);
 
-        // 🔒 Blocage strict si doublon (sauf end session)
-        if (!isEndSession && session?.lastUserMessage === receivedMessage) {
+        // 5️⃣ Préparation du contexte
+        const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+        const session = getSession(senderId) || {};
+        const isEndSession = cleanText === 'end session';
+
+        // 6️⃣ Hard block : répétition stricte du même message, sauf "end session"
+        if (!isEndSession && session.lastUserMessage === receivedMessage) {
             console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
             return res.sendStatus(200);
         }
 
-        // 🧠 Stockage immédiat du message reçu
+        // 7️⃣ Mémorisation du message
         session.lastUserMessage = receivedMessage;
         setSession(senderId, session);
 
-        const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         const context = {
             senderId,
             message: receivedMessage,
@@ -77,12 +81,13 @@ app.post('/webhook', async (req, res) => {
             res
         };
 
-        await sendMarkSeen(senderId);
+        // 8️⃣ Exécution de la logique principale
         console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
         console.log(`[DEBUG] Message transmis au directeur`);
-
         await runDirector(context);
 
+        // 9️⃣ Réponse déjà traitée par les steps
+        return res.sendStatus(200);
     } catch (error) {
         console.error("[ERROR]", error);
         res.status(500).send('Server Error');
