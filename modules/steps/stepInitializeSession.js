@@ -29,8 +29,10 @@ async function stepInitializeSession(context) {
     // 🧠 Session existante ou création vide
     let session = getSession(senderId);
     if (!session || typeof session !== 'object') {
+        console.log('[INIT] Aucune session trouvée dans le store → nouvelle session créée');
         session = {};
-        console.log('[INIT] Aucune session trouvée → nouvelle session créée');
+    } else {
+        console.log('[INIT] Session existante trouvée dans le store');
     }
 
     // 🔍 Log AVANT réparation
