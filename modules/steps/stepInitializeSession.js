@@ -6,22 +6,25 @@ const axios = require('axios');
 async function stepInitializeSession(context) {
     const { senderId, message, cleanText, res } = context;
 
-    let existing = getSession(senderId);
+    let session = getSession(senderId);
 
-    const isInitialized = existing &&
-        typeof existing.projectType !== 'undefined' &&
-        typeof existing.askedSpecs !== 'undefined' &&
-        typeof existing.specValues !== 'undefined';
+    const isEndSession = message.trim().toLowerCase() === 'end session';
 
-    if (isInitialized) {
-        context.session = existing;
-        return true;
+    if (!session || typeof session !== 'object') {
+        session = {};
+        console.log('[INIT] Aucune session trouvée, création nouvelle session');
     }
 
-    if (context.message.trim().toLowerCase() === 'end session') {
-        console.log('[InitBLOCK] Commande "end session" détectée ne pas traiter ce message avec GPT');
+    const wasUninitialized = (
+        typeof session.projectType === 'undefined' ||
+        typeof session.askedSpecs === 'undefined' ||
+        typeof session.specValues === 'undefined'
+    );
 
-        const session = {
+    if (isEndSession) {
+        console.log('[InitBLOCK] Commande "end session" détectée → réinitialisation immédiate');
+
+        session = {
             language: 'fr',
             ProjectDate: new Date().toISOString(),
             questionCount: 0,
@@ -32,14 +35,17 @@ async function stepInitializeSession(context) {
             currentSpec: null
         };
 
-        setSession(context.senderId, session);
+        setSession(senderId, session);
         context.session = session;
-
         return false;
     }
 
+    if (!wasUninitialized) {
+        context.session = session;
+        return true;
+    }
+
     // Nouvelle session : liaison immédiate au store
-    const session = {};
     setSession(senderId, session);
     context.session = session;
 
@@ -50,7 +56,6 @@ async function stepInitializeSession(context) {
 
     const isVagueMessage = vagueInputs.some(g => cleanText === g || cleanText.startsWith(g));
 
-    // Prompt structuré pour GPT
     const prompt = `
 Tu es un assistant spécialisé en immobilier. Classe le message de l'utilisateur dans l'une des catégories suivantes :
 - B : l'utilisateur veut acheter une propriété
@@ -99,6 +104,7 @@ Message : "${message}"`.trim();
     session.maxQuestions = 40;
     session.askedSpecs = {};
     session.specValues = {};
+    session.currentSpec = null;
 
     console.log(`[InitTRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
 
@@ -120,14 +126,13 @@ Message : "${message}"`.trim();
             : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
 
         console.log(`[InitSent] Asking for projectType after vague or unclear message (lang=${language}, GPT=${project})`);
-
         console.log(`[InitMessenger] → ${retry}`);
         await sendMessage(senderId, retry);
         return false;
     }
+
     delete session.lastUserMessage;
     console.log(`[INIT] Starting new session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
- 
 
     return true;
 }

@@ -1,5 +1,5 @@
 const { getNextUnansweredSpec } = require('./specEngine');
-const { initializeSpecFields, setProjectType } = require('./utils');
+const { setProjectType, initializeSpecFields } = require('./utils');
 const { sendMessage } = require('./messenger');
 
 const {
@@ -12,53 +12,42 @@ const {
     stepCollectContact,
     stepHandleFallback
 } = require('./steps');
+
 const { stepInitializeSession } = require('./steps/index');
 
-// Fonction principale du directeur
 async function runDirector(context) {
-    const { message, senderId, session } = context;
+    const { message, senderId } = context;
 
-    // 🔎 Si session absente, vide, ou incomplète → réinitialisation automatique
-    const sessionIsMissing = !session;
-    const sessionIsEmpty = session && Object.keys(session).length === 0;
-    const sessionIsCorrupted = !session?.projectType || !session?.specValues;
+    // Étape 0 : Initialisation complète (session nouvelle, invalide ou end session)
+    const isReady = await stepInitializeSession(context);
+    const session = context.session;
 
-    if (sessionIsMissing || sessionIsEmpty || sessionIsCorrupted) {
-        console.log('[DIRECTOR] Session absente ou corrompue → initialisation automatique.');
-
-        if (!session) {
-            console.warn('[DIRECTOR] ERREUR: session est undefined → impossible de corriger');
-            return false;
-        }
-
-        initializeSpecFields(session);
-        setProjectType(session, "?");
-
-        await sendMessage(senderId, "Quel est le but de votre projet ? (1-acheter, 2-vendre, 3-louer, 4-autre)");
-        return true;
+    if (!isReady || !session) {
+        console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
+        return false;
     }
 
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
-    // SCÉNARIO 1 : Requête explicite de fin de session
-    if (message && typeof message === 'string' && message.trim().toLowerCase() === 'end session') {
-        console.log('[DIRECTOR] SCÉNARIO 1 → end session détecté, session à rebâtir');
-        session.lastUserMessage = null;
-        await stepInitializeSession(context);
-        return true;
-    }
-
-    // SCÉNARIO 2 : Il est temps de détecter l’intention
+    // SCÉNARIO 1 : Projet encore inconnu → poser la question
     const noSpecsCommenced = Object.values(session.askedSpecs || {}).every(v => !v);
 
     if ((session.projectType === undefined || session.projectType === '?') &&
         noSpecsCommenced &&
         session.currentSpec === null) {
-        console.log('[DIRECTOR] SCÉNARIO 2 → projectType indéfini ou "?" + specs jamais posées + aucune question en cours → poser la question projet');
-        await stepHandleProjectType(context); // <- ici le step clé
+        console.log('[DIRECTOR] SCÉNARIO 1 → projectType indéfini ou "?" + specs jamais posées → poser la question projet');
+        await stepHandleProjectType(context);
         return true;
     }
 
+    // SCÉNARIO 2 : Une réponse utilisateur vient probablement d’être donnée → valider et traiter
+    if (session.currentSpec) {
+        console.log(`[DIRECTOR] SCÉNARIO 2 → Réponse reçue pour spec "${session.currentSpec}" → traitement`);
+        await stepHandleSpecAnswer(context);
+        return true;
+    }
+
+    // SCÉNARIO 3 : Il reste des specs à poser
     const nextSpec = getNextUnansweredSpec(session);
 
     console.log('[DEBUG] specValues =', session.specValues);
@@ -67,16 +56,32 @@ async function runDirector(context) {
     console.log('[DEBUG] projectType =', session.projectType);
     console.log('[DEBUG] nextSpec =', nextSpec);
 
-    // SCÉNARIO 3 : Intention connue, on cherche la prochaine spec
     if (['B', 'S', 'R'].includes(session.projectType) &&
         nextSpec &&
         session.currentSpec === null) {
-        console.log(`[DIRECTOR] SCÉNARIO 3 → Prochaine question spec à poser : "${nextSpec}"`);
+        console.log(`[DIRECTOR] SCÉNARIO 3 → Prochaine spec à poser : "${nextSpec}"`);
+        await stepAskNextSpec(context);
         return true;
     }
 
-    console.log('[DIRECTOR] Aucun scénario détecté');
-    return false;
+    // SCÉNARIO 4 : Toutes les specs sont remplies → proposer un résumé
+    if (/* condition de résumé à compléter selon ta logique */ false) {
+        // console.log('[DIRECTOR] SCÉNARIO 4 → résumé des infos');
+        // await stepSummarizeAndConfirm(context);
+        // return true;
+    }
+
+    // SCÉNARIO 5 : Collecte de contact (à activer plus tard)
+    if (/* condition pour collecte contact */ false) {
+        // console.log('[DIRECTOR] SCÉNARIO 5 → collecte des infos de contact');
+        // await stepCollectContact(context);
+        // return true;
+    }
+
+    // SCÉNARIO FINAL : Aucune piste → fallback
+    console.log('[DIRECTOR] Aucun scénario actif détecté → fallback');
+    await stepHandleFallback(context);
+    return true;
 }
 
 module.exports = { runDirector };

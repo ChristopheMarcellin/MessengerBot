@@ -73,7 +73,9 @@ app.post('/webhook', async (req, res) => {
         const session = context.session;
 
         // 🔒 Blocage strict : si message déjà reçu → ignorer
-        if (session?.lastUserMessage === receivedMessage) {
+        const isEndSession = receivedMessage.toLowerCase() === 'end session';
+
+        if (!isEndSession && session?.lastUserMessage === receivedMessage) {
             console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
             return res.sendStatus(200);
         }
