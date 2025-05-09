@@ -4,27 +4,30 @@ const { getSession, setSession } = require('../sessionStore');
 const axios = require('axios');
 
 async function stepInitializeSession(context) {
-    const { senderId, message, cleanText, res } = context;
+    const { senderId, message, cleanText } = context;
 
-    let session = getSession(senderId);
-
-    const isEndSession = message.trim().toLowerCase() === 'end session';
-
-    if (!session || typeof session !== 'object') {
-        session = {};
-        console.log('[INIT] Aucune session trouvée, création nouvelle session');
+    // 🔐 Vérifier présence du senderId
+    if (typeof senderId !== 'string' || senderId.trim() === '') {
+        console.warn('[INIT] senderId manquant → impossible de poursuivre.');
+        context._initStatus = 'error';
+        return false;
     }
 
-    const wasUninitialized = (
-        typeof session.projectType === 'undefined' ||
-        typeof session.askedSpecs === 'undefined' ||
-        typeof session.specValues === 'undefined'
-    );
+    // 🧠 Session existante ou création vide
+    let session = getSession(senderId);
+    if (!session || typeof session !== 'object') {
+        session = {};
+        console.log('[INIT] Aucune session trouvée → nouvelle session créée');
+    }
 
+    setSession(senderId, session);
+    context.session = session;
+
+    const isEndSession = message.trim().toLowerCase() === 'end session';
     if (isEndSession) {
-        console.log('[InitBLOCK] Commande "end session" détectée → réinitialisation immédiate');
+        console.log('[InitBLOCK] "end session" détecté → session réinitialisée');
 
-        session = {
+        const reset = {
             language: 'fr',
             ProjectDate: new Date().toISOString(),
             questionCount: 0,
@@ -35,26 +38,43 @@ async function stepInitializeSession(context) {
             currentSpec: null
         };
 
-        setSession(senderId, session);
-        context.session = session;
+        setSession(senderId, reset);
+        context.session = reset;
+        context._initStatus = 'reset';
         return false;
     }
 
-    if (!wasUninitialized) {
-        context.session = session;
+    // 🧼 Normalisation minimale
+    session.language ??= 'fr';
+    session.ProjectDate ??= new Date().toISOString();
+    session.questionCount ??= 1;
+    session.maxQuestions ??= 40;
+    session.askedSpecs ??= {};
+    session.specValues ??= {};
+    session.currentSpec ??= null;
+
+    // 🎯 Détecter l’état logique
+    const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);
+    const hasAskedSpecs = Object.values(session.askedSpecs).some(v => v === true);
+
+    if (hasProject && hasAskedSpecs) {
+        console.log('[INIT] Session en cours détectée → reprise possible');
+        context._initStatus = 'resume';
         return true;
     }
 
-    // Nouvelle session : liaison immédiate au store
-    setSession(senderId, session);
-    context.session = session;
+    if (hasProject && !hasAskedSpecs) {
+        console.log('[INIT] ProjectType connu mais specs non commencées → prêt à commencer');
+        context._initStatus = 'continue';
+        return true;
+    }
 
+    // 🤖 Classification GPT
     const vagueInputs = [
         "bonjour", "allo", "salut", "hello", "hi", "cc", "ça va",
         "comment ca va", "comment ça va", "yo", "hey", "coucou", "re"
     ];
-
-    const isVagueMessage = vagueInputs.some(g => cleanText === g || cleanText.startsWith(g));
+    const isVague = vagueInputs.some(g => cleanText === g || cleanText.startsWith(g));
 
     const prompt = `
 Tu es un assistant spécialisé en immobilier. Classe le message de l'utilisateur dans l'une des catégories suivantes :
@@ -68,7 +88,6 @@ Réponds uniquement par : B, S, R ou E.
 Message : "${message}"`.trim();
 
     let project = "E";
-    let language = "fr";
 
     try {
         const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -89,52 +108,37 @@ Message : "${message}"`.trim();
         }
 
     } catch (err) {
-        console.warn(`[Init GPT ERROR] Unable to classify project type:`, err.message);
+        console.warn(`[Init GPT ERROR] GPT erreur :`, err.message);
     }
 
-    if (isVagueMessage) {
-        console.log(`[InitDETECT] Message vague détecté → projectType annulé (était: ${project})`);
+    if (isVague) {
+        console.log(`[InitDETECT] Message vague détecté → projectType forcé à ? (était: ${project})`);
         project = "E";
     }
-
-    // Remplissage contrôlé de la session
-    session.language = language;
-    session.ProjectDate = new Date().toISOString();
-    session.questionCount = 1;
-    session.maxQuestions = 40;
-    session.askedSpecs = {};
-    session.specValues = {};
-    session.currentSpec = null;
-
-    console.log(`[InitTRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
 
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
 
     if (finalProject !== "?") {
-        setProjectType(session, finalProject, "GPT session init (contexte structuré)");
+        setProjectType(session, finalProject, "GPT session init");
         initializeSpecFields(session);
-    } else {
-        if (project === "E") {
-            console.log(`[InitTRACK] projectType changed from E to ? | reason: fallback → ?`);
-        }
-
-        setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
-        session.awaitingProjectTypeAttempt = 1;
-
-        const retry = language === "fr"
-            ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
-            : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
-
-        console.log(`[InitSent] Asking for projectType after vague or unclear message (lang=${language}, GPT=${project})`);
-        console.log(`[InitMessenger] → ${retry}`);
-        await sendMessage(senderId, retry);
-        return false;
+        console.log(`[INIT] Nouvelle session avec projectType = ${finalProject}`);
+        context._initStatus = 'fresh';
+        return true;
     }
 
-    delete session.lastUserMessage;
-    console.log(`[INIT] Starting new session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
+    // 🟡 Si projet indéfini, on relance la question
+    setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
+    session.awaitingProjectTypeAttempt = 1;
 
-    return true;
+    const retry = session.language === "fr"
+        ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
+        : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
+
+    console.log(`[InitSent] Poser la question projet (lang=${session.language}, GPT=${project})`);
+    console.log(`[InitMessenger] → ${retry}`);
+    await sendMessage(senderId, retry);
+    context._initStatus = 'retry';
+    return false;
 }
 
 module.exports = { stepInitializeSession };
