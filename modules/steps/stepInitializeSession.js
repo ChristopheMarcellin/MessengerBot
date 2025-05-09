@@ -1,7 +1,21 @@
 const { setProjectType, initializeSpecFields } = require('../utils');
-const { sendMessage } = require('../messenger');
 const { getSession, setSession } = require('../sessionStore');
 const axios = require('axios');
+
+// 🔎 Fonction d'audit de la session
+function logSessionState(label, session) {
+    const snapshot = {
+        language: session.language,
+        ProjectDate: session.ProjectDate,
+        questionCount: session.questionCount,
+        maxQuestions: session.maxQuestions,
+        askedSpecs: session.askedSpecs,
+        specValues: session.specValues,
+        projectType: session.projectType,
+        currentSpec: session.currentSpec
+    };
+    console.log(`[INIT] ${label} :`, JSON.stringify(snapshot, null, 2));
+}
 
 async function stepInitializeSession(context) {
     const { senderId, message, cleanText } = context;
@@ -9,8 +23,7 @@ async function stepInitializeSession(context) {
     // 🔐 Vérifier présence du senderId
     if (typeof senderId !== 'string' || senderId.trim() === '') {
         console.warn('[INIT] senderId manquant → impossible de poursuivre.');
-        context._initStatus = 'error';
-        return false;
+        return true;
     }
 
     // 🧠 Session existante ou création vide
@@ -20,14 +33,14 @@ async function stepInitializeSession(context) {
         console.log('[INIT] Aucune session trouvée → nouvelle session créée');
     }
 
-    setSession(senderId, session);
-    context.session = session;
+    // 🔍 Log AVANT réparation
+    logSessionState("Vérification AVANT réparation", session);
 
+    // 🔧 Réparation
     const isEndSession = message.trim().toLowerCase() === 'end session';
     if (isEndSession) {
-        console.log('[InitBLOCK] "end session" détecté → session réinitialisée');
-
-        const reset = {
+        console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
+        session = {
             language: 'fr',
             ProjectDate: new Date().toISOString(),
             questionCount: 0,
@@ -37,11 +50,10 @@ async function stepInitializeSession(context) {
             projectType: undefined,
             currentSpec: null
         };
-
-        setSession(senderId, reset);
-        context.session = reset;
-        context._initStatus = 'reset';
-        return false;
+        setSession(senderId, session);
+        context.session = session;
+        logSessionState("Vérification APRÈS réparation (post-reset)", session);
+        return true;
     }
 
     // 🧼 Normalisation minimale
@@ -53,19 +65,24 @@ async function stepInitializeSession(context) {
     session.specValues ??= {};
     session.currentSpec ??= null;
 
-    // 🎯 Détecter l’état logique
+    // 🔍 Log APRÈS réparation
+    logSessionState("Vérification APRÈS réparation", session);
+
+    // 🎯 Analyse projectType logique
     const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);
     const hasAskedSpecs = Object.values(session.askedSpecs).some(v => v === true);
 
     if (hasProject && hasAskedSpecs) {
         console.log('[INIT] Session en cours détectée → reprise possible');
-        context._initStatus = 'resume';
+        setSession(senderId, session);
+        context.session = session;
         return true;
     }
 
     if (hasProject && !hasAskedSpecs) {
         console.log('[INIT] ProjectType connu mais specs non commencées → prêt à commencer');
-        context._initStatus = 'continue';
+        setSession(senderId, session);
+        context.session = session;
         return true;
     }
 
@@ -108,11 +125,11 @@ Message : "${message}"`.trim();
         }
 
     } catch (err) {
-        console.warn(`[Init GPT ERROR] GPT erreur :`, err.message);
+        console.warn(`[INIT] GPT erreur :`, err.message);
     }
 
     if (isVague) {
-        console.log(`[InitDETECT] Message vague détecté → projectType forcé à ? (était: ${project})`);
+        console.log(`[INIT] Message vague détecté → projectType forcé à ? (était: ${project})`);
         project = "E";
     }
 
@@ -122,23 +139,15 @@ Message : "${message}"`.trim();
         setProjectType(session, finalProject, "GPT session init");
         initializeSpecFields(session);
         console.log(`[INIT] Nouvelle session avec projectType = ${finalProject}`);
-        context._initStatus = 'fresh';
-        return true;
+    } else {
+        setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
+        session.awaitingProjectTypeAttempt = 1;
     }
 
-    // 🟡 Si projet indéfini, on relance la question
-    setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
-    session.awaitingProjectTypeAttempt = 1;
+    setSession(senderId, session);
+    context.session = session;
 
-    const retry = session.language === "fr"
-        ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
-        : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
-
-    console.log(`[InitSent] Poser la question projet (lang=${session.language}, GPT=${project})`);
-    console.log(`[InitMessenger] → ${retry}`);
-    await sendMessage(senderId, retry);
-    context._initStatus = 'retry';
-    return false;
+    return true;
 }
 
 module.exports = { stepInitializeSession };
