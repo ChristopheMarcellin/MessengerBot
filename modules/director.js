@@ -1,5 +1,5 @@
 const { getNextSpec } = require('./utils');
-const { validateSpecAnswer } = require('./specEngine');
+const { isValidAnswer } = require('./specEngine');
 const { setProjectType, initializeSpecFields } = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
@@ -33,7 +33,7 @@ async function runDirector(context) {
         return false;
     }
 
-    const isValid = validateSpecAnswer(message, session.projectType, nextSpec);
+    const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
     if (!isValid) {
         console.log(`[DIRECTOR] Réponse invalide pour "${nextSpec}" → fallback`);
