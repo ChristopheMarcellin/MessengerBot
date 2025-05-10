@@ -7,7 +7,7 @@ app.use(express.json());
 const { sendMessage, sendMarkSeen } = require('./modules/messenger');
 const { getSession, setSession } = require('./modules/sessionStore');
 const { runDirector } = require('./modules/director');
-const { isValidIncomingMessage } = require('./modules/filters'); // ✅ nouveau
+const { isValidIncomingMessage } = require('./filters'); // ✅ nouveau
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
