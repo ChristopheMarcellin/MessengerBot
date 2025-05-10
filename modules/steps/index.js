@@ -24,6 +24,6 @@ module.exports = {
   stepAskNextSpec: require('./stepAskNextSpec').stepAskNextSpec,
   stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm').stepSummarizeAndConfirm,
   stepCollectContact: require('./stepCollectContact').stepCollectContact,
-  stepHandleFallback: require('./stepHandleFallback').stepHandleFallback
+  stepHandleFallback: require('./stepHandleFallback').stepHandleFallback,
   stepWhatNext: require('./stepWhatNext')
 };
