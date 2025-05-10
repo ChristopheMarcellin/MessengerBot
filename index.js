@@ -35,6 +35,9 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();
         const timestamp = messagingEvent.timestamp;
 
+        // ✅ ACK systématique à tout message valide
+        await sendMarkSeen(senderId);
+
         if (!senderId || !receivedMessage || !timestamp) return res.sendStatus(200);
 
         // 1️⃣ ÉCHO — on bloque immédiatement
@@ -46,8 +49,15 @@ app.post('/webhook', async (req, res) => {
         // 2️⃣ Système → pas un vrai message utilisateur
         if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
 
-        // ✅ ACK systématique à tout message valide
-        await sendMarkSeen(senderId);
+        const ageMs = Date.now() - timestamp;
+        const ageMin = Math.floor(ageMs / 60000);
+
+        if (ageMin > 5) {
+            console.log(`[SKIP] Message ancien ignoré (age: ${ageMin} min)`);
+            await sendMarkSeen(senderId);
+            return res.sendStatus(200);
+        }
+
 
         // 3️⃣ Préparation du contexte
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();

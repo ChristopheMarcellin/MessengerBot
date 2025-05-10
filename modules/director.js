@@ -4,6 +4,7 @@ const { setProjectType, initializeSpecFields } = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
+
 async function runDirector(context) {
     const { message, senderId } = context;
 
@@ -36,10 +37,17 @@ async function runDirector(context) {
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
     if (!isValid) {
-        console.log(`[DIRECTOR] Réponse invalide pour "${nextSpec}" → fallback`);
+        console.log(`[DIRECTOR] Réponse invalide pour "${nextSpec}" → réponse libre + reprise de question`);
+        session.specValues[nextSpec] = "?";
+        session.askedSpecs[nextSpec] = true;
         context.deferSpec = true;
         context.gptAllowed = true;
+
+        // 1. Réponse libre via GPT
         await stepHandleFallback(context);
+
+        // 2. Reposer la question structurée
+        await stepWhatNext(context);
         return true;
     }
 
@@ -58,12 +66,11 @@ async function runDirector(context) {
         session.askedSpecs[nextSpec] = true;
     }
 
-    const continued = await require('./steps/stepWhatNext').stepWhatNext(context);
+    const continued = await stepWhatNext(context);
 
     if (!continued) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext)');
     }
-
 
     return true;
 }
