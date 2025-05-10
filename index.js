@@ -1,4 +1,3 @@
-/*
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
@@ -23,8 +22,13 @@ app.get('/webhook', (req, res) => {
     }
 });
 
-// === Réception des messages ===
+// === Réception des messages Messenger ===
 app.post('/webhook', async (req, res) => {
+    if (process.env.BOT_ENABLED !== 'true') {
+        console.log('[SAFE MODE] Bot désactivé — traitement ignoré');
+        return res.sendStatus(200);
+    }
+
     try {
         const body = req.body;
 
@@ -34,21 +38,21 @@ app.post('/webhook', async (req, res) => {
                 const senderId = messagingEvent?.sender?.id;
                 const messageText = messagingEvent?.message?.text;
 
-                // 🚫 Ne pas traiter les messages générés par le bot lui-même
+                // 🔒 Ignorer les messages echo (réponses générées par le bot lui-même)
                 if (messagingEvent?.message?.is_echo) {
-                    console.warn('[SKIP] Echo message received — skipping');
+                    console.warn('[SKIP] Echo message reçu — ignoré');
                     continue;
                 }
 
+                // 📦 Log minimal
                 console.log(`[RECEIVED] senderId: ${senderId} | message: ${messageText}`);
 
-                // 🚫 Ignorer les senderId suspects ou inconnus
                 if (!senderId || senderId.length < 10) {
-                    console.warn(`[SKIP] Invalid or missing senderId: ${senderId}`);
+                    console.warn(`[SKIP] senderId invalide: ${senderId}`);
                     continue;
                 }
 
-                // ✅ Envoie du mark_seen
+                // 👁 Marquer comme vu
                 try {
                     await axios.post(
                         `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
@@ -90,24 +94,7 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
+// === Lancement serveur ===
 app.listen(PORT, () => {
-    console.log(`[INIT] Messenger test server running on port ${PORT}`);
-});
-*/
-const express = require('express');
-const app = express();
-app.use(express.json());
-
-app.post('/webhook', (req, res) => {
-    console.log('[SAFE MODE] Messenger request ignored.');
-    res.status(200).send('SAFE MODE');
-});
-
-app.get('/', (req, res) => {
-    res.send('Safe mode is active.');
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`[SAFE MODE] Server running on port ${PORT}`);
+    console.log(`[INIT] Test Messenger server running on port ${PORT}`);
 });
