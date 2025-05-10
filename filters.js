@@ -47,9 +47,20 @@ function isBadSender(event) {
   return !senderId || typeof senderId !== 'string' || senderId.length < 10;
 }
 
+function isRepeatMessage(session, text, timestamp) {
+    const payload = `${text}|${timestamp}`;
+    return session?.lastPayload === payload;
+}
+
+function setLastPayload(session, text, timestamp) {
+    session.lastPayload = `${text}|${timestamp}`;
+}
+
 module.exports = {
   isValidIncomingMessage,
   isEcho,
   isInvalidMessage,
-  isBadSender
+    isBadSender,
+    isRepeatMessage,
+  setLastPayload
 };

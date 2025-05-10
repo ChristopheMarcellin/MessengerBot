@@ -7,7 +7,12 @@ app.use(express.json());
 const { sendMessage, sendMarkSeen } = require('./modules/messenger');
 const { getSession, setSession } = require('./modules/sessionStore');
 const { runDirector } = require('./modules/director');
-const { isValidIncomingMessage } = require('./filters'); // ✅ nouveau
+const {
+    isValidIncomingMessage,
+    isRepeatMessage,
+    setLastPayload
+} = require('./filters');
+
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
@@ -67,6 +72,14 @@ app.post('/webhook', async (req, res) => {
         const isEndSession = cleanText === 'end session';
 
         // 4️⃣ Mémorisation brute du message
+
+        if (isRepeatMessage(session, receivedMessage, timestamp)) {
+            console.warn(`[HARD BLOCK] Message déjà traité: "${receivedMessage}" @${timestamp}`);
+            return res.sendStatus(200);
+        }
+
+        setLastPayload(session, receivedMessage, timestamp);
+
         session.lastUserMessage = receivedMessage;
         setSession(senderId, session);
 

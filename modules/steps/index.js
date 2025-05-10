@@ -25,5 +25,5 @@ module.exports = {
   stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm').stepSummarizeAndConfirm,
   stepCollectContact: require('./stepCollectContact').stepCollectContact,
   stepHandleFallback: require('./stepHandleFallback').stepHandleFallback,
-  stepWhatNext: require('./stepWhatNext')
+  stepWhatNext: require('./stepWhatNext').stepWhatNext
 };
