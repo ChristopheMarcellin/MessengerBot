@@ -1,6 +1,6 @@
 const { getNextSpec } = require('../utils');
-const { getPromptForSpec, getPromptForProjectType } = require('../modules/questions');
-const { sendMessage } = require('../modules/messenger');
+const { getPromptForSpec, getPromptForProjectType } = require('../questions');
+const { sendMessage } = require('../messenger');
 
 /**
  * Décide et envoie la prochaine question à poser à l'utilisateur
