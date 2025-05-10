@@ -46,30 +46,15 @@ app.post('/webhook', async (req, res) => {
         // 2️⃣ Système → pas un vrai message utilisateur
         if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
 
-        // 3️⃣ Message trop vieux
-        const ageMs = Date.now() - timestamp;
-        const ageMin = Math.floor(ageMs / 60000);
-        if (ageMin > 10) {
-            console.log(`[SKIP] Message ancien ignoré (age: ${ageMin} min)`);
-            await sendMarkSeen(senderId);
-            return res.sendStatus(200);
-        }
-
-        // 4️⃣ Ack immédiat pour éviter l'empilement côté Messenger
+        // ✅ ACK systématique à tout message valide
         await sendMarkSeen(senderId);
 
-        // 5️⃣ Préparation du contexte
+        // 3️⃣ Préparation du contexte
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         const session = getSession(senderId) || {};
         const isEndSession = cleanText === 'end session';
 
-        // 6️⃣ Hard block : répétition stricte du même message, sauf "end session"
-        if (!isEndSession && session.lastUserMessage === receivedMessage) {
-            console.log(`[HARD BLOCK] Répétition bloquée de "${receivedMessage}"`);
-            return res.sendStatus(200);
-        }
-
-        // 7️⃣ Mémorisation du message
+        // 4️⃣ Mémorisation brute du message
         session.lastUserMessage = receivedMessage;
         setSession(senderId, session);
 
@@ -78,15 +63,16 @@ app.post('/webhook', async (req, res) => {
             message: receivedMessage,
             cleanText,
             greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
+            timestamp,
             res
         };
 
-        // 8️⃣ Exécution de la logique principale
+        // 5️⃣ Exécution de la logique principale
         console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
         console.log(`[DEBUG] Message transmis au directeur`);
         await runDirector(context);
 
-        // 9️⃣ Réponse déjà traitée par les steps
+        // 6️⃣ Réponse déjà traitée par les steps
         return res.sendStatus(200);
     } catch (error) {
         console.error("[ERROR]", error);
