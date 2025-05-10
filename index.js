@@ -39,21 +39,29 @@ app.post('/webhook', async (req, res) => {
             for (const entry of body.entry) {
                 const messagingEvent = entry.messaging?.[0];
                 const senderId = messagingEvent?.sender?.id;
-                const messageText = messagingEvent?.message?.text;
+                const message = messagingEvent?.message;
+                const messageText = message?.text;
 
-                // 🔒 Ignorer les messages echo (envoyés par le bot lui-même)
-                if (messagingEvent?.message?.is_echo) {
-                    console.warn('[SKIP] Echo message reçu — ignoré');
+                // 🔍 Log brut pour traçabilité
+                console.log('[RAW EVENT]', JSON.stringify(messagingEvent, null, 2));
+
+                // 🔒 Protection stricte
+                if (
+                    !senderId ||
+                    typeof senderId !== 'string' ||
+                    senderId.length < 10 ||
+                    !message ||
+                    message.is_echo ||
+                    !messageText ||
+                    typeof messageText !== 'string' ||
+                    messageText.trim().length === 0
+                ) {
+                    console.warn('[SKIP] Message ignoré : echo, vide ou invalide');
                     continue;
                 }
 
-                // 📦 Log minimal
+                // 📥 Log du message
                 console.log(`[RECEIVED] senderId: ${senderId} | message: ${messageText}`);
-
-                if (!senderId || senderId.length < 10) {
-                    console.warn(`[SKIP] senderId invalide: ${senderId}`);
-                    continue;
-                }
 
                 // 👁 Marquer comme vu
                 try {
@@ -71,7 +79,7 @@ app.post('/webhook', async (req, res) => {
                     continue;
                 }
 
-                // ✅ Réponse simple pour test
+                // ✅ Réponse de test
                 try {
                     await axios.post(
                         `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
@@ -97,7 +105,7 @@ app.post('/webhook', async (req, res) => {
     }
 });
 
-// === Lancement serveur ===
+// === Lancement du serveur ===
 app.listen(PORT, () => {
     console.log(`[INIT] Test Messenger server running on port ${PORT}`);
 });
