@@ -12,6 +12,7 @@ async function stepWhatNext(context) {
     const lang = session.language || 'fr';
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    console.log('[DEBUG] Version active de stepWhatNext');
     console.log(`[NEXT] Prochaine spec attendue : ${nextSpec}`);
 
     // Rien à poser
@@ -37,6 +38,7 @@ async function stepWhatNext(context) {
 
     // Une spec ordinaire à poser
     const prompt = getPromptForSpec(nextSpec, lang);
+
     console.log(`[NEXT] Pose de la spec "${nextSpec}" → ${prompt}`);
     await sendMessage(senderId, prompt);
     return true;
