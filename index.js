@@ -24,7 +24,10 @@ app.get('/webhook', (req, res) => {
 
 // === Réception des messages Messenger ===
 app.post('/webhook', async (req, res) => {
-    if (process.env.BOT_ENABLED !== 'true') {
+    const botEnabled = (process.env.BOT_ENABLED || '').trim().toLowerCase() === 'true';
+    console.log(`[DEBUG] BOT_ENABLED = ${process.env.BOT_ENABLED} → interpreted as ${botEnabled}`);
+
+    if (!botEnabled) {
         console.log('[SAFE MODE] Bot désactivé — traitement ignoré');
         return res.sendStatus(200);
     }
@@ -38,7 +41,7 @@ app.post('/webhook', async (req, res) => {
                 const senderId = messagingEvent?.sender?.id;
                 const messageText = messagingEvent?.message?.text;
 
-                // 🔒 Ignorer les messages echo (réponses générées par le bot lui-même)
+                // 🔒 Ignorer les messages echo (envoyés par le bot lui-même)
                 if (messagingEvent?.message?.is_echo) {
                     console.warn('[SKIP] Echo message reçu — ignoré');
                     continue;
