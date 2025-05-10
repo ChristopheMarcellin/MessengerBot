@@ -33,11 +33,17 @@ app.post('/webhook', async (req, res) => {
                 const senderId = messagingEvent?.sender?.id;
                 const messageText = messagingEvent?.message?.text;
 
+                // 🚫 Ne pas traiter les messages générés par le bot lui-même
+                if (messagingEvent?.message?.is_echo) {
+                    console.warn('[SKIP] Echo message received — skipping');
+                    continue;
+                }
+
                 console.log(`[RECEIVED] senderId: ${senderId} | message: ${messageText}`);
 
                 // 🚫 Ignorer les senderId suspects ou inconnus
-                if (!senderId || senderId === '663804066810317' || senderId.length < 10) {
-                    console.warn(`[SKIP] Ignoring senderId: ${senderId}`);
+                if (!senderId || senderId.length < 10) {
+                    console.warn(`[SKIP] Invalid or missing senderId: ${senderId}`);
                     continue;
                 }
 
@@ -54,7 +60,7 @@ app.post('/webhook', async (req, res) => {
                 } catch (err) {
                     console.error(`[ERROR] mark_seen failed → ${senderId}`);
                     console.error(err.response?.data || err.message);
-                    continue; // Ne pas poursuivre si échec de mark_seen
+                    continue;
                 }
 
                 // ✅ Réponse simple pour test
