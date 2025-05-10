@@ -1,17 +1,15 @@
-// === Load env + dependencies ===
 require('dotenv').config();
 const express = require('express');
+const axios = require('axios');
 const app = express();
 app.use(express.json());
-
-const { sendMessage, sendMarkSeen } = require('./modules/messenger');
-const { getSession, setSession } = require('./modules/sessionStore');
-const { runDirector } = require('./modules/director');
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
-// === Webhook Verification ===
+const PORT = process.env.PORT || 10000;
+
+// Vérification webhook (GET)
 app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
@@ -25,71 +23,64 @@ app.get('/webhook', (req, res) => {
     }
 });
 
-// === Webhook POST ===
+// Réception de messages (POST)
 app.post('/webhook', async (req, res) => {
     try {
-        const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
-        if (!messagingEvent) return res.sendStatus(200);
+        const body = req.body;
 
-        const senderId = messagingEvent.sender?.id;
-        const receivedMessage = messagingEvent.message?.text?.trim();
-        const timestamp = messagingEvent.timestamp;
+        if (body.object === 'page') {
+            for (const entry of body.entry) {
+                const messagingEvent = entry.messaging?.[0];
+                const senderId = messagingEvent?.sender?.id;
+                const messageText = messagingEvent?.message?.text;
 
-        // ✅ ACK systématique à tout message valide
-        await sendMarkSeen(senderId);
+                console.log(`[RECEIVED] senderId: ${senderId} | message: ${messageText}`);
 
-        if (!senderId || !receivedMessage || !timestamp) return res.sendStatus(200);
+                // Vérification basique de validité du senderId
+                if (!senderId || typeof senderId !== 'string' || senderId.length < 10) {
+                    console.warn('[ABORT] Invalid senderId. Skipping mark_seen and reply.');
+                    continue;
+                }
 
-        // 1️⃣ ÉCHO — on bloque immédiatement
-        if (messagingEvent.message?.is_echo) {
-            console.log(`[ECHO] Skipping bot echo: "${messagingEvent.message.text}"`);
-            return res.sendStatus(200);
+                // Envoie d'un mark_seen
+                await axios.post(
+                    `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
+                    {
+                        recipient: { id: senderId },
+                        sender_action: 'mark_seen',
+                    }
+                ).then(() => {
+                    console.log(`[ACK] mark_seen → ${senderId}`);
+                }).catch((error) => {
+                    console.error(`[ERROR] mark_seen failed → ${senderId}`);
+                    console.error(error.response?.data || error.message);
+                });
+
+                // Envoi d'un message simple pour confirmer que ça marche
+                await axios.post(
+                    `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
+                    {
+                        recipient: { id: senderId },
+                        message: { text: '✅ Test ok' }
+                    }
+                ).then(() => {
+                    console.log(`[SEND] test ok → ${senderId}`);
+                }).catch((error) => {
+                    console.error(`[ERROR] sendMessage failed → ${senderId}`);
+                    console.error(error.response?.data || error.message);
+                });
+            }
+
+            res.sendStatus(200);
+        } else {
+            res.sendStatus(404);
         }
-
-        // 2️⃣ Système → pas un vrai message utilisateur
-        if (messagingEvent.delivery || messagingEvent.read) return res.sendStatus(200);
-
-        const ageMs = Date.now() - timestamp;
-        const ageMin = Math.floor(ageMs / 60000);
-
-        if (ageMin > 5) {
-            console.log(`[SKIP] Message ancien ignoré (age: ${ageMin} min)`);
-            await sendMarkSeen(senderId);
-            return res.sendStatus(200);
-        }
-
-
-        // 3️⃣ Préparation du contexte
-        const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
-        const session = getSession(senderId) || {};
-        const isEndSession = cleanText === 'end session';
-
-        // 4️⃣ Mémorisation brute du message
-        session.lastUserMessage = receivedMessage;
-        setSession(senderId, session);
-
-        const context = {
-            senderId,
-            message: receivedMessage,
-            cleanText,
-            greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
-            timestamp,
-            res
-        };
-
-        // 5️⃣ Exécution de la logique principale
-        console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
-        console.log(`[DEBUG] Message transmis au directeur`);
-        await runDirector(context);
-
-        // 6️⃣ Réponse déjà traitée par les steps
-        return res.sendStatus(200);
-    } catch (error) {
-        console.error("[ERROR]", error);
-        res.status(500).send('Server Error');
+    } catch (err) {
+        console.error('[FATAL ERROR]', err);
+        res.sendStatus(500);
     }
 });
 
-// === Start Server ===
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`[INIT] Test Messenger server running on port ${PORT}`);
+});
