@@ -1,6 +1,6 @@
 const { getNextSpec } = require('./utils');
-const { validateSpecAnswer } = require('./modules/specEngine');
-const { setProjectType, initializeSpecFields } = require('./modules/utils');
+const { validateSpecAnswer } = require('./specEngine');
+const { setProjectType, initializeSpecFields } = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
