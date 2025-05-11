@@ -26,30 +26,14 @@ function initializeSpecFields(session) {
     }
 }
 
-function setProjectType(session, newValue, reason = '') {
-    const oldValue = session.projectType;
+function setProjectType(session, newType, reason = "unspecified") {
+    const allowed = ["B", "S", "R", "E", "?"];
+    const previous = session.projectType;
+    const safeType = allowed.includes(newType) ? newType : "?";
 
-    // Ne rien faire si aucune modification réelle
-    if (oldValue === newValue) return;
-
-    session.projectType = newValue;
-
-    // Clarification du motif
-    let logReason = reason;
-
-    if (!reason) {
-        if (typeof oldValue === 'undefined') {
-            logReason = `initial → ${newValue}`;
-        } else if (oldValue === 'E') {
-            logReason = `E (temporaire) → forcé ${newValue}`;
-        } else {
-            logReason = `modifié manuellement`;
-        }
-    }
-
-    console.log(`[TRACK] projectType changed from ${oldValue ?? 'undefined'} to ${newValue} | reason: ${logReason}`);
+    session.projectType = safeType;
+    console.log(`[TRACK] projectType changed from ${previous} to ${safeType} | reason: ${reason}`);
 }
-
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     if (!["B", "S", "R", "E", "?"].includes(projectType)) {
         return "projectType";

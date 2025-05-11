@@ -35,12 +35,14 @@ async function runDirector(context) {
 
     if (!isValid) {
         console.log(`[DIRECTOR] Réponse invalide pour "${nextSpec}" → réponse libre + reprise de question`);
-        session.specValues[nextSpec] = "?";
-        session.askedSpecs[nextSpec] = true;
+
+        if (nextSpec !== "projectType") {
+            session.specValues[nextSpec] = "?";
+            session.askedSpecs[nextSpec] = true;
+        }
+
         context.deferSpec = true;
         context.gptAllowed = true;
-
-        // ✅ Choix du mode GPT
         context.gptMode = (nextSpec === "projectType") ? "classifyOrChat" : "chatOnly";
 
         await stepHandleFallback(context);
@@ -54,6 +56,7 @@ async function runDirector(context) {
         const map = { "1": "B", "2": "S", "3": "R", "4": "E" };
         const interpreted = map[message.trim()] || "?";
         setProjectType(session, interpreted, "user input");
+
         if (["B", "S", "R"].includes(interpreted)) {
             initializeSpecFields(session);
         }
