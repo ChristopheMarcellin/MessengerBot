@@ -4,6 +4,11 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 async function sendMessage(senderId, text, session) {
     console.log(`[SEND] To: ${senderId} | Message: ${text}`);
 
+    if (typeof text === 'string' && text.trim() === '4') {
+        console.warn(`[ALERTE TRACE] >>> Le bot s’apprête à ENVOYER "4" vers ${senderId}`);
+        console.trace('[TRACE ORIGINE] Envoi de "4" déclenché ici :');
+    }
+
     if (session) {
         session.lastBotMessage = text;
     }
@@ -19,7 +24,6 @@ async function sendMessage(senderId, text, session) {
         }
     );
 }
-
 async function sendMarkSeen(senderId) {
     console.log(`[ACK] mark_seen → ${senderId}`);
     await axios.post(

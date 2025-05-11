@@ -52,8 +52,9 @@ app.post('/webhook', async (req, res) => {
         }
 
         const senderId = messagingEvent.sender?.id;
-        const receivedMessage = messagingEvent.message?.text?.trim();
+        const receivedMessage = messagingEvent.message?.text?.trim();     
         const timestamp = messagingEvent.timestamp;
+        console.log(`[RECEIVED-RAW] From ${senderId} | Message: "${receivedMessage}" @ ${timestamp}`);
 
         // ✅ ACK systématique
         await sendMarkSeen(senderId);

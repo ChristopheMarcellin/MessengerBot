@@ -25,6 +25,10 @@ async function runDirector(context) {
         return true;
     }
 
+    if (message === "4") {
+        console.warn(`[ALERTE] Le message reçu est "4" → analysé comme input utilisateur`);
+    }
+
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
