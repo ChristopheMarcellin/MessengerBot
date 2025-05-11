@@ -8,7 +8,6 @@ const { stepWhatNext } = require('./steps');
 async function runDirector(context) {
     const { message, senderId } = context;
 
-    // Étape 0 : Initialisation ou restauration de session
     const isReady = await stepInitializeSession(context);
     const session = context.session;
 
@@ -19,7 +18,6 @@ async function runDirector(context) {
 
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
-    // Étape 1 : Déterminer la spec à laquelle on s’attend
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log('[DEBUG] nextSpec =', nextSpec);
 
@@ -30,7 +28,6 @@ async function runDirector(context) {
 
     if (nextSpec === "summary") {
         console.log('[DIRECTOR] Toutes les specs sont couvertes → prêt pour résumé');
-        // future: appeler stepSummarizeAndConfirm(context)
         return false;
     }
 
@@ -43,15 +40,14 @@ async function runDirector(context) {
         context.deferSpec = true;
         context.gptAllowed = true;
 
-        // 1. Réponse libre via GPT
-        await stepHandleFallback(context);
+        // ✅ Choix du mode GPT
+        context.gptMode = (nextSpec === "projectType") ? "classifyOrChat" : "chatOnly";
 
-        // 2. Reposer la question structurée
+        await stepHandleFallback(context);
         await stepWhatNext(context);
         return true;
     }
 
-    // Étape 2 : Réponse valide → enregistrer la valeur
     console.log(`[DIRECTOR] Réponse valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
@@ -67,7 +63,6 @@ async function runDirector(context) {
     }
 
     const continued = await stepWhatNext(context);
-
     if (!continued) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext)');
     }

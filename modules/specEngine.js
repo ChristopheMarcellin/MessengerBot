@@ -68,15 +68,40 @@ const resetInvalidSpecs = (session) => {
 // ✅ Validation spécifique pour projectType
 function isValidAnswer(value, projectType, field) {
     if (!value) return false;
+    const input = value.trim();
 
+    // 🎯 1. projectType : choix numéroté 1 à 4
     if (field === "projectType") {
-        return ["1", "2", "3", "4"].includes(value.trim());
+        return ["1", "2", "3", "4"].includes(input);
     }
 
+    // 🎯 2. Champs numériques purs
+    const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking"];
+    if (numericFields.includes(field)) {
+        return /^\d+$/.test(input);
+    }
+
+    // 🎯 3. Téléphone : permet chiffres, espaces, tirets, parenthèses, plus
+    if (field === "phone") {
+        return /^[\d\s\-\+\(\)]{7,25}$/.test(input);
+    }
+
+    // 🎯 4. Email : format basique mais rigoureux
+    if (field === "email") {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+    }
+
+    // 🎯 5. Nom et prénom : minimum 2 lettres, accents autorisés
+    if (["firstName", "lastName"].includes(field)) {
+        return /^[a-zA-ZÀ-ÿ' -]{2,}$/.test(input);
+    }
+
+    // 🎯 6. Fallback sur displayMap
     const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
     const map = displayMap?.[field]?.[lang];
-    return map ? Object.keys(map).includes(value) : true;
+    return map ? Object.keys(map).includes(input) : true;
 }
+
 
 function getSpecFieldsForProjectType(projectType) {
     return Object.keys(questions?.[projectType] || {});
