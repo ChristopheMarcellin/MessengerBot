@@ -57,15 +57,7 @@ app.post('/webhook', async (req, res) => {
 
         // ✅ ACK systématique
         await sendMarkSeen(senderId);
-
-        const ageMs = Date.now() - timestamp;
-        const ageMin = Math.floor(ageMs / 60000);
-        if (ageMin > 5) {
-            console.log(`[SKIP] Message ancien ignoré (age: ${ageMin} min)`);
-            await sendMarkSeen(senderId);
-            return res.sendStatus(200);
-        }
-
+        console.log(`[ACK] mark_seen → ${senderId}`);
         // 3️⃣ Préparation du contexte
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         const session = getSession(senderId) || {};
