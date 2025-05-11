@@ -1,5 +1,5 @@
 const {
-    deleteSession,
+    resetSession,
     setSession,
     getSession,
     logSessionState
@@ -21,7 +21,7 @@ function stepCheckEndSession({ senderId, message }) {
             logSessionState(senderId);
         }
 
-        deleteSession(senderId);
+        resetSession(senderId);
         setSession(senderId, {
             projectType: undefined,
             specValues: {},

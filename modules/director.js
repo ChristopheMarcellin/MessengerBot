@@ -16,6 +16,15 @@ async function runDirector(context) {
         return false;
     }
 
+    if (context.cleanText === 'end session') {
+        const { resetSession, setSession } = require('./sessionStore');
+        const newSession = resetSession(senderId);
+        setSession(senderId, newSession);
+        context.session = newSession;
+        console.log('[DIRECTOR] Session réinitialisée suite à "end session" (dans runDirector)');
+        return true;
+    }
+
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
