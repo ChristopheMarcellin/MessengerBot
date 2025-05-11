@@ -3,7 +3,7 @@ const displayMap = require('./displayMap');
 
 function getPromptForSpec(projectType, specKey, lang = "en") {
     const questionSet = questions?.[projectType];
-    const rawQuestion = questionSet?.[specKey]?.text || `${specKey}?`;
+    const rawQuestion = questionSet?.[specKey]?.[lang] || `${specKey}?`;
     const options = displayMap?.[specKey]?.[lang];
     let formattedChoices = "";
 
@@ -65,19 +65,27 @@ const resetInvalidSpecs = (session) => {
     }
 };
 
-//Fonction ajoutée pour valider une réponse
+// ✅ Validation spécifique pour projectType
 function isValidAnswer(value, projectType, field) {
     if (!value) return false;
+
+    if (field === "projectType") {
+        return ["1", "2", "3", "4"].includes(value.trim());
+    }
+
     const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
     const map = displayMap?.[field]?.[lang];
     return map ? Object.keys(map).includes(value) : true;
 }
+
 function getSpecFieldsForProjectType(projectType) {
     return Object.keys(questions?.[projectType] || {});
 }
+
 function allSpecsCollected(session) {
     return !getNextUnansweredSpec(session);
 }
+
 module.exports = {
     getPromptForSpec,
     getNextUnansweredSpec,
