@@ -136,7 +136,7 @@ Message : "${message}"`.trim();
         setProjectType(session, finalProject, "GPT session init");
         initializeSpecFields(session);
         console.log(`[INIT] Nouvelle session avec projectType = ${finalProject}`);
-    } else {
+    } else if (typeof session.projectType === "undefined") {
         setProjectType(session, "?", "GPT → ?");
     }
 
