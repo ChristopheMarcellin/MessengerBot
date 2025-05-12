@@ -15,16 +15,13 @@ function getNextSpec(session) {
             console.log('[NEXT] projectType non défini → on doit poser la question');
             return 'projectType';
         }
-        // S’il a été demandé mais toujours pas compris
         if (session.askedSpecs?.projectType && session.projectType === "?") {
             console.log('[NEXT] projectType est encore "?" après une relance');
             return 'projectType';
         }
-        // Sinon, pas de question structurée à poser
         return "none";
     }
 
-    // Si projectType est défini → specs normales
     const allKeys = Object.keys(session.specValues || {});
     for (const key of allKeys) {
         if (!session.askedSpecs[key]) {
@@ -36,6 +33,7 @@ function getNextSpec(session) {
     console.log('[NEXT] Aucune spec restante à poser');
     return 'summary';
 }
+
 function initializeSpecFields(session, projectType) {
     traceCaller('initializeSpecFields');
     const fields = {
@@ -59,9 +57,24 @@ function initializeSpecFields(session, projectType) {
 
 function setProjectType(session, value, reason = 'unknown') {
     traceCaller('setProjectType');
+
     const old = session.projectType;
+
+    // 🚫 Règle #1 : ne pas écraser B/S/R par "?"
+    if (["B", "S", "R"].includes(old) && value === "?") {
+        console.warn(`[BLOCKED] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
+        return;
+    }
+
+    // 🚫 Règle #2 : ne pas réécrire la même valeur
+    if (old === value) {
+        console.log(`[SKIP] projectType déjà égal à "${value}" — aucune modification`);
+        return;
+    }
+
     session.projectType = value;
-    if (value !== old) {
+
+    if (["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
     }
 
@@ -74,8 +87,27 @@ function setProjectType(session, value, reason = 'unknown') {
 
 function setSpecValue(session, key, value) {
     traceCaller('setSpecValue');
+
     if (!session.specValues) session.specValues = {};
+    if (!session.askedSpecs) session.askedSpecs = {};
+
+    const old = session.specValues[key];
+
+    // 🚫 Ne pas écraser une vraie valeur par "?" (ex: 3 → ?)
+    if (old && old !== "?" && old !== "E" && value === "?") {
+        console.warn(`[BLOCKED] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué`);
+        return;
+    }
+
+    // 🚫 Éviter la réécriture identique
+    if (old === value) {
+        console.log(`[SKIP] spec "${key}" déjà égale à "${value}" — aucune modification`);
+        return;
+    }
+
+    // ✅ Mise à jour acceptée
     session.specValues[key] = value;
+    session.askedSpecs[key] = true;
 
     const specs = Object.entries(session.specValues)
         .map(([k, v]) => `${k}=${v}`)
