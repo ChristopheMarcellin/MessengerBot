@@ -54,6 +54,7 @@ app.post('/webhook', async (req, res) => {
         const senderId = messagingEvent.sender?.id;
         const receivedMessage = messagingEvent.message?.text?.trim();     
         const timestamp = messagingEvent.timestamp;
+       
         console.log(`[RECEIVED-RAW] From ${senderId} | Message: "${receivedMessage}" @ ${timestamp}`);
 
         // ✅ ACK systématique
@@ -79,6 +80,7 @@ app.post('/webhook', async (req, res) => {
         const context = {
             senderId,
             message: receivedMessage,
+            timestamp,
             cleanText,
             greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
             timestamp,

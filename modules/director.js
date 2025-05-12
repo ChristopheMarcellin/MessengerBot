@@ -1,6 +1,6 @@
 const { getNextSpec } = require('./utils');
 const { isValidAnswer } = require('./specEngine');
-const { setProjectType, initializeSpecFields } = require('./utils');
+const { setProjectType, initializeSpecFields, setSpecValue } = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
@@ -26,12 +26,13 @@ async function runDirector(context) {
     }
 
     if (message === "4") {
-        console.warn(`[ALERTE] Le message reçu est "4" → analysé comme input utilisateur`);
+        const ts = new Date(context.timestamp).toISOString();
+        console.warn(`[${ts}] [ALERTE] Le message reçu est "4" → analysé comme input utilisateur`);
     }
 
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
-    const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    const nextSpec = getNextSpec(session);
     console.log('[DEBUG] nextSpec =', nextSpec);
 
     if (nextSpec === "none") {
@@ -46,10 +47,9 @@ async function runDirector(context) {
 
     // 🔁 Si la spec a déjà été posée une fois sans succès → convertir "?" en "E"
     if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
-        session.specValues[nextSpec] = "E";
+        setSpecValue(session, nextSpec, "E");
         console.log(`[DIRECTOR] "${nextSpec}" → passage de "?" à "E" après relance unique`);
     }
-
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
@@ -63,7 +63,7 @@ async function runDirector(context) {
                 setProjectType(session, "?", "user input");
             }
         } else {
-            session.specValues[nextSpec] = "?";
+            setSpecValue(session, nextSpec, "?");
         }
 
         context.deferSpec = true;
@@ -74,6 +74,7 @@ async function runDirector(context) {
         await stepWhatNext(context);
         return true;
     }
+
     console.log(`[DIRECTOR] Réponse valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
@@ -85,7 +86,7 @@ async function runDirector(context) {
             initializeSpecFields(session);
         }
     } else {
-        session.specValues[nextSpec] = message;
+        setSpecValue(session, nextSpec, message);
         session.askedSpecs[nextSpec] = true;
     }
 
