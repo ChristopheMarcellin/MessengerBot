@@ -54,6 +54,7 @@ async function stepInitializeSession(context) {
         };
         setSession(senderId, session);
         context.session = session;
+
         logSessionState("Vérification APRÈS réparation (post-reset)", session);
         return true;
     }
@@ -142,6 +143,22 @@ Message : "${message}"`.trim();
 
     setSession(senderId, session);
     context.session = session;
+
+    if (context?.session) {
+        const realSession = context.session;
+        let internalValue = realSession.projectType;
+        Object.defineProperty(realSession, 'projectType', {
+            get() {
+                return internalValue;
+            },
+            set(value) {
+                const err = new Error();
+                console.log('[ALERTE] projectType modifié via setter piégé →', value);
+                console.log('[TRACE] Stack:', err.stack);
+                internalValue = value;
+            }
+        });
+    }
 
     return true;
 }
