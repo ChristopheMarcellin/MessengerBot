@@ -72,7 +72,9 @@ function isValidAnswer(value, projectType, field) {
 
     // 🎯 1. projectType : choix numéroté 1 à 4
     if (field === "projectType") {
-        return ["1", "2", "3", "4"].includes(input);
+        const isValid = ["1", "2", "3", "4"].includes(input);
+        console.log(`[VALIDATION] field=projectType | input="${input}" | valid=${isValid}`);
+        return isValid;
     }
 
     // 🎯 2. Champs numériques purs
@@ -81,17 +83,17 @@ function isValidAnswer(value, projectType, field) {
         return /^\d+$/.test(input);
     }
 
-    // 🎯 3. Téléphone : permet chiffres, espaces, tirets, parenthèses, plus
+    // 🎯 3. Téléphone
     if (field === "phone") {
         return /^[\d\s\-\+\(\)]{7,25}$/.test(input);
     }
 
-    // 🎯 4. Email : format basique mais rigoureux
+    // 🎯 4. Email
     if (field === "email") {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
     }
 
-    // 🎯 5. Nom et prénom : minimum 2 lettres, accents autorisés
+    // 🎯 5. Nom et prénom
     if (["firstName", "lastName"].includes(field)) {
         return /^[a-zA-ZÀ-ÿ' -]{2,}$/.test(input);
     }
@@ -101,6 +103,7 @@ function isValidAnswer(value, projectType, field) {
     const map = displayMap?.[field]?.[lang];
     return map ? Object.keys(map).includes(input) : true;
 }
+
 
 
 function getSpecFieldsForProjectType(projectType) {
