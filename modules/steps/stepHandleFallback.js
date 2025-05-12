@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { sendMessage } = require('../messenger');
+const { setProjectType } = require('../utils');
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -14,7 +15,6 @@ async function stepHandleFallback(context) {
 
     const lang = session.language || "fr";
 
-    // 🧠 Construire un prompt selon le mode
     let prompt = "";
     if (gptMode === "classifyOrChat") {
         prompt = lang === "fr"
@@ -40,11 +40,28 @@ async function stepHandleFallback(context) {
         }
     });
 
-    const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim() || (
-        lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn’t understand."
-    );
+    const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
 
-    await sendMessage(senderId, gptReply);
+    if (gptMode === "classifyOrChat") {
+        const classification = gptReply;
+
+        if (["1", "2", "3", "4"].includes(classification)) {
+            const map = { "1": "B", "2": "S", "3": "R", "4": "?" };
+            const interpreted = map[classification];
+
+            console.log(`[ALERTE TRACE] GPT a classé la réponse comme ${classification} → projectType = ${interpreted}`);
+            setProjectType(session, interpreted, "GPT → classification directe");
+            return;
+        }
+
+        // Ce n’est pas une classification → envoyer à l'utilisateur
+        await sendMessage(senderId, classification);
+        return;
+    }
+
+    // Mode chatOnly → envoyer toujours
+    const fallback = gptReply || (lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn’t understand.");
+    await sendMessage(senderId, fallback);
 }
 
 module.exports = { stepHandleFallback };
