@@ -50,7 +50,13 @@ async function stepHandleFallback(context) {
             const interpreted = map[classification];
 
             console.log(`[ALERTE TRACE] GPT a classé la réponse comme ${classification} → projectType = ${interpreted}`);
-            setProjectType(session, interpreted, "GPT → classification directe");
+
+            // 🚫 Ne pas écraser une vraie valeur utilisateur déjà définie
+            if (typeof session.projectType === "undefined" || session.projectType === "?") {
+                setProjectType(session, interpreted, "GPT → classification directe");
+            } else {
+                console.log(`[TRACE] GPT a proposé "${interpreted}" mais projectType déjà défini → conservé : ${session.projectType}`);
+            }
             return;
         }
 
