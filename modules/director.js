@@ -72,12 +72,6 @@ async function runDirector(context) {
 
         await stepHandleFallback(context);
         await stepWhatNext(context);
-        if (field === "projectType") {
-    const trimmed = value.trim();
-    const isValid = ["1", "2", "3", "4"].includes(trimmed);
-    console.log(`[VALIDATION] field=projectType | input="${trimmed}" | valid=${isValid}`);
-    return isValid;
-}
         return true;
     }
 
