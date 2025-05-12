@@ -8,19 +8,34 @@ function traceCaller(label) {
 
 function getNextSpec(session) {
     traceCaller('getNextSpec');
-    if (!session || !session.askedSpecs || !session.specValues) return null;
 
-    const allKeys = Object.keys(session.specValues);
+    // Priorité à projectType si non défini
+    if (!["B", "S", "R"].includes(session.projectType)) {
+        if (!session.askedSpecs?.projectType) {
+            console.log('[NEXT] projectType non défini → on doit poser la question');
+            return 'projectType';
+        }
+        // S’il a été demandé mais toujours pas compris
+        if (session.askedSpecs?.projectType && session.projectType === "?") {
+            console.log('[NEXT] projectType est encore "?" après une relance');
+            return 'projectType';
+        }
+        // Sinon, pas de question structurée à poser
+        return "none";
+    }
+
+    // Si projectType est défini → specs normales
+    const allKeys = Object.keys(session.specValues || {});
     for (const key of allKeys) {
         if (!session.askedSpecs[key]) {
             console.log(`[NEXT] Prochaine spec attendue: ${key}`);
             return key;
         }
     }
-    console.log('[NEXT] Aucune spec restante à poser');
-    return null;
-}
 
+    console.log('[NEXT] Aucune spec restante à poser');
+    return 'summary';
+}
 function initializeSpecFields(session, projectType) {
     traceCaller('initializeSpecFields');
     const fields = {
@@ -46,18 +61,29 @@ function setProjectType(session, value, reason = 'unknown') {
     traceCaller('setProjectType');
     const old = session.projectType;
     session.projectType = value;
-    console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason}`);
     if (value !== old) {
         initializeSpecFields(session, value);
     }
+
+    const specs = Object.entries(session.specValues || {})
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ');
+
+    console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
 
 function setSpecValue(session, key, value) {
     traceCaller('setSpecValue');
     if (!session.specValues) session.specValues = {};
     session.specValues[key] = value;
-    console.trace(`[TRACK] spec "${key}" modifiée → "${value}"`);
+
+    const specs = Object.entries(session.specValues)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ');
+
+    console.trace(`[TRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
+
 
 module.exports = {
     getNextSpec,
