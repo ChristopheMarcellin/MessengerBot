@@ -2,10 +2,8 @@ const { getSpecFieldsForProjectType } = require('./specEngine');
 const specOrderByProject = {
     B: ["price", "bedrooms", "bathrooms", "garage", "location","parking"],
     S: ["price", "bedrooms", "bathrooms", "garage", "location", "parking"],
-    R: ["rentalPrice", "bedrooms", "bathrooms", "parking", "location", "parking"]
+    R: ["rentalPrice", "bedrooms", "bathrooms", "parking", "location"]
 };
-
-
 
 
 //Initialise tous les champs de spec à "?" sauf projectType.
@@ -41,6 +39,9 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
     // 1️⃣ Projet encore inconnu
     if (projectType === "?" || typeof projectType === "undefined") {
+        if (askedSpecs.projectType === true) {
+            return "none"; // ou "summary", selon le flux souhaité
+        }
         return "projectType";
     }
 

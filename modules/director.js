@@ -44,14 +44,26 @@ async function runDirector(context) {
         return false;
     }
 
+    // 🔁 Si la spec a déjà été posée une fois sans succès → convertir "?" en "E"
+    if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
+        session.specValues[nextSpec] = "E";
+        console.log(`[DIRECTOR] "${nextSpec}" → passage de "?" à "E" après relance unique`);
+    }
+
+
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
     if (!isValid) {
         console.log(`[DIRECTOR] Réponse invalide pour "${nextSpec}" → réponse libre + reprise de question`);
 
-        if (nextSpec !== "projectType") {
+        session.askedSpecs[nextSpec] = true;
+
+        if (nextSpec === "projectType") {
+            if (session.projectType !== "B" && session.projectType !== "S" && session.projectType !== "R") {
+                setProjectType(session, "?", "user input");
+            }
+        } else {
             session.specValues[nextSpec] = "?";
-            session.askedSpecs[nextSpec] = true;
         }
 
         context.deferSpec = true;
@@ -62,11 +74,10 @@ async function runDirector(context) {
         await stepWhatNext(context);
         return true;
     }
-
     console.log(`[DIRECTOR] Réponse valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
-        const map = { "1": "B", "2": "S", "3": "R", "4": "E" };
+        const map = { "1": "B", "2": "S", "3": "R", "4": "?" };
         const interpreted = map[message.trim()] || "?";
         setProjectType(session, interpreted, "user input");
 

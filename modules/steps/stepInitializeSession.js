@@ -100,13 +100,13 @@ Tu es un assistant spécialisé en immobilier. Classe le message de l'utilisateu
 - B : l'utilisateur veut acheter une propriété
 - S : l'utilisateur veut vendre une propriété
 - R : l'utilisateur veut louer une propriété
-- E : toute autre situation (salutation, question, humour, etc.)
+- ? : toute autre situation (salutation, question, humour, etc.)
 
-Réponds uniquement par : B, S, R ou E.
+Réponds uniquement par : B, S, R ou ?.
 
 Message : "${message}"`.trim();
 
-    let project = "E";
+    let project = "?";
 
     try {
         const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -122,17 +122,12 @@ Message : "${message}"`.trim();
         });
 
         const content = gptRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
-        if (["B", "S", "R", "E"].includes(content)) {
+        if (["B", "S", "R", "?"].includes(content)) {
             project = content;
         }
 
     } catch (err) {
         console.warn(`[INIT] GPT erreur :`, err.message);
-    }
-
-    if (isVague) {
-        console.log(`[INIT] Message vague détecté → projectType forcé à ? (était: ${project})`);
-        project = "E";
     }
 
     const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
@@ -142,8 +137,7 @@ Message : "${message}"`.trim();
         initializeSpecFields(session);
         console.log(`[INIT] Nouvelle session avec projectType = ${finalProject}`);
     } else {
-        setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
-        session.awaitingProjectTypeAttempt = 1;
+        setProjectType(session, "?", "GPT → ?");
     }
 
     setSession(senderId, session);
