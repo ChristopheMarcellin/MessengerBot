@@ -16,11 +16,13 @@ function traceCaller(label) {
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     // 1. Type de projet invalide → poser la question
     if (!["B", "S", "R", "E"].includes(projectType)) {
+        console.log(`[NEXT] Condition 1 utilisée → projectType invalide ("${projectType}") → retour "projectType"`);
         return "projectType";
     }
 
     // 2. Projet "E" = aucune spécification à poser
     if (projectType === "E") {
+        console.log(`[NEXT] Condition 2 utilisée → projectType = "E" → retour "none"`);
         return "none";
     }
 
@@ -38,13 +40,16 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         const asked = askedSpecs[field];
         const value = specValues[field];
         if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
+            console.log(`[NEXT] Condition 4 utilisée → spec incomplète → retour "${field}" (asked=${asked}, value=${value})`);
             return field;
         }
     }
 
-    // 5. Sinon, tout est complété
+    // 5. Toutes les specs sont complètes
+    console.log(`[NEXT] Condition 5 utilisée → toutes specs complètes pour "${projectType}" → retour "summary"`);
     return "summary";
 }
+
 function getCurrentSpec(session) {
     if (!session || typeof session.currentSpec !== "string") {
         return null;

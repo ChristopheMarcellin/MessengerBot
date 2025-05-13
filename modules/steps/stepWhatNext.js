@@ -11,6 +11,7 @@ async function stepWhatNext(context) {
     const { senderId, session } = context;
     const lang = session.language || 'fr';
 
+    console.log("[BEFORE getNextSpec] projectType =", session.projectType);
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log('[DEBUG] Version active de stepWhatNext');
     console.log(`[NEXT] Prochaine spec attendue : ${nextSpec}`);
