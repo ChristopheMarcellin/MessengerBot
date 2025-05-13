@@ -9,20 +9,20 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 function traceCaller(label) {
     const stack = new Error().stack;
     const line = stack.split('\n')[3] || 'inconnu';
-    console.log(`[TRACE] ${label} ← ${line.trim()}`);
+    console.log(`[UTILS] ${label} ← ${line.trim()}`);
 }
 
 // validé par CM, attention le none devrai être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     // 1. Type de projet invalide → poser la question
     if (!["B", "S", "R", "E"].includes(projectType)) {
-        console.log(`[NEXT] Condition 1 utilisée → projectType invalide ("${projectType}") → retour "projectType"`);
+        console.log(`[UTILS1] Type de projet non défini  ("${projectType}") "`);
         return "projectType";
     }
 
     // 2. Projet "E" = aucune spécification à poser
     if (projectType === "E") {
-        console.log(`[NEXT] Condition 2 utilisée → projectType = "E" → retour "none"`);
+        console.log('[UTILS] Projet défini à Else '  );
         return "none";
     }
 
@@ -40,13 +40,13 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         const asked = askedSpecs[field];
         const value = specValues[field];
         if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
-            console.log(`[NEXT] Condition 4 utilisée → spec incomplète → retour "${field}" (asked=${asked}, value=${value})`);
+            console.log(`[UTILS4] Condition 4 utilisée → spec incomplète → retour "${field}" (asked=${asked}, value=${value})`);
             return field;
         }
     }
 
     // 5. Toutes les specs sont complètes
-    console.log(`[NEXT] Condition 5 utilisée → toutes specs complètes pour "${projectType}" → retour "summary"`);
+    console.log(`[UTILS] Toutes les specs sont complétées "${projectType}" → retour "summary"`);
     return "summary";
 }
 
@@ -76,7 +76,7 @@ function initializeSpecFields(session, projectType) {
         session.askedSpecs[field] = false;
     }
 
-    console.log(`[INIT] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
+    console.log(`[UTILS] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
 }
 
 function setProjectType(session, value, reason = 'unknown') {
@@ -86,13 +86,13 @@ function setProjectType(session, value, reason = 'unknown') {
 
     // 🚫 Règle #1 : ne pas écraser B/S/R par "?"
     if (["B", "S", "R"].includes(old) && value === "?") {
-        console.warn(`[BLOCKED] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
+        console.warn(`[UTILS] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
         return;
     }
 
     // 🚫 Règle #2 : ne pas réécrire la même valeur
     if (old === value) {
-        console.log(`[SKIP] projectType déjà égal à "${value}" — aucune modification`);
+        console.log(`[UTILS] projectType déjà égal à "${value}" — aucune modification`);
         return;
     }
 
@@ -119,13 +119,13 @@ function setSpecValue(session, key, value) {
 
     // 🚫 Ne pas écraser une vraie valeur par "?" (ex: 3 → ?)
     if (old && old !== "?" && old !== "E" && value === "?") {
-        console.warn(`[BLOCKED] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué`);
+        console.warn(`[UTILS] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué`);
         return;
     }
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
-        console.log(`[SKIP] spec "${key}" déjà égale à "${value}" — aucune modification`);
+        console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture`);
         return;
     }
 
@@ -137,7 +137,7 @@ function setSpecValue(session, key, value) {
         .map(([k, v]) => `${k}=${v}`)
         .join(', ');
 
-    console.trace(`[TRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
+    console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
 
 //gpt classifies project

@@ -34,10 +34,10 @@ app.get('/webhook', (req, res) => {
 // === Webhook POST ===
 app.post('/webhook', async (req, res) => {
     const botEnabled = (process.env.BOT_ENABLED || '').trim().toLowerCase() === 'true';
-    console.log(`[DEBUG] BOT_ENABLED = ${process.env.BOT_ENABLED} → interpreted as ${botEnabled}`);
+//    console.log(`[DEBUG] BOT_ENABLED = ${process.env.BOT_ENABLED} → interpreted as ${botEnabled}`);
 
     if (!botEnabled) {
-        console.log('[SAFE MODE] Bot désactivé — traitement ignoré');
+  //      console.log('[SAFE MODE] Bot désactivé — traitement ignoré');
         return res.sendStatus(200);
     }
 
@@ -47,7 +47,7 @@ app.post('/webhook', async (req, res) => {
 
         // 🔒 Protection centralisée
         if (!isValidIncomingMessage(messagingEvent)) {
-            console.warn('[SKIP] Message ignoré : echo, vide, invalide ou système');
+        //    console.warn('[SKIP] Message ignoré : echo, vide, invalide ou système');
             return res.sendStatus(200);
         }
 
@@ -55,11 +55,11 @@ app.post('/webhook', async (req, res) => {
         const receivedMessage = messagingEvent.message?.text?.trim();     
         const timestamp = messagingEvent.timestamp;
        
-        console.log(`[RECEIVED-RAW] From ${senderId} | Message: "${receivedMessage}" @ ${timestamp}`);
+     //   console.log(`[RECEIVED-RAW] From ${senderId} | Message: "${receivedMessage}" @ ${timestamp}`);
 
         // ✅ ACK systématique
         await sendMarkSeen(senderId);
-        console.log(`[ACK] mark_seen → ${senderId}`);
+     //   console.log(`[ACK] mark_seen → ${senderId}`);
         // 3️⃣ Préparation du contexte
         const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
         const session = getSession(senderId) || {};
@@ -89,7 +89,7 @@ app.post('/webhook', async (req, res) => {
 
         // 5️⃣ Exécution de la logique principale
         console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
-        console.log(`[DEBUG] Message transmis au directeur`);
+  //      console.log(`[DEBUG] Message transmis au directeur`);
         await runDirector(context);
 
         return res.sendStatus(200);

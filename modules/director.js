@@ -32,7 +32,7 @@ async function runDirector(context) {
     // 🌐 Détection automatique de la langue (une seule fois)
     if (typeof session.language === "undefined") {
         session.language = detectLanguageFromText(message);
-        console.log(`[DIRECTOR] Langue détectée automatiquement : ${session.language}`);
+  //      console.log(`[DIRECTOR] Langue détectée automatiquement : ${session.language}`);
     }
 
     console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
@@ -40,16 +40,16 @@ async function runDirector(context) {
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
 
-    // On fait évoluer le statut de la spec
+    // On fait évoluer le statut de la spec vers E
     if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
         setSpecValue(session, nextSpec, "E");
-        console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" après relance unique`);
+        console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" `);
     }
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
     if (!isValid) {
-        console.log(`[DIRECTOR] Réponse invalide pour "${nextSpec}" → réponse libre + reprise de question`);
+        console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée `);
 
         session.askedSpecs[nextSpec] = true;
 
@@ -60,7 +60,7 @@ async function runDirector(context) {
 
         if (nextSpec === "projectType") {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
-            console.log(`[DIRECTOR] GPT s'est chargé de traiter et d'interpréter votre msg : ${interpreted}`);
+            console.log(`[DIRECTOR] interprétation par GPT de votre msg : ${interpreted}`);
 
             session.askedSpecs.projectType = true;
 
@@ -82,7 +82,7 @@ async function runDirector(context) {
     }
 
 
-    console.log(`[DIRECTOR] Réponse valide pour "${nextSpec}" = "${message}"`);
+    console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
         const map = { "1": "B", "2": "S", "3": "R", "4": "?" };

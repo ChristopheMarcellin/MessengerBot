@@ -11,30 +11,29 @@ async function stepWhatNext(context) {
     const { senderId, session } = context;
     const lang = session.language || 'fr';
 
-    console.log("[BEFORE getNextSpec] projectType =", session.projectType);
+    console.log("[WHATNEXT Before getNextSpec] projectType =", session.projectType);
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
-    console.log('[DEBUG] Version active de stepWhatNext');
-    console.log(`[NEXT] Prochaine spec attendue : ${nextSpec}`);
+    console.log(`[WHATNEXT] Spec à traiter : ${nextSpec}`);
 
     // Synchroniser avec la spec actuellement attendue
     session.currentSpec = nextSpec;
 
     // Rien à poser
     if (nextSpec === "none") {
-        console.log('[NEXT] Aucune suite structurée possible (projectType = E)');
+        console.log('[WHATNEXT] nextSpec = none');
         return false;
     }
 
     // Résumé attendu
     if (nextSpec === "summary") {
-        console.log('[NEXT] Toutes les specs sont couvertes → passage au résumé');
+        console.log('[WHATNEXT] Toutes les specs traitées, on passe au sommaire');
         return false;
     }
 
     // Projet non défini → poser la question projet
     if (nextSpec === "projectType") {
         const prompt = getPromptForProjectType(lang);
-        console.log(`[NEXT] Pose de la question projet → ${prompt}`);
+        console.log(`[WHATNEXT] Pose de la question projet → ${prompt}`);
         await sendMessage(senderId, prompt);
         return true;
     }
@@ -42,7 +41,7 @@ async function stepWhatNext(context) {
     // Une spec ordinaire à poser
     const prompt = getPromptForSpec(nextSpec, lang);
 
-    console.log(`[NEXT] Pose de la spec "${nextSpec}" → ${prompt}`);
+    console.log(`[WHATNEXT] Pose de la spec "${nextSpec}" → ${prompt}`);
     await sendMessage(senderId, prompt);
     return true;
 }
