@@ -53,7 +53,6 @@ async function runDirector(context) {
 
         session.askedSpecs[nextSpec] = true;
 
-        // 🛡️ Ne jamais déclencher GPT si projectType est déjà B, S ou R
         if (nextSpec === "projectType" && ["B", "S", "R"].includes(session.projectType)) {
             await stepWhatNext(context);
             return true;
@@ -70,17 +69,17 @@ async function runDirector(context) {
                 await stepWhatNext(context);
                 return true;
             }
-
         } else {
             setSpecValue(session, nextSpec, "?");
         }
 
         context.deferSpec = true;
         context.gptAllowed = true;
-        await await chatOnly(context);
+        await chatOnly(senderId, message, session.language || "fr");
         await stepWhatNext(context);
         return true;
     }
+
 
     console.log(`[DIRECTOR] Réponse valide pour "${nextSpec}" = "${message}"`);
 
