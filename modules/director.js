@@ -62,9 +62,10 @@ async function runDirector(context) {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
             console.log(`[DIRECTOR] GPT s'est chargé de traiter et d'interpréter votre msg : ${interpreted}`);
 
+            session.askedSpecs.projectType = true;
+
             if (["B", "S", "R", "?"].includes(interpreted)) {
                 setProjectType(session, interpreted, "GPT");
-                session.askedSpecs.projectType = true;
                 if (interpreted !== "?") initializeSpecFields(session);
                 await stepWhatNext(context);
                 return true;
@@ -86,8 +87,9 @@ async function runDirector(context) {
     if (nextSpec === "projectType") {
         const map = { "1": "B", "2": "S", "3": "R", "4": "?" };
         const interpreted = map[message.trim()] || "?";
-        setProjectType(session, interpreted, "user input");
         session.askedSpecs.projectType = true;
+        setProjectType(session, interpreted, "user input");
+
 
         if (["B", "S", "R"].includes(interpreted)) {
             initializeSpecFields(session);
