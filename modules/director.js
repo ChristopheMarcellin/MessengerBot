@@ -1,6 +1,7 @@
 const { getNextSpec } = require('./utils');
+const { detectLanguageFromText } = require('./utils');
 const { isValidAnswer } = require('./specEngine');
-const { setProjectType, initializeSpecFields, setSpecValue } = require('./utils');
+const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject } = require('./utils'); // ajout ici
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
@@ -8,46 +9,41 @@ const { stepWhatNext } = require('./steps');
 async function runDirector(context) {
     const { message, senderId } = context;
 
-    const isReady = await stepInitializeSession(context);
-    const session = context.session;
-
-    if (!isReady || !session) {
-        console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
-        return false;
-    }
-
+    // 🔁 End Session
     if (context.cleanText === 'end session') {
         const { resetSession, setSession } = require('./sessionStore');
         const newSession = resetSession(senderId);
         setSession(senderId, newSession);
         context.session = newSession;
-        console.log('[DIRECTOR] Session réinitialisée suite à "end session" (dans runDirector)');
+        console.log('[DIRECTOR] Session réinitialisée suite à "end session" en attente du prochain MSG à traiter');
         return true;
     }
 
-    if (message === "4") {
-        const ts = new Date(context.timestamp).toISOString();
-        console.warn(`[${ts}] [ALERTE] Le message reçu est "4" → analysé comme input utilisateur`);
+    // 1 - Initialisation de la session
+    const isReady = await stepInitializeSession(context);
+    const session = context.session;
+
+    // 🔍 Détection de blocage à l'initialisation
+    if (!isReady || !session) {
+        console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
+        return false;
     }
 
-    console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
+    // 🌐 Détection automatique de la langue (une seule fois)
+    if (typeof session.language === "undefined") {
+        session.language = detectLanguageFromText(message);
+        console.log(`[DIRECTOR] Langue détectée automatiquement : ${session.language}`);
+    }
+
+    console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
-    console.log('[DEBUG] nextSpec =', nextSpec);
+    console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
 
-    if (nextSpec === "none") {
-        console.log('[DIRECTOR] Type de projet = E → aucun traitement structuré.');
-        return false;
-    }
-
-    if (nextSpec === "summary") {
-        console.log('[DIRECTOR] Toutes les specs sont couvertes → prêt pour résumé');
-        return false;
-    }
-
+    // On fait évoluer le statut de la spec
     if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
         setSpecValue(session, nextSpec, "E");
-        console.log(`[DIRECTOR] "${nextSpec}" → passage de "?" à "E" après relance unique`);
+        console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" après relance unique`);
     }
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
@@ -59,22 +55,29 @@ async function runDirector(context) {
 
         // 🛡️ Ne jamais déclencher GPT si projectType est déjà B, S ou R
         if (nextSpec === "projectType" && ["B", "S", "R"].includes(session.projectType)) {
-            console.warn('[SKIP] Fallback ignoré : projectType déjà défini.');
             await stepWhatNext(context);
             return true;
         }
 
         if (nextSpec === "projectType") {
-            setProjectType(session, "?", "user input");
+            const interpreted = await gptClassifyProject(message, session.language || "fr");
+            console.log(`[DIRECTOR] GPT s'est chargé de traiter et d'interpréter votre msg : ${interpreted}`);
+
+            if (["B", "S", "R", "?"].includes(interpreted)) {
+                setProjectType(session, interpreted, "GPT");
+                session.askedSpecs.projectType = true;
+                if (interpreted !== "?") initializeSpecFields(session);
+                await stepWhatNext(context);
+                return true;
+            }
+
         } else {
             setSpecValue(session, nextSpec, "?");
         }
 
         context.deferSpec = true;
         context.gptAllowed = true;
-        context.gptMode = (nextSpec === "projectType") ? "classifyOrChat" : "chatOnly";
-
-        await stepHandleFallback(context);
+        await await chatOnly(context);
         await stepWhatNext(context);
         return true;
     }
@@ -85,6 +88,7 @@ async function runDirector(context) {
         const map = { "1": "B", "2": "S", "3": "R", "4": "?" };
         const interpreted = map[message.trim()] || "?";
         setProjectType(session, interpreted, "user input");
+        session.askedSpecs.projectType = true;
 
         if (["B", "S", "R"].includes(interpreted)) {
             initializeSpecFields(session);

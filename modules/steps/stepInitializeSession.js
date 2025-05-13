@@ -1,6 +1,5 @@
 const { setProjectType, initializeSpecFields } = require('../utils');
 const { getSession, setSession } = require('../sessionStore');
-const axios = require('axios');
 
 // 🔎 Fonction d'audit de la session
 function logSessionState(label, session) {
@@ -18,7 +17,7 @@ function logSessionState(label, session) {
 }
 
 async function stepInitializeSession(context) {
-    const { senderId, message, cleanText } = context;
+    const { senderId, message } = context;
 
     // 🔐 Vérifier présence du senderId
     if (typeof senderId !== 'string' || senderId.trim() === '') {
@@ -71,7 +70,7 @@ async function stepInitializeSession(context) {
     // 🔍 Log APRÈS réparation
     logSessionState("Vérification APRÈS réparation", session);
 
-    // 🎯 Analyse projectType logique
+    // 🎯 Analyse état session existante
     const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);
     const hasAskedSpecs = Object.values(session.askedSpecs).some(v => v === true);
 
@@ -89,58 +88,7 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-    // 🤖 Classification GPT
-    const vagueInputs = [
-        "bonjour", "allo", "salut", "hello", "hi", "cc", "ça va",
-        "comment ca va", "comment ça va", "yo", "hey", "coucou", "re"
-    ];
-    const isVague = vagueInputs.some(g => cleanText === g || cleanText.startsWith(g));
-
-    const prompt = `
-Tu es un assistant spécialisé en immobilier. Classe le message de l'utilisateur dans l'une des catégories suivantes :
-- B : l'utilisateur veut acheter une propriété
-- S : l'utilisateur veut vendre une propriété
-- R : l'utilisateur veut louer une propriété
-- ? : toute autre situation (salutation, question, humour, etc.)
-
-Réponds uniquement par : B, S, R ou ?.
-
-Message : "${message}"`.trim();
-
-    let project = "?";
-
-    try {
-        const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 10,
-            temperature: 0
-        }, {
-            headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const content = gptRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
-        if (["B", "S", "R", "?"].includes(content)) {
-            project = content;
-        }
-
-    } catch (err) {
-        console.warn(`[INIT] GPT erreur :`, err.message);
-    }
-
-    const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
-
-    if (finalProject !== "?") {
-        setProjectType(session, finalProject, "GPT session init");
-        initializeSpecFields(session);
-        console.log(`[INIT] Nouvelle session avec projectType = ${finalProject}`);
-    } else if (typeof session.projectType === "undefined") {
-        setProjectType(session, "?", "GPT → ?");
-    }
-
+    // 📌 Aucune classification ici — laissé au directeur
     setSession(senderId, session);
     context.session = session;
 
