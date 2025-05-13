@@ -50,29 +50,27 @@ async function runDirector(context) {
 
     if (!isValid) {
         console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée `);
-
         session.askedSpecs[nextSpec] = true;
 
-        if (nextSpec === "projectType" && ["B", "S", "R"].includes(session.projectType)) {
+        if (nextSpec === "projectType") {
+            const interpreted = await gptClassifyProject(message, session.language || "fr");
+            console.log(`[DIRECTOR] GPT s'est chargé de traiter et d'interpréter votre msg : ${interpreted}`);
+
+            const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
+
+            if (isValidGPT) {
+                setProjectType(session, interpreted, "GPT → valide");
+                initializeSpecFields(session);
+            } else {
+                setProjectType(session, "?", "GPT → invalide");
+            }
+
             await stepWhatNext(context);
             return true;
         }
 
-        if (nextSpec === "projectType") {
-            const interpreted = await gptClassifyProject(message, session.language || "fr");
-            console.log(`[DIRECTOR] interprétation par GPT de votre msg : ${interpreted}`);
-
-            session.askedSpecs.projectType = true;
-
-            if (["B", "S", "R", "?"].includes(interpreted)) {
-                setProjectType(session, interpreted, "GPT");
-                if (interpreted !== "?") initializeSpecFields(session);
-                await stepWhatNext(context);
-                return true;
-            }
-        } else {
-            setSpecValue(session, nextSpec, "?");
-        }
+        // Toutes les autres specs non valides
+        setSpecValue(session, nextSpec, "?");
 
         context.deferSpec = true;
         context.gptAllowed = true;
@@ -80,6 +78,7 @@ async function runDirector(context) {
         await stepWhatNext(context);
         return true;
     }
+
 
 
     console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);

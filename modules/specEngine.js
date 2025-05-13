@@ -103,8 +103,10 @@ function isValidAnswer(value, projectType, field) {
     const map = displayMap?.[field]?.[lang];
     return map ? Object.keys(map).includes(input) : true;
 }
-
-
+//emplacement
+if (field === "location") {
+    return typeof value === "string" && value.trim().length > 0 && value.length <= 25;
+}
 
 function getSpecFieldsForProjectType(projectType) {
     return Object.keys(questions?.[projectType] || {});
