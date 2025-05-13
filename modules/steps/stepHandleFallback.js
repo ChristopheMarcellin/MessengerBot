@@ -4,6 +4,8 @@ const { setProjectType } = require('../utils');
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+
+
 async function stepHandleFallback(context) {
     const { senderId, session, message, gptMode = "chatOnly" } = context;
     session.questionCount++;

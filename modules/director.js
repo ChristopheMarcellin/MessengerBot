@@ -59,10 +59,15 @@ async function runDirector(context) {
 
         session.askedSpecs[nextSpec] = true;
 
+        // 🛡️ Blocage GPT si projectType déjà défini
+        if (nextSpec === "projectType" && ["B", "S", "R"].includes(session.projectType)) {
+            console.warn('[SKIP] Fallback ignoré : projectType déjà défini.');
+            await stepWhatNext(context);
+            return true;
+        }
+
         if (nextSpec === "projectType") {
-            if (session.projectType !== "B" && session.projectType !== "S" && session.projectType !== "R") {
-                setProjectType(session, "?", "user input");
-            }
+            setProjectType(session, "?", "user input");
         } else {
             setSpecValue(session, nextSpec, "?");
         }
