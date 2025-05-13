@@ -32,7 +32,8 @@ async function runDirector(context) {
 
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
-    const nextSpec = getNextSpec(session);
+    // 🛠 Appel corrigé : on passe bien les 3 arguments
+    const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log('[DEBUG] nextSpec =', nextSpec);
 
     if (nextSpec === "none") {
