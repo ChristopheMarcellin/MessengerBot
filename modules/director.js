@@ -1,7 +1,7 @@
-const { getNextSpec } = require('./utils');
-const { detectLanguageFromText } = require('./utils');
+
 const { isValidAnswer } = require('./specEngine');
-const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject } = require('./utils'); // ajout ici
+const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject,
+        chatOnly, getNextSpec, detectLanguageFromText } = require('./utils'); // ajout ici
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
