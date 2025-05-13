@@ -32,7 +32,6 @@ async function runDirector(context) {
 
     console.log(`[DIRECTOR] Analyse en cours du message: "${message}"`);
 
-    // 🛠 Appel corrigé : on passe bien les 3 arguments
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log('[DEBUG] nextSpec =', nextSpec);
 
@@ -46,7 +45,6 @@ async function runDirector(context) {
         return false;
     }
 
-    // 🔁 Si la spec a déjà été posée une fois sans succès → convertir "?" en "E"
     if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
         setSpecValue(session, nextSpec, "E");
         console.log(`[DIRECTOR] "${nextSpec}" → passage de "?" à "E" après relance unique`);
@@ -59,7 +57,7 @@ async function runDirector(context) {
 
         session.askedSpecs[nextSpec] = true;
 
-        // 🛡️ Blocage GPT si projectType déjà défini
+        // 🛡️ Ne jamais déclencher GPT si projectType est déjà B, S ou R
         if (nextSpec === "projectType" && ["B", "S", "R"].includes(session.projectType)) {
             console.warn('[SKIP] Fallback ignoré : projectType déjà défini.');
             await stepWhatNext(context);
