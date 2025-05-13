@@ -51,7 +51,17 @@ async function stepHandleFallback(context) {
 
             console.log(`[ALERTE TRACE] GPT a classé la réponse comme ${classification} → projectType = ${interpreted}`);
 
-            // 🚫 Ne pas écraser une vraie valeur utilisateur déjà définie
+            // 🚫 Protection anti-écrasement d'une valeur utilisateur déjà définie
+            if (
+                session.projectType &&
+                session.projectType !== "?" &&
+                interpreted === "?"
+            ) {
+                console.error('[BLOCKED] GPT a tenté d’écraser un projectType utilisateur valide — opération annulée');
+                return;
+            }
+
+            // Appliquer si projectType est encore indéfini ou ?
             if (typeof session.projectType === "undefined" || session.projectType === "?") {
                 setProjectType(session, interpreted, "GPT → classification directe");
             } else {
