@@ -15,6 +15,9 @@ async function stepWhatNext(context) {
     console.log('[DEBUG] Version active de stepWhatNext');
     console.log(`[NEXT] Prochaine spec attendue : ${nextSpec}`);
 
+    // Synchroniser avec la spec actuellement attendue
+    session.currentSpec = nextSpec;
+
     // Rien à poser
     if (nextSpec === "none") {
         console.log('[NEXT] Aucune suite structurée possible (projectType = E)');
@@ -24,7 +27,6 @@ async function stepWhatNext(context) {
     // Résumé attendu
     if (nextSpec === "summary") {
         console.log('[NEXT] Toutes les specs sont couvertes → passage au résumé');
-        // futur : résumé ou redirection
         return false;
     }
 

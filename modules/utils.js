@@ -5,34 +5,45 @@ function traceCaller(label) {
     const line = stack.split('\n')[3] || 'inconnu';
     console.log(`[TRACE] ${label} ← ${line.trim()}`);
 }
+function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
+    // 1. Cas spécial : projectType manquant ou non demandé
+    if (projectType === "?" || askedSpecs.projectType !== true) {
+        return "projectType";
+    }
 
-function getNextSpec(session) {
-    traceCaller('getNextSpec');
-
-    // Priorité à projectType si non défini
-    if (!["B", "S", "R"].includes(session.projectType)) {
-        if (!session.askedSpecs?.projectType) {
-            console.log('[NEXT] projectType non défini → on doit poser la question');
-            return 'projectType';
-        }
-        if (session.askedSpecs?.projectType && session.projectType === "?") {
-            console.log('[NEXT] projectType est encore "?" après une relance');
-            return 'projectType';
-        }
+    // 2. Cas spécial : projectType = E → aucun traitement structuré
+    if (projectType === "E") {
         return "none";
     }
 
-    const allKeys = Object.keys(session.specValues || {});
-    for (const key of allKeys) {
-        if (!session.askedSpecs[key]) {
-            console.log(`[NEXT] Prochaine spec attendue: ${key}`);
-            return key;
+    // 3. Liste des specs à poser selon le type de projet
+    const specsByType = {
+        B: ["price", "bedrooms", "bathrooms", "garage", "location"],
+        S: ["price", "bedrooms", "bathrooms", "garage", "location"],
+        R: ["price", "bedrooms", "bathrooms", "parking", "location"]
+    };
+
+    const specList = specsByType[projectType] || [];
+
+    // 4. Parcours des specs en ordre → première à poser (non posée ou vide)
+    for (const field of specList) {
+        const isAsked = askedSpecs[field] === true;
+        const isAnswered = typeof specValues[field] !== "undefined" && specValues[field] !== "?";
+        if (!isAsked || !isAnswered) {
+            return field;
         }
     }
 
-    console.log('[NEXT] Aucune spec restante à poser');
-    return 'summary';
+    // 5. Si tout est posé et répondu → on retourne "summary"
+    return "summary";
 }
+function getCurrentSpec(session) {
+    if (!session || typeof session.currentSpec !== "string") {
+        return null;
+    }
+    return session.currentSpec;
+}
+
 
 function initializeSpecFields(session, projectType) {
     traceCaller('initializeSpecFields');
@@ -119,6 +130,7 @@ function setSpecValue(session, key, value) {
 
 module.exports = {
     getNextSpec,
+    getCurrentSpec,
     initializeSpecFields,
     setProjectType,
     setSpecValue,
