@@ -16,14 +16,11 @@ function getAllSessions() {
     return userSessions;
 }
 
-
-function logSessionState(senderId) {
-    const session = userSessions[senderId];
-    console.log(`[DEBUG] Session state for ${senderId}:\n`, JSON.stringify(session, null, 2));
-}
-
+// ✅ Fusion : reset enrichi sans effet de bord
 function resetSession(senderId) {
     const freshSession = {
+        senderId,
+        language: 'fr',
         projectType: "?",
         specValues: {},
         askedSpecs: {},
@@ -33,13 +30,31 @@ function resetSession(senderId) {
         lastBotMessage: null,
         questionCount: 0,
         maxQuestions: 40,
-        language: 'fr',
         ProjectDate: new Date().toISOString()
     };
 
-    userSessions[senderId] = freshSession;
-    console.log(`[RESET] Nouvelle session propre cr��e pour ${senderId}`);
+    console.log(`[RESET] Nouvelle session propre créée pour ${senderId}`);
     return freshSession;
+}
+
+// ✅ Log centralisé, appelé depuis stepInitializeSession ou autre
+function logSessionState(label, senderId) {
+    const session = userSessions[senderId];
+    if (!session) {
+        console.warn(`[DEBUG] Session absente pour ${senderId} → rien à afficher.`);
+        return;
+    }
+    const snapshot = {
+        language: session.language,
+        ProjectDate: session.ProjectDate,
+        questionCount: session.questionCount,
+        maxQuestions: session.maxQuestions,
+        askedSpecs: session.askedSpecs,
+        specValues: session.specValues,
+        projectType: session.projectType,
+        currentSpec: session.currentSpec
+    };
+    console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
 }
 
 module.exports = {
@@ -47,6 +62,6 @@ module.exports = {
     setSession,
     deleteSession,
     getAllSessions,
-    logSessionState,
-    resetSession
+    resetSession,
+    logSessionState
 };

@@ -1,20 +1,5 @@
-const { setProjectType, initializeSpecFields } = require('../utils');
-const { getSession, setSession } = require('../sessionStore');
-
-// 🔎 Fonction d'audit de la session
-function logSessionState(label, session) {
-    const snapshot = {
-        language: session.language,
-        ProjectDate: session.ProjectDate,
-        questionCount: session.questionCount,
-        maxQuestions: session.maxQuestions,
-        askedSpecs: session.askedSpecs,
-        specValues: session.specValues,
-        projectType: session.projectType,
-        currentSpec: session.currentSpec
-    };
-    console.log(`[INIT] ${label} :`, JSON.stringify(snapshot, null, 2));
-}
+const { setProjectType, initializeSpecFields, detectLanguageFromText } = require('../utils');
+const { getSession, setSession, resetSession, logSessionState } = require('../sessionStore');
 
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
@@ -25,7 +10,7 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-    // 🧠 Session existante ou création vide
+    // 🧠 Session existante ou création d'une session vide
     let session = getSession(senderId);
     if (!session || typeof session !== 'object') {
         console.log('[INIT] Aucune session trouvée dans le store → nouvelle session créée');
@@ -35,31 +20,21 @@ async function stepInitializeSession(context) {
     }
 
     // 🔍 Log AVANT réparation
-    logSessionState("Vérification AVANT réparation", session);
+    logSessionState("Vérification AVANT réparation", senderId);
 
-    // 🔧 Réparation
+    // 🔧 Affecter les variables minimales suivant un End Session
     const isEndSession = message.trim().toLowerCase() === 'end session';
     if (isEndSession) {
+        const newSession = resetSession(senderId);
+        setSession(senderId, newSession);
+        context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-        session = {
-            language: 'fr',
-            ProjectDate: new Date().toISOString(),
-            questionCount: 0,
-            maxQuestions: 40,
-            askedSpecs: {},
-            specValues: {},
-            projectType: undefined,
-            currentSpec: null
-        };
-        setSession(senderId, session);
-        context.session = session;
-
-        logSessionState("Vérification APRÈS réparation (post-reset)", session);
+        logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
         return true;
     }
 
-    // 🧼 Normalisation minimale
-    session.language ??= 'fr';
+    // 🧼 Normalisation, corrige les variables suspectes ou aux données incomplètes
+    session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue
     session.ProjectDate ??= new Date().toISOString();
     session.questionCount ??= 1;
     session.maxQuestions ??= 40;
@@ -67,8 +42,8 @@ async function stepInitializeSession(context) {
     session.specValues ??= {};
     session.currentSpec ??= null;
 
-    // 🔍 Log APRÈS réparation
-    logSessionState("Vérification APRÈS réparation", session);
+    // 🔍 Log APRÈS réparation/normalisation
+    logSessionState("Vérification APRÈS réparation", senderId);
 
     // 🎯 Analyse état session existante
     const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);
@@ -92,9 +67,9 @@ async function stepInitializeSession(context) {
     setSession(senderId, session);
     context.session = session;
 
+    // 🧩 Sécuriser l’observation de projectType via un setter piégé
     if (context?.session) {
         const realSession = context.session;
-        let internalValue = realSession.projectType;
         console.log("[CHECK] Définition du setter projectType dans stepInitializeSession");
 
         Object.defineProperty(session, 'projectType', {
@@ -109,9 +84,8 @@ async function stepInitializeSession(context) {
                 console.log(`[TRACE] setProjectType ←`, err.stack);
                 session._projectType = value;
             }
-
-        })
-    };
+        });
+    }
 
     return true;
 }

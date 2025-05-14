@@ -9,31 +9,16 @@ const { stepWhatNext } = require('./steps');
 async function runDirector(context) {
     const { message, senderId } = context;
 
-    // 🔁 End Session
-    if (context.cleanText === 'end session') {
-        const { resetSession, setSession } = require('./sessionStore');
-        const newSession = resetSession(senderId);
-        setSession(senderId, newSession);
-        context.session = newSession;
-        console.log('[DIRECTOR] Session réinitialisée suite à "end session" en attente du prochain MSG à traiter');
-        return true;
-    }
-
-    // 1 - Initialisation de la session
+    // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);
     const session = context.session;
 
-    // 🔍 Détection de blocage à l'initialisation
+    // 🔍 Détection d'un blocage à l'initialisation
     if (!isReady || !session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
         return false;
     }
 
-    // 🌐 Détection automatique de la langue (une seule fois)
-    if (typeof session.language === "undefined") {
-        session.language = detectLanguageFromText(message);
-  //      console.log(`[DIRECTOR] Langue détectée automatiquement : ${session.language}`);
-    }
 
     console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
 
@@ -95,7 +80,7 @@ async function runDirector(context) {
         }
     } else {
         setSpecValue(session, nextSpec, message);
-        session.askedSpecs[nextSpec] = true;
+     //   session.askedSpecs[nextSpec] = true;
     }
 
     const continued = await stepWhatNext(context);
@@ -107,3 +92,9 @@ async function runDirector(context) {
 }
 
 module.exports = { runDirector };
+
+
+
+
+
+
