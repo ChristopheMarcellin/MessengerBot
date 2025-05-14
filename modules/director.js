@@ -1,5 +1,5 @@
 
-const { isValidAnswer } = require('./specEngine');
+const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
 const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject,
         chatOnly, getNextSpec, detectLanguageFromText } = require('./utils'); // ajout ici
 const { stepInitializeSession } = require('./steps/index');
@@ -69,8 +69,7 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
-        const map = { "1": "B", "2": "S", "3": "R", "4": "?" };
-        const interpreted = map[message.trim()] || "?";
+        const interpreted = getProjectTypeFromNumber(message);
         session.askedSpecs.projectType = true;
         setProjectType(session, interpreted, "user input");
 
@@ -80,7 +79,7 @@ async function runDirector(context) {
         }
     } else {
         setSpecValue(session, nextSpec, message);
-     //   session.askedSpecs[nextSpec] = true;
+
     }
 
     const continued = await stepWhatNext(context);

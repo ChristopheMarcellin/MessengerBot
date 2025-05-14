@@ -16,6 +16,18 @@ function getPromptForSpec(projectType, specKey, lang = "en") {
     return formattedChoices ? `${rawQuestion}\n${formattedChoices}` : rawQuestion;
 }
 
+const projectTypeMap = {
+    "1": "B",
+    "2": "S",
+    "3": "R",
+    "4": "E", // projet autre
+    "5": "?"  // réponse incomprise
+};
+
+function getProjectTypeFromNumber(input) {
+    return projectTypeMap[input?.trim()] || "?";
+}
+
 const getNextUnansweredSpec = (session) => {
     const projectType = session.projectType;
     if (!projectType || !questions[projectType]) return undefined;

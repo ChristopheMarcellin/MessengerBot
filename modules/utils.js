@@ -1,5 +1,5 @@
 // modules/utils.js
-
+const { getProjectTypeFromNumber } = require('./specEngine');
 
 const axios = require('axios');
 const { sendMessage } = require('./messenger');
@@ -12,7 +12,7 @@ function traceCaller(label) {
     console.log(`[UTILS] ${label} ← ${line.trim()}`);
 }
 
-// validé par CM, attention le none devrai être extensionné lorsque toutes les specs sont
+// validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     // 1. Type de projet invalide → poser la question
     if (!["B", "S", "R", "E"].includes(projectType)) {
@@ -163,7 +163,7 @@ async function gptClassifyProject(message, language = "fr") {
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const classification = raw?.match(/^[1-4]/)?.[0] || "5"; // défaut: 5 → autre → ?
 
-        const map = { "1": "B", "2": "S", "3": "R", "4": "E", "5": "?" };
+        const map = classifyProjectFromNumber(message);
         return map[classification];
 
     } catch (err) {
