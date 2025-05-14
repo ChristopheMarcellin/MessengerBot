@@ -33,7 +33,7 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-    // 🧼 Normalisation, corrige les variables suspectes ou aux données incomplètes
+    // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes
     session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue
     session.ProjectDate ??= new Date().toISOString();
     session.questionCount ??= 1;

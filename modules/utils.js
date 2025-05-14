@@ -85,7 +85,7 @@ function setProjectType(session, value, reason = 'unknown') {
     const old = session.projectType;
 
     // 🚫 Règle #1 : ne pas écraser B/S/R par "?"
-    if (["B", "S", "R"].includes(old) && value === "?") {
+    if (["B", "S", "R", "E"].includes(old) && value === "?") {
         console.warn(`[UTILS] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
         return;
     }
@@ -161,9 +161,9 @@ async function gptClassifyProject(message, language = "fr") {
         });
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const classification = raw?.match(/^[1-4]/)?.[0] || "4"; // défaut: 4 → autre → ?
+        const classification = raw?.match(/^[1-4]/)?.[0] || "5"; // défaut: 5 → autre → ?
 
-        const map = { "1": "B", "2": "S", "3": "R", "4": "?" };
+        const map = { "1": "B", "2": "S", "3": "R", "4": "E", "5": "?" };
         return map[classification];
 
     } catch (err) {
