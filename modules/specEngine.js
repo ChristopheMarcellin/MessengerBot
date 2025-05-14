@@ -140,5 +140,6 @@ module.exports = {
     getDisplayValue,
     isValidAnswer,
     getSpecFieldsForProjectType,
-    allSpecsCollected
+    allSpecsCollected,
+    getProjectTypeFromNumber
 };
