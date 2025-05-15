@@ -45,7 +45,7 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     }
 
     // 4. Toutes les specs principales sont complètes → enchaîner sur questions génériques
-    const genericSpecs = ["contactConsent", "firstName", "lastName", "phone", "email", "message"];
+    const genericSpecs = ["wantsContact", "firstName", "lastName", "phone", "email"];
 
     for (const field of genericSpecs) {
         const asked = askedSpecs[field];

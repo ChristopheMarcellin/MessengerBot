@@ -1,68 +1,68 @@
 const questions = {
   B: {
     price: {
-      en: "What is your budget?",
-      fr: "Quel est votre budget ?",
+      en: "What kind of budget are you looking at (please provide a numeric answer, for example 500 for 500 000)?",
+      fr: "Quel serait votre budget (svp fournir une réponse numérique, par exemple 500 pour 500 000) ?",
     },
     bedrooms: {
-      en: "How many bedrooms are you looking for?",
-      fr: "Combien de chambres souhaitez-vous ?",
+      en: "How many bedrooms minimum would you be looking for (numeric answer please)?",
+      fr: "Combien de chambres au minimum souhaiteriez-vous (réponse numérique SVP) ?",
     },
     bathrooms: {
-      en: "How many bathrooms do you need?",
-      fr: "Combien de salles de bains souhaitez-vous ?",
+        en: "How many bathrooms minimum would you need (numeric answer please)?",
+        fr: "Combien de salles de bains souhaitez-vous (réponse numérique SVP) ?",
     },
     garage: {
-      en: "Do you need a garage? If so, how many?",
-      fr: "Avez-vous besoin d’un garage ? Si oui, combien ?",
+        en: "Do you need a garage - If so, how many minimum (numeric answer please) ?",
+        fr: "Avez-vous besoin d’un garage - Si oui, combien au minimum (réponse numérique SVP) ?",
     },
     location: {
-      en: "In which city or neighborhood?",
-      fr: "Dans quelle ville ou quel quartier ?",
+      en: "Which city or which neighborhood(s) would be your idea target?",
+      fr: "Dans quelle ville ou quel(s) quartier(s) serait votre cible idéale ?",
     },
   },
   S: {
     price: {
-      en: "Do you have a selling price in mind, what is it?",
+          en: "Do you have a selling price in mind, what is it (numeric answer please)?",
       fr: "Avez-vous un prix de vente en tête, quel est-il?",
     },
     bedrooms: {
-      en: "How many bedrooms do you have?",
-      fr: "Combien de chambre à coucher avez-vous ?",
+        en: "How many bedrooms do you have (numeric answer please)?",
+        fr: "Combien de chambre à coucher avez-vous (réponse numérique SVP) ?",
     },
     bathrooms: {
-      en: "How many bathrooms do you have?",
-      fr: "Combien de salles de bains avez-vous ?",
+        en: "How many bathrooms do you have (numeric answer please)?",
+        fr: "Combien de salles de bains avez-vous (réponse numérique SVP) ?",
     },
     garage: {
-      en: "How many garage spots do you have?",
-      fr: "Combien d'espace garage avez-vous ?",
+        en: "How many garage spaces do you have (numeric answer please)?",
+        fr: "Combien d'espace garage avez-vous (réponse numérique SVP) ?",
     },
     location: {
-      en: "In which city or neighborhood are you located?",
-      fr: "Dans quelle ville ou quel quartier êtes vous situé ?",
+        en: "In which city / neighborhood are you located (numeric answer please)?",
+        fr: "Dans quelle ville / quartier êtes vous situé (réponse numérique SVP) ?",
     },
   },
   R: {
     price: {
-      en: "What rental price target do you have in mind (monthly)?",
+      en: "What rental price target do you have in mind (monthly numeric only please)?",
       fr: "Quel prix de location (mensuel) avez-vous en tête ?",
     },
     bedrooms: {
-      en: "How many bedrooms do you have?",
+        en: "How many bedrooms do you have (numeric answer please)?",
       fr: "Combien de chambre à coucher avez-vous ?",
     },
     bathrooms: {
-      en: "How many bathrooms do you have?",
+        en: "How many bathrooms do you have (numeric answer please)?",
       fr: "Combien de salles de bains avez-vous ?",
     },
     parking: {
-      en: "Do you have private parking space, how many?",
+        en: "Do you have private parking space, how many space(s) (numeric answer please)?",
       fr: "Avez-vous des places de stationnement privées, combien ?",
     },
     location: {
-      en: "In which city or neighborhood are you located?",
-      fr: "Dans quelle ville ou quel quartier êtes vous situé ?",
+      en: "In which city/neighborhood are you located?",
+      fr: "Dans quelle ville/quartier êtes vous situé ?",
     },
   },
     E: {},
@@ -73,15 +73,15 @@ const questions = {
             en: "Would you like someone from our team to contact you? (1-yes, 2-no)",
         },
         firstName: {
-            fr: "Quel est votre prénom ?",
-            en: "What is your first name?",
+            fr: "Quel est votre prénom SVP ?",
+            en: "What is your first name please ?",
         },
         lastName: {
-            fr: "Quel est votre nom ?",
-            en: "What is your last name?",
+            fr: "Nom de famille ?",
+            en: "Your last name?",
         },
         phone: {
-            fr: "Quel est votre numéro de téléphone ?",
+            fr: "À quel numéro de téléphone pouvons nous vous joindre ?",
             en: "What is your phone number?",
         },
         email: {
@@ -102,7 +102,7 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
   return lang === 'en'
-    ? "What is the purpose of your project: 1-buy, 2-sell, 3-rent, 4-other? Please answer with a number only."
+    ? "Thanks for visiting us before going further, do you have a real estate project in mind ?: 1-buy, 2-sell, 3-rent, 4-other? Please answer with a number only."
     : "Avez-vous un projet immobilier en tête : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Svp, répondre seulement par un chiffre.)";
 }
 
