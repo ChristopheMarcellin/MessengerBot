@@ -102,8 +102,8 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
   return lang === 'en'
-    ? "Thanks for visiting us before going further, do you have a real estate project in mind ?: 1-buy, 2-sell, 3-rent, 4-other? Please answer with a number only."
-    : "Avez-vous un projet immobilier en tête : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Svp, répondre seulement par un chiffre.)";
+    ? "Thanks for contacting us before going further, do you have a real estate project in mind ?: 1-buy, 2-sell, 3-rent, 4-other? Please answer with a number only."
+    : "Merdi de nous contacter, avant de poursuivre, avez-vous un projet immobilier en tête : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Svp, répondre seulement par un chiffre.)";
 }
 
 module.exports = {
