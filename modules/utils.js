@@ -16,13 +16,13 @@ function traceCaller(label) {
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     // 1. Type de projet invalide → poser la question
     if (!["B", "S", "R", "E"].includes(projectType)) {
-        console.log(`[UTILS1] Type de projet non défini  ("${projectType}") "`);
+        console.log(`[UTILS1] Type de projet non défini  ("${projectType}")`);
         return "projectType";
     }
 
     // 2. Projet "E" = aucune spécification à poser
     if (projectType === "E") {
-        console.log('[UTILS] Projet défini à Else '  );
+        console.log('[UTILS] Projet défini à Else');
         return "none";
     }
 
@@ -32,6 +32,34 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         S: ["price", "bedrooms", "bathrooms", "garage", "location"],
         R: ["price", "bedrooms", "bathrooms", "parking", "location"]
     };
+
+    const expectedSpecs = specsByType[projectType] || [];
+
+    for (const field of expectedSpecs) {
+        const asked = askedSpecs[field];
+        const value = specValues[field];
+        if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
+            console.log(`[UTILS4] Condition 4 utilisée → spec incomplète → retour "${field}" (asked=${asked}, value=${value})`);
+            return field;
+        }
+    }
+
+    // 4. Toutes les specs principales sont complètes → enchaîner sur questions génériques
+    const genericSpecs = ["contactConsent", "firstName", "lastName", "phone", "email", "message"];
+
+    for (const field of genericSpecs) {
+        const asked = askedSpecs[field];
+        const value = specValues[field];
+        if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
+            console.log(`[UTILS5] Question générique à poser → retour "${field}"`);
+            return field;
+        }
+    }
+
+    // 5. Vraiment tout est complété → retour summary
+    console.log('[UTILS6] Toutes les specs (projet + génériques) complètes → retour "summary"');
+    return "summary";
+}
 
     const expectedSpecs = specsByType[projectType] || [];
 

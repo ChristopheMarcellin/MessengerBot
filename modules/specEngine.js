@@ -56,8 +56,8 @@ function getDisplayValue(field, value, lang = "en") {
 function buildSpecSummary(session, lang = "en") {
     const fields = session.specValues;
     let summary = lang === "fr"
-        ? "Voici le résumé des informations fournies :\n"
-        : "Here is the summary of the information you provided:\n";
+        ? "Voici un petit résumé des informations fournies que vous nous avez fournies:\n"
+        : "Here is a short summary of the information you provided:\n";
 
     for (const key in fields) {
         if (key !== "projectType" && fields[key] !== "?") {

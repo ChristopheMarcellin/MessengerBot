@@ -1,6 +1,7 @@
 const { getNextSpec } = require('../utils');
 const { getPromptForSpec, getPromptForProjectType } = require('../questions');
 const { sendMessage } = require('../messenger');
+const { buildSpecSummary } = require('../specEngine');
 
 /**
  * Décide et envoie la prochaine question à poser à l'utilisateur
@@ -26,8 +27,10 @@ async function stepWhatNext(context) {
 
     // Résumé attendu
     if (nextSpec === "summary") {
-        console.log('[WHATNEXT] Toutes les specs traitées, on passe au sommaire');
-        return false;
+                console.log('[WHATNEXT] Toutes les specs traitées, on passe au sommaire');
+                const summary = buildSpecSummary(session, lang);
+                await sendMessage(senderId, summary);
+                return false; // ❗️Résumé envoyé → conversation terminée
     }
 
     // Projet non défini → poser la question projet

@@ -84,8 +84,12 @@ async function runDirector(context) {
 
     const continued = await stepWhatNext(context);
     if (!continued) {
-        console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext)');
+        console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
+        context.gptAllowed = true;
+        await chatOnly(senderId, message, session.language || "fr");
+        return true;
     }
+
 
     return true;
 }

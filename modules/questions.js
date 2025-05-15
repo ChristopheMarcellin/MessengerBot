@@ -65,12 +65,40 @@ const questions = {
       fr: "Dans quelle ville ou quel quartier êtes vous situé ?",
     },
   },
-  E: {},
+    E: {},
+
+    generic: {
+        wantsContact: {
+            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte ? (1-oui, 2-non)",
+            en: "Would you like someone from our team to contact you? (1-yes, 2-no)",
+        },
+        firstName: {
+            fr: "Quel est votre prénom ?",
+            en: "What is your first name?",
+        },
+        lastName: {
+            fr: "Quel est votre nom ?",
+            en: "What is your last name?",
+        },
+        phone: {
+            fr: "Quel est votre numéro de téléphone ?",
+            en: "What is your phone number?",
+        },
+        email: {
+            fr: "Quelle est votre adresse courriel ?",
+            en: "What is your email address?",
+        },
+    },
 };
 
 function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
-  return questions[projectType]?.[field]?.[lang] || `Veuillez fournir une valeur pour ${field}`;
+    return (
+        questions[projectType]?.[field]?.[lang] ||
+        questions.generic?.[field]?.[lang] ||
+        `Veuillez fournir une valeur pour ${field}`
+    );
 }
+
 
 function getPromptForProjectType(lang = 'fr') {
   return lang === 'en'
