@@ -26,6 +26,12 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         return "none";
     }
 
+    // ✅ 2.5 : Type de propriété non défini → poser propertyUsage
+    if (!askedSpecs?.propertyUsage) {
+        console.log(`[UTILS3] propertyUsage non défini → retour "propertyUsage"`);
+        return "propertyUsage";
+    }
+
     // 3. Specs attendues selon le type
     const specsByType = {
         B: ["price", "bedrooms", "bathrooms", "garage", "location"],
@@ -56,11 +62,9 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         }
     }
 
+    return "summary"; // ✅ Toutes les specs sont traitées
+}
 
-    // 5. Toutes les specs sont complètes
-    console.log(`[UTILS] Toutes les specs sont complétées "${projectType}" → retour "summary"`);
-    return "summary";
-};
 
 
 function getCurrentSpec(session) {
