@@ -56,27 +56,12 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         }
     }
 
-    // 5. Vraiment tout est complété → retour summary
-    console.log('[UTILS6] Toutes les specs (projet + génériques) complètes → retour "summary"');
-    return "summary";
-}
-
-    const expectedSpecs = specsByType[projectType] || [];
-
-    // 4. Logique officielle : posée ET réponse valide obligatoire
-    for (const field of expectedSpecs) {
-        const asked = askedSpecs[field];
-        const value = specValues[field];
-        if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
-            console.log(`[UTILS4] Condition 4 utilisée → spec incomplète → retour "${field}" (asked=${asked}, value=${value})`);
-            return field;
-        }
-    }
 
     // 5. Toutes les specs sont complètes
     console.log(`[UTILS] Toutes les specs sont complétées "${projectType}" → retour "summary"`);
     return "summary";
-}
+};
+
 
 function getCurrentSpec(session) {
     if (!session || typeof session.currentSpec !== "string") {
@@ -191,7 +176,7 @@ async function gptClassifyProject(message, language = "fr") {
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const classification = raw?.match(/^[1-4]/)?.[0] || "5"; // défaut: 5 → autre → ?
 
-        const map = classifyProjectFromNumber(message);
+        const map = getProjectTypeFromNumber();
         return map[classification];
 
     } catch (err) {
