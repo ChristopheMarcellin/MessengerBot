@@ -1,7 +1,7 @@
 
 const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
 const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject,
-        chatOnly, getNextSpec, detectLanguageFromText } = require('./utils'); // ajout ici
+        chatOnly, getNextSpec } = require('./utils'); // ajout ici
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
@@ -87,6 +87,7 @@ async function runDirector(context) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
         context.gptAllowed = true;
         await chatOnly(senderId, message, session.language || "fr");
+
         return true;
     }
 

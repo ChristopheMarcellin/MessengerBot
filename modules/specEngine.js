@@ -80,47 +80,57 @@ const resetInvalidSpecs = (session) => {
 // ✅ Validation spécifique pour projectType
 function isValidAnswer(value, projectType, field) {
     if (!value) return false;
+
     const input = value.trim();
 
-    // 🎯 1. projectType : choix numéroté 1 à 4
+    // 🎯 1. valide le texte de location
+
+    if (field === "location") {
+        const isValid = typeof value === "string" && value.trim().length > 0 && value.trim().length <= 25;
+        console.log(`[VALIDATION] field=location | input="${value}" | valid=${isValid}`);
+        return isValid;
+    }
+
+    // 🎯 2. projectType : choix numéroté 1 à 4
     if (field === "projectType") {
         const isValid = ["1", "2", "3", "4"].includes(input);
         console.log(`[VALIDATION] field=projectType | input="${input}" | valid=${isValid}`);
         return isValid;
     }
 
-    // 🎯 2. Champs numériques purs
+    // 🎯 3. Champs numériques purs
     const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking"];
     if (numericFields.includes(field)) {
         return /^\d+$/.test(input);
     }
 
-    // 🎯 3. Téléphone
+    // 🎯 4. Réponse à "Souhaitez-vous être contacté ?"
+    if (field === "wantsContact") {
+        const isValid = ["1", "2"].includes(input);
+        console.log(`[VALIDATION] field=wantsContact | input="${input}" | valid=${isValid}`);
+        return isValid;
+    }
+
+    // 🎯 5. Téléphone
     if (field === "phone") {
         return /^[\d\s\-\+\(\)]{7,25}$/.test(input);
     }
 
-    // 🎯 4. Email
+    // 🎯 6. Email
     if (field === "email") {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
     }
 
-    // 🎯 5. Nom et prénom
+    // 🎯 7. Nom et prénom
     if (["firstName", "lastName"].includes(field)) {
         return /^[a-zA-ZÀ-ÿ' -]{2,}$/.test(input);
     }
 
-    // 🎯 6. Fallback sur displayMap
+    // 🎯 8. Fallback sur displayMap
     const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
     const map = displayMap?.[field]?.[lang];
     return map ? Object.keys(map).includes(input) : true;
-
-     //🎯 7.emplacement
-    if (field === "location") {
-        return typeof value === "string" && value.trim().length > 0 && value.length <= 25;
-    }
 }
-
 
 function getSpecFieldsForProjectType(projectType) {
     return Object.keys(questions?.[projectType] || {});
