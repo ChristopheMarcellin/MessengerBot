@@ -110,6 +110,12 @@ function isValidAnswer(value, projectType, field) {
         console.log(`[VALIDATION] field=wantsContact | input="${input}" | valid=${isValid}`);
         return isValid;
     }
+    // 🎯 4. Détermine si c'est une propriété à revenus
+    if (field === "propertyUsage") {
+        const isValid = ["1", "2"].includes(input);
+        console.log(`[VALIDATION] field=propertyUsage | input="${input}" | valid=${isValid}`);
+        return isValid;
+    }
 
     // 🎯 5. Téléphone
     if (field === "phone") {

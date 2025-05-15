@@ -41,7 +41,18 @@ async function stepWhatNext(context) {
         return true;
     }
 
-    // Une spec ordinaire à poser
+    // Une spec ordinaire à poser qui saute les questions concernant les specs d'une propriété à revenus
+
+    const skipIfIncomeProperty = ["bedrooms", "bathrooms", "garage", "parking"];
+
+    if (session.propertyUsage === "income" && skipIfIncomeProperty.includes(nextSpec)) {
+        console.log(`[WHATNEXT] Spec "${nextSpec}" ignorée car propriété à revenus`);
+        session.askedSpecs[nextSpec] = true;
+        session.specValues[nextSpec] = "?";
+        return await stepWhatNext(context); // On relance pour la suivante
+    }
+
+
     const prompt = getPromptForSpec(nextSpec, lang);
 
     console.log(`[WHATNEXT] Pose de la spec "${nextSpec}" → ${prompt}`);

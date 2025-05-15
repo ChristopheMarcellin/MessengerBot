@@ -142,7 +142,17 @@ function setSpecValue(session, key, value) {
         return;
     }
 
-    // ✅ Mise à jour acceptée
+    // 🎯 Traitement spécial pour propertyUsage
+    if (key === "propertyUsage") {
+        const usage = value === "1" ? "income" : "residential";
+        session.propertyUsage = usage;
+        session.askedSpecs[key] = true;
+
+        console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}`);
+        return; // on sort ici sans toucher specValues
+    }
+
+    // ✅ Mise à jour standard
     session.specValues[key] = value;
     session.askedSpecs[key] = true;
 
@@ -152,6 +162,7 @@ function setSpecValue(session, key, value) {
 
     console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
+
 
 //gpt classifies project
 
