@@ -146,14 +146,14 @@ function setSpecValue(session, key, value) {
         return;
     }
 
-    // 🎯 Traitement spécial pour propertyUsage
     if (key === "propertyUsage") {
         const usage = value === "1" ? "income" : "residential";
         session.propertyUsage = usage;
+        session.specValues[key] = usage; // ✅ nécessaire pour que getNextSpec et stepWhatNext fonctionnent
         session.askedSpecs[key] = true;
 
         console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}`);
-        return; // on sort ici sans toucher specValues
+        return; // on sort ici sans toucher specValues plus bas
     }
 
     // ✅ Mise à jour standard
