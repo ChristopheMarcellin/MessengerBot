@@ -8,9 +8,29 @@ const { buildSpecSummary } = require('../specEngine');
  * @param {object} context - objet contenant session, senderId, etc.
  * @returns {boolean} true si une question a été posée, false sinon
  */
+const { getNextSpec } = require('../utils');
+const { getPromptForSpec, getPromptForProjectType } = require('../questions');
+const { sendMessage } = require('../messenger');
+const { buildSpecSummary } = require('../specEngine');
+
+/**
+ * Décide et envoie la prochaine question à poser à l'utilisateur
+ * @param {object} context - objet contenant session, senderId, etc.
+ * @returns {boolean} true si une question a été posée, false sinon
+ */
 async function stepWhatNext(context) {
     const { senderId, session } = context;
     const lang = session.language || 'fr';
+
+    // 🔁 Si la propriété est à revenus, forcer certaines specs à 0 dès maintenant
+    if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
+        const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
+        for (const field of specsToForce) {
+            session.specValues[field] = 0;
+            session.askedSpecs[field] = true;
+        }
+        session._incomeSpecsForced = true;
+    }
 
     console.log("[WHATNEXT Before getNextSpec] projectType =", session.projectType);
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
@@ -27,10 +47,10 @@ async function stepWhatNext(context) {
 
     // Résumé attendu
     if (nextSpec === "summary") {
-                console.log('[WHATNEXT] Toutes les specs traitées, on passe au sommaire');
-                const summary = buildSpecSummary(session, lang);
-                await sendMessage(senderId, summary);
-                return false; // ❗️Résumé envoyé → conversation terminée
+        console.log('[WHATNEXT] Toutes les specs traitées, on passe au sommaire');
+        const summary = buildSpecSummary(session, lang);
+        await sendMessage(senderId, summary);
+        return false; // ❗️Résumé envoyé → conversation terminée
     }
 
     // Projet non défini → poser la question projet
@@ -40,6 +60,16 @@ async function stepWhatNext(context) {
         await sendMessage(senderId, prompt);
         return true;
     }
+
+    // Une spec ordinaire à poser
+    const prompt = getPromptForSpec(nextSpec, lang);
+    console.log(`[WHATNEXT] Pose de la spec "${nextSpec}" → ${prompt}`);
+    await sendMessage(senderId, prompt);
+    return true;
+}
+
+module.exports = { stepWhatNext };
+
 
     // Une spec ordinaire à poser qui saute les questions concernant les specs d'une propriété à revenus
 
