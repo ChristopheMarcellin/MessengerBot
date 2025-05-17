@@ -44,6 +44,8 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     for (const field of expectedSpecs) {
         const asked = askedSpecs[field];
         const value = specValues[field];
+
+        if (value === "E") continue;
         if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
             console.log(`[UTILS4] Condition 4 utilisée → spec incomplète → retour "${field}" (asked=${asked}, value=${value})`);
             return field;
@@ -56,6 +58,8 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     for (const field of genericSpecs) {
         const asked = askedSpecs[field];
         const value = specValues[field];
+
+        if (value === "E") continue;
         if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
             console.log(`[UTILS5] Question générique à poser → retour "${field}"`);
             return field;
