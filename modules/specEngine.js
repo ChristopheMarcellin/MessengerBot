@@ -83,10 +83,15 @@ function isValidAnswer(value, projectType, field) {
 
     const input = value.trim();
 
-    // 🎯 1. valide le texte de location
+    // 🎯 0. Cas spécial : refus explicite (valable sauf pour projectType)
+    if (input === "E" && field !== "projectType") {
+        console.log(`[VALIDATION] field=${field} | input="E" | valid=true (refus explicite accepté)`);
+        return true;
+    }
 
+    // 🎯 1. valide le texte de location
     if (field === "location") {
-        const isValid = typeof value === "string" && value.trim().length > 0 && value.trim().length <= 25;
+        const isValid = typeof value === "string" && input.length > 0 && input.length <= 25;
         console.log(`[VALIDATION] field=location | input="${value}" | valid=${isValid}`);
         return isValid;
     }
@@ -101,7 +106,9 @@ function isValidAnswer(value, projectType, field) {
     // 🎯 3. Champs numériques purs
     const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking"];
     if (numericFields.includes(field)) {
-        return /^\d+$/.test(input);
+        const isValid = /^\d+$/.test(input);
+        console.log(`[VALIDATION] field=${field} | input="${input}" | valid=${isValid}`);
+        return isValid;
     }
 
     // 🎯 4. Réponse à "Souhaitez-vous être contacté ?"
@@ -110,32 +117,41 @@ function isValidAnswer(value, projectType, field) {
         console.log(`[VALIDATION] field=wantsContact | input="${input}" | valid=${isValid}`);
         return isValid;
     }
-    // 🎯 4. Détermine si c'est une propriété à revenus
+
+    // 🎯 5. Détermine si c'est une propriété à revenus
     if (field === "propertyUsage") {
         const isValid = ["1", "2"].includes(input);
         console.log(`[VALIDATION] field=propertyUsage | input="${input}" | valid=${isValid}`);
         return isValid;
     }
 
-    // 🎯 5. Téléphone
+    // 🎯 6. Téléphone
     if (field === "phone") {
-        return /^[\d\s\-\+\(\)]{7,25}$/.test(input);
+        const isValid = /^[\d\s\-\+\(\)]{7,25}$/.test(input);
+        console.log(`[VALIDATION] field=phone | input="${input}" | valid=${isValid}`);
+        return isValid;
     }
 
-    // 🎯 6. Email
+    // 🎯 7. Email
     if (field === "email") {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+        console.log(`[VALIDATION] field=email | input="${input}" | valid=${isValid}`);
+        return isValid;
     }
 
-    // 🎯 7. Nom et prénom
+    // 🎯 8. Nom et prénom
     if (["firstName", "lastName"].includes(field)) {
-        return /^[a-zA-ZÀ-ÿ' -]{2,}$/.test(input);
+        const isValid = /^[a-zA-ZÀ-ÿ' -]{2,}$/.test(input);
+        console.log(`[VALIDATION] field=${field} | input="${input}" | valid=${isValid}`);
+        return isValid;
     }
 
-    // 🎯 8. Fallback sur displayMap
+    // 🎯 9. Fallback sur displayMap
     const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
     const map = displayMap?.[field]?.[lang];
-    return map ? Object.keys(map).includes(input) : true;
+    const isValid = map ? Object.keys(map).includes(input) : true;
+    console.log(`[VALIDATION] field=${field} | input="${input}" | valid=${isValid} (via displayMap fallback)`);
+    return isValid;
 }
 
 function getSpecFieldsForProjectType(projectType) {
