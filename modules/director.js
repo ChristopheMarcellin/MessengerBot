@@ -72,14 +72,8 @@ async function runDirector(context) {
         const interpreted = getProjectTypeFromNumber(message);
         session.askedSpecs.projectType = true;
         setProjectType(session, interpreted, "user input");
-
-
-        if (["B", "S", "R"].includes(interpreted)) {
-            initializeSpecFields(session);
-        }
     } else {
         setSpecValue(session, nextSpec, message);
-
     }
 
     const continued = await stepWhatNext(context);

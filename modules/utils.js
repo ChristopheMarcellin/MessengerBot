@@ -40,6 +40,8 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         R: ["price", "bedrooms", "bathrooms", "parking", "location"]
     };
 
+    const expectedSpecs = specsByType[projectType] || [];
+
     for (const field of expectedSpecs) {
         const asked = askedSpecs[field];
         const value = specValues[field];
@@ -48,10 +50,8 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
         // ✅ On ne retourne que si la question n’a PAS été posée
         if (!asked) {
-          //  console.log(`[UTILS4] Toujours en attente de réponse pour "${field}" (asked=${asked}, value=${value})`);
             return field;
         }
-
     }
 
     // 4. Toutes les specs principales sont complètes → enchaîner sur questions génériques
