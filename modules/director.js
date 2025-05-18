@@ -24,6 +24,7 @@ async function runDirector(context) {
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
+    console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
     // On fait évoluer le statut de la spec vers E
     if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
@@ -39,7 +40,7 @@ async function runDirector(context) {
 
         if (nextSpec === "projectType") {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
-            console.log(`[DIRECTOR] GPT s'est chargé de traiter et d'interpréter votre msg : ${interpreted}`);
+      //      console.log(`[DIRECTOR] GPT s'est chargé de traiter et d'interpréter votre msg : ${interpreted}`);
 
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
 

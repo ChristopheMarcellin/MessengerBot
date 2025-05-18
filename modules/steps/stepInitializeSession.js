@@ -6,17 +6,17 @@ async function stepInitializeSession(context) {
 
     // 🔐 Vérifier présence du senderId
     if (typeof senderId !== 'string' || senderId.trim() === '') {
-        console.warn('[INIT] senderId manquant → impossible de poursuivre.');
+    //    console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return true;
     }
 
     // 🧠 Session existante ou création d'une session vide
     let session = getSession(senderId);
     if (!session || typeof session !== 'object') {
-        console.log('[INIT] Aucune session trouvée dans le store → nouvelle session créée');
+ //       console.log('[INIT] Aucune session trouvée dans le store → nouvelle session créée');
         session = {};
     } else {
-        console.log('[INIT] Session existante trouvée dans le store');
+  //      console.log('[INIT] Session existante trouvée dans le store');
     }
 
     // 🔍 Log AVANT réparation
@@ -29,7 +29,7 @@ async function stepInitializeSession(context) {
         setSession(senderId, newSession);
         context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-        logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
+      //  logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
         return true;
     }
 
@@ -70,7 +70,7 @@ async function stepInitializeSession(context) {
     // 🧩 Sécuriser l’observation de projectType via un setter piégé
     if (context?.session) {
         const realSession = context.session;
-        console.log("[CHECK] Définition du setter projectType dans stepInitializeSession");
+     //   console.log("[CHECK] Définition du setter projectType dans stepInitializeSession");
 
         Object.defineProperty(session, 'projectType', {
             configurable: true,
