@@ -66,7 +66,6 @@ async function runDirector(context) {
     }
 
 
-
     console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {

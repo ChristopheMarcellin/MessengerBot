@@ -14,21 +14,22 @@ function traceCaller(label) {
 
 // validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
+
     // 1. Type de projet invalide → poser la question
     if (!["B", "S", "R", "E"].includes(projectType)) {
-        console.log(`[UTILS1] Type de projet non défini  ("${projectType}")`);
+     //   console.log(`[UTILS1] Type de projet non défini  ("${projectType}")`);
         return "projectType";
     }
 
-    // 2. Projet "E" = aucune spécification à poser
+    // 2. Type de projet défini à "E" le robot cesse de poser des questions
     if (projectType === "E") {
-        console.log('[UTILS] Projet défini à Else');
+        console.log('[UTILS] Fin des questions');
         return "none";
     }
 
     // ✅ 2.5 : Type de propriété non défini → poser propertyUsage
     if (!askedSpecs?.propertyUsage) {
-        console.log(`[UTILS3] propertyUsage non défini → retour "propertyUsage"`);
+       // console.log(`[UTILS3] propertyUsage jamais traité"`);
         return "propertyUsage";
     }
 
@@ -39,17 +40,18 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         R: ["price", "bedrooms", "bathrooms", "parking", "location"]
     };
 
-    const expectedSpecs = specsByType[projectType] || [];
-
     for (const field of expectedSpecs) {
         const asked = askedSpecs[field];
         const value = specValues[field];
 
         if (value === "E") continue;
-        if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
-            console.log(`[UTILS4] Condition 4 utilisée → spec incomplète → retour "${field}" (asked=${asked}, value=${value})`);
+
+        // ✅ On ne retourne que si la question n’a PAS été posée
+        if (!asked) {
+          //  console.log(`[UTILS4] Toujours en attente de réponse pour "${field}" (asked=${asked}, value=${value})`);
             return field;
         }
+
     }
 
     // 4. Toutes les specs principales sont complètes → enchaîner sur questions génériques
@@ -60,12 +62,13 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         const value = specValues[field];
 
         if (value === "E") continue;
-        if (!asked || value === "?" || value === "undetermined" || typeof value === "undefined") {
+
+        // ✅ Retourner uniquement les champs jamais posés
+        if (!asked) {
             console.log(`[UTILS5] Question générique à poser → retour "${field}"`);
             return field;
         }
     }
-
     return "summary"; // ✅ Toutes les specs sont traitées
 }
 
