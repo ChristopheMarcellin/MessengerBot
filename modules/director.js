@@ -20,7 +20,6 @@ async function runDirector(context) {
         return false;
     }
 
-
     // 🔁 Si la propriété est à revenus, forcer certaines specs à 0 dès maintenant
     if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
         const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
@@ -45,20 +44,17 @@ async function runDirector(context) {
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
-    //isValid === false
     if (!isValid) {
         console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée `);
         session.askedSpecs[nextSpec] = true;
 
         if (nextSpec === "projectType") {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
-      //      console.log(`[DIRECTOR] GPT s'est chargé de traiter et d'interpréter votre msg : ${interpreted}`);
-
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
 
             if (isValidGPT) {
                 setProjectType(session, interpreted, "GPT → valide");
-                initializeSpecFields(session);
+  
             } else {
                 setProjectType(session, "?", "GPT → invalide");
             }
@@ -68,7 +64,14 @@ async function runDirector(context) {
         }
 
         // Toutes les autres specs non valides
-        setSpecValue(session, nextSpec, "?");
+        const current = session.specValues[nextSpec];
+        const protectedValues = ["E", 0];
+
+        if (!protectedValues.includes(current)) {
+            setSpecValue(session, nextSpec, "?");
+        } else {
+            console.log(`[DIRECTOR] Pas de réécriture de "${nextSpec}" car déjà à valeur protégée "${current}"`);
+        }
 
         context.deferSpec = true;
         context.gptAllowed = true;

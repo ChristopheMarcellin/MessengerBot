@@ -1,6 +1,5 @@
 // modules/utils.js
 const { getProjectTypeFromNumber } = require('./specEngine');
-
 const axios = require('axios');
 const { sendMessage } = require('./messenger');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -29,6 +28,11 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     // ✅ 2.5 : Type de propriété non défini → poser propertyUsage
     const usageValue = specValues.propertyUsage;
     const usageAsked = askedSpecs.propertyUsage;
+
+    if (usageValue === "E") {
+        // console.log(`[UTILS3C] propertyUsage refusé explicitement → aucune question à poser`);
+        return "none";
+    }
 
     if (!usageAsked && (usageValue === "?" || usageValue === "undetermined" || typeof usageValue === "undefined")) {
         // console.log(`[UTILS3] propertyUsage jamais traité`);
@@ -81,15 +85,12 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     return "summary"; // ✅ Toutes les specs sont traitées
 }
 
-
-
 function getCurrentSpec(session) {
     if (!session || typeof session.currentSpec !== "string") {
         return null;
     }
     return session.currentSpec;
 }
-
 
 function initializeSpecFields(session, projectType) {
     traceCaller('initializeSpecFields');
@@ -116,7 +117,7 @@ function setProjectType(session, value, reason = 'unknown') {
     traceCaller('setProjectType');
 
     const old = session.projectType;
-
+    // Remove enventually CM
     // 🚫 Règle #1 : ne pas écraser B/S/R par "?"
     if (["B", "S", "R", "E"].includes(old) && value === "?") {
         console.warn(`[UTILS] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
@@ -128,9 +129,17 @@ function setProjectType(session, value, reason = 'unknown') {
         console.log(`[UTILS] projectType déjà égal à "${value}" — aucune modification`);
         return;
     }
+  
+    // ✅ Initialisation globale de propertyUsage
+    if (!session.specValues) session.specValues = {};
+    if (!session.askedSpecs) session.askedSpecs = {};
+    if (typeof session.specValues.propertyUsage === "undefined") {
+        session.specValues.propertyUsage = "?";
+        session.askedSpecs.propertyUsage = false;
+    }
 
     session.projectType = value;
-
+    //Initialisation spécifique des specs en fonction du project type qui nécessitent des specs
     if (["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
     }
@@ -183,7 +192,6 @@ function setSpecValue(session, key, value) {
     console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
 
-
 //gpt classifies project
 
 async function gptClassifyProject(message, language = "fr") {
@@ -215,10 +223,6 @@ async function gptClassifyProject(message, language = "fr") {
         return "?";
     }
 }
-
-
-
-
 
 async function chatOnly(senderId, message, lang = "fr") {
     const prompt = lang === "fr"

@@ -79,6 +79,8 @@ const resetInvalidSpecs = (session) => {
 
 // ✅ Validation spécifique pour projectType
 function isValidAnswer(value, projectType, field) {
+    //cm
+    console.log(`[VALIDATION hint] validating message or interpretation: ${value} projecttype: ${projectType} for: field=${field}`);
     if (!value) return false;
 
     const input = value.trim();
