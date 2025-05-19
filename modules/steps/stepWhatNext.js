@@ -10,17 +10,8 @@ const { buildSpecSummary } = require('../specEngine');
  */
 async function stepWhatNext(context) {
     const { senderId, session } = context;
-    const lang = session.language || 'fr';
 
-    // 🔁 Si la propriété est à revenus, forcer certaines specs à 0 dès maintenant
-    if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
-        const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
-        for (const field of specsToForce) {
-            session.specValues[field] = 0;
-            session.askedSpecs[field] = true;
-        }
-        session._incomeSpecsForced = true;
-    }
+    const lang = session.language || 'fr';
 
     console.log("[WHATNEXT Before getNextSpec] projectType =", session.projectType);
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);

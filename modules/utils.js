@@ -17,7 +17,7 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
     // 1. Type de projet invalide → poser la question
     if (!["B", "S", "R", "E"].includes(projectType)) {
-     //   console.log(`[UTILS1] Type de projet non défini  ("${projectType}")`);
+        // console.log(`[UTILS1] Type de projet non défini  ("${projectType}")`);
         return "projectType";
     }
 
@@ -26,12 +26,19 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         console.log('[UTILS] Fin des questions');
         return "none";
     }
-
     // ✅ 2.5 : Type de propriété non défini → poser propertyUsage
-    if (!askedSpecs?.propertyUsage) {
-       // console.log(`[UTILS3] propertyUsage jamais traité"`);
+    const usageValue = specValues.propertyUsage;
+    const usageAsked = askedSpecs.propertyUsage;
+
+    if (!usageAsked && (usageValue === "?" || usageValue === "undetermined" || typeof usageValue === "undefined")) {
+        // console.log(`[UTILS3] propertyUsage jamais traité`);
         return "propertyUsage";
     }
+    if (usageAsked && usageValue === "?") {
+        // console.log(`[UTILS3B] propertyUsage déjà posée mais floue → relance`);
+        return "propertyUsage";
+    }
+
 
     // 3. Specs attendues selon le type
     const specsByType = {
@@ -48,8 +55,9 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
         if (value === "E") continue;
 
-        // ✅ On ne retourne que si la question n’a PAS été posée
-        if (!asked) {
+        // ✅ On ne retourne que si la question n’a PAS été posée et la valeur est encore floue
+        if (value === "?" || value === "undetermined" || typeof value === "undefined") {
+            // console.log(`[UTILS4] Spec principale à poser → retour "${field}"`);
             return field;
         }
     }
@@ -63,12 +71,13 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
         if (value === "E") continue;
 
-        // ✅ Retourner uniquement les champs jamais posés
-        if (!asked) {
+        // ✅ Retourner uniquement les champs jamais posés avec valeur floue
+        if (value === "undetermined" || typeof value === "undefined") {
             console.log(`[UTILS5] Question générique à poser → retour "${field}"`);
             return field;
         }
     }
+
     return "summary"; // ✅ Toutes les specs sont traitées
 }
 

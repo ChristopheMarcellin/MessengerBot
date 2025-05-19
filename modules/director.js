@@ -13,12 +13,23 @@ async function runDirector(context) {
     const isReady = await stepInitializeSession(context);
     const session = context.session;
 
+
     // 🔍 Détection d'un blocage à l'initialisation
     if (!isReady || !session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
         return false;
     }
 
+
+    // 🔁 Si la propriété est à revenus, forcer certaines specs à 0 dès maintenant
+    if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
+        const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
+        for (const field of specsToForce) {
+            session.specValues[field] = 0;
+            session.askedSpecs[field] = true;
+        }
+        session._incomeSpecsForced = true;
+    }
 
     console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
 
@@ -34,6 +45,7 @@ async function runDirector(context) {
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
+    //isValid === false
     if (!isValid) {
         console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée `);
         session.askedSpecs[nextSpec] = true;
@@ -66,6 +78,7 @@ async function runDirector(context) {
     }
 
 
+    //isValid === true
     console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
@@ -74,6 +87,7 @@ async function runDirector(context) {
         setProjectType(session, interpreted, "user input");
     } else {
         setSpecValue(session, nextSpec, message);
+        session.askedSpecs[nextSpec] = true; 
     }
 
     const continued = await stepWhatNext(context);
