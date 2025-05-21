@@ -5,6 +5,8 @@ const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject,
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
+const { sendGif } = require('./messenger'); // ajout ici
+
 
 async function runDirector(context) {
     const { message, senderId } = context;
@@ -12,7 +14,6 @@ async function runDirector(context) {
 
     const { text } = message;
 
-    const { sendGif } = require('./messenger'); // ajout ici
 
     // 🎯 INTERCEPTION : demande explicite d’un GIF
     if (typeof text === 'string' && text.toLowerCase().includes("gif")) {
