@@ -14,14 +14,14 @@ async function runDirector(context) {
 
     const { text } = message;
 
+    console.log(`[DEBUG] Texte reçu AVANT interception : "${text}"`);
 
-    // 🎯 INTERCEPTION : demande explicite d’un GIF
     if (typeof text === 'string' && text.toLowerCase().includes("gif")) {
         console.log(`[DIRECTOR] Intention détectée : envoi de GIF → "${text}"`);
+        console.log(`[DEBUG] Envoi du GIF en cours...`);
         await sendGif(senderId, "https://media.giphy.com/media/3orieUe6ejxSFxYCXe/giphy.gif");
         return true;
     }
-    console.log(`[DIRECTOR] Taitement du message reçu: "${text}"`);
 
     // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);
