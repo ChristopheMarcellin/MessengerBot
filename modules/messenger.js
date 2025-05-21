@@ -69,11 +69,35 @@ function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function sendGif(senderId, gifUrl) {
+    console.log(`[SEND] To: ${senderId} | GIF: ${gifUrl}`);
+
+    await axios.post(
+        `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
+        {
+            recipient: { id: senderId },
+            message: {
+                attachment: {
+                    type: "image",
+                    payload: {
+                        url: gifUrl,
+                        is_reusable: false
+                    }
+                }
+            }
+        },
+        {
+            headers: { 'Content-Type': 'application/json' }
+        }
+    );
+}
+
 module.exports = {
     sendMessage,
     sendMarkSeen,
     sendTypingOn,
     acknowledgeAndRespond,
-    acknowledgeOnly
+    acknowledgeOnly,
+    sendGif
 };
 

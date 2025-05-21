@@ -9,6 +9,18 @@ const { stepWhatNext } = require('./steps');
 async function runDirector(context) {
     const { message, senderId } = context;
 
+
+    const { text } = message;
+
+    const { sendGif } = require('./messenger'); // ajout ici
+
+    // 🎯 INTERCEPTION : demande explicite d’un GIF
+    if (typeof text === 'string' && text.toLowerCase().includes("gif")) {
+        console.log(`[DIRECTOR] Intention détectée : envoi de GIF → "${text}"`);
+        await sendGif(senderId, "https://media.giphy.com/media/3orieUe6ejxSFxYCXe/giphy.gif");
+        return true;
+    }
+
     // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);
     const session = context.session;

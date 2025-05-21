@@ -134,7 +134,7 @@ function setProjectType(session, value, reason = 'unknown') {
     if (!session.specValues) session.specValues = {};
     if (!session.askedSpecs) session.askedSpecs = {};
     if (typeof session.specValues.propertyUsage === "undefined") {
-        session.specValues.propertyUsage = "?";
+       // session.specValues.propertyUsage = "?";
         session.askedSpecs.propertyUsage = false;
     }
 
