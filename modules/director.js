@@ -20,6 +20,7 @@ async function runDirector(context) {
         await sendGif(senderId, "https://media.giphy.com/media/3orieUe6ejxSFxYCXe/giphy.gif");
         return true;
     }
+    console.log(`[DIRECTOR] Taitement du message reçu: "${text}"`);
 
     // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);
