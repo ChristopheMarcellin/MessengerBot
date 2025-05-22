@@ -53,7 +53,11 @@ async function runDirector(context) {
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
 
             if (isValidGPT) {
+                const preserveUsageAsked = session.askedSpecs?.propertyUsage;
                 setProjectType(session, interpreted, "GPT → valide");
+                if (typeof preserveUsageAsked !== "undefined") {
+                    session.askedSpecs.propertyUsage = preserveUsageAsked;
+                }
             } else {
                 setProjectType(session, "?", "GPT → invalide");
             }
@@ -92,7 +96,12 @@ async function runDirector(context) {
     if (nextSpec === "projectType") {
         const interpreted = getProjectTypeFromNumber(message);
         setAskedSpec(session, "projectType", "valid answer");
+
+        const preserveUsageAsked = session.askedSpecs?.propertyUsage;
         setProjectType(session, interpreted, "user input");
+        if (typeof preserveUsageAsked !== "undefined") {
+            session.askedSpecs.propertyUsage = preserveUsageAsked;
+        }
     } else {
         setSpecValue(session, nextSpec, message, "runDirector/valid");
     }

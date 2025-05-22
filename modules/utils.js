@@ -139,17 +139,9 @@ function setProjectType(session, value, reason = 'unknown') {
 
     session.projectType = value;
 
-    // ✅ Sauvegarde de askedSpecs.propertyUsage avant reset
-    const preserveUsageAsked = session.askedSpecs?.propertyUsage;
-
-    // Réinitialisation des specs selon le projet
+    // ✅ Initialisation des specs selon le type
     if (["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
-
-        // Restauration de propertyUsage si elle a déjà été traitée
-        if (typeof preserveUsageAsked !== "undefined") {
-            session.askedSpecs.propertyUsage = preserveUsageAsked;
-        }
     }
 
     const specs = Object.entries(session.specValues || {})
@@ -158,6 +150,7 @@ function setProjectType(session, value, reason = 'unknown') {
 
     console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
+
 
 
 function setSpecValue(session, key, value, source = "unspecified") {
