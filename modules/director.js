@@ -1,21 +1,22 @@
-
 const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
-const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject,
-        chatOnly, getNextSpec } = require('./utils'); // ajout ici
+const {
+    setProjectType,
+    initializeSpecFields,
+    setSpecValue,
+    gptClassifyProject,
+    chatOnly,
+    getNextSpec
+} = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
 
-
-
 async function runDirector(context) {
     const { message, senderId } = context;
-
 
     // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);
     const session = context.session;
-
 
     // 🔍 Détection d'un blocage à l'initialisation
     if (!isReady || !session) {
@@ -35,20 +36,20 @@ async function runDirector(context) {
 
     console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
 
-    const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    let nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
     console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
     // On fait évoluer le statut de la spec vers E
     if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
         setSpecValue(session, nextSpec, "E");
-        console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" `);
+        console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E"`);
     }
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
     if (!isValid) {
-        console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée `);
+        console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée`);
         session.askedSpecs[nextSpec] = true;
 
         if (nextSpec === "projectType") {
@@ -57,7 +58,6 @@ async function runDirector(context) {
 
             if (isValidGPT) {
                 setProjectType(session, interpreted, "GPT → valide");
-  
             } else {
                 setProjectType(session, "?", "GPT → invalide");
             }
@@ -83,8 +83,7 @@ async function runDirector(context) {
         return true;
     }
 
-
-    //isValid === true
+    // Réponse valide
     console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
@@ -93,26 +92,24 @@ async function runDirector(context) {
         setProjectType(session, interpreted, "user input");
     } else {
         setSpecValue(session, nextSpec, message);
-        session.askedSpecs[nextSpec] = true; 
+        session.askedSpecs[nextSpec] = true;
     }
+
+    // 🔁 Recalcul propre de la spec suivante après mise à jour
+    nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    session.currentSpec = nextSpec;
+    console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
+    console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
     const continued = await stepWhatNext(context);
     if (!continued) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
         context.gptAllowed = true;
         await chatOnly(senderId, message, session.language || "fr");
-
         return true;
     }
-
 
     return true;
 }
 
 module.exports = { runDirector };
-
-
-
-
-
-
