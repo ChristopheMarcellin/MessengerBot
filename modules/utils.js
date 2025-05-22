@@ -14,77 +14,18 @@ function traceCaller(label) {
 // validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
-    // 1. Type de projet invalide → poser la question
-    if (!["B", "S", "R", "E"].includes(projectType)) {
-        // console.log(`[UTILS1] Type de projet non défini  ("${projectType}")`);
-        return "projectType";
+    // 🔐 Cas d’arrêt immédiat
+    if (specValues.propertyUsage === "E") {
+        console.log(`[WHATNEXT] propertyUsage = "E" → arrêt total`);
+        return null;
     }
 
-    // 2. Type de projet défini à "E" le robot cesse de poser des questions
-    if (projectType === "E") {
-        console.log('[UTILS] Fin des questions');
-        return "none";
-    }
-    // ✅ 2.5 : Type de propriété non défini → poser propertyUsage
-    const usageValue = specValues.propertyUsage;
-    const usageAsked = askedSpecs.propertyUsage;
-
-    if (usageValue === "E") {
-        // console.log(`[UTILS3C] propertyUsage refusé explicitement → aucune question à poser`);
-        return "none";
-    }
-
-    if (!usageAsked && (usageValue === "?" || usageValue === "undetermined" || typeof usageValue === "undefined")) {
-        // console.log(`[UTILS3] propertyUsage jamais traité`);
+    // 🔁 Cas à reposer même si déjà posée
+    if (specValues.propertyUsage === "?" || typeof specValues.propertyUsage === "undefined") {
+        console.log(`[WHATNEXT] propertyUsage = "?" → à poser/reposer`);
         return "propertyUsage";
     }
-    if (usageAsked && usageValue === "?") {
-        // console.log(`[UTILS3B] propertyUsage déjà posée mais floue → relance`);
-        return "propertyUsage";
-    }
-
-
-    // 3. Specs attendues selon le type
-    const specsByType = {
-        B: ["price", "bedrooms", "bathrooms", "garage", "location"],
-        S: ["price", "bedrooms", "bathrooms", "garage", "location"],
-        R: ["price", "bedrooms", "bathrooms", "parking", "location"]
-    };
-
-    const expectedSpecs = specsByType[projectType] || [];
-
-    for (const field of expectedSpecs) {
-        const asked = askedSpecs[field];
-        const value = specValues[field];
-
-        if (value === "E") continue;
-
-        // ✅ On ne retourne que si la question n’a PAS été posée et la valeur est encore floue
-        if (value === "?" || value === "undetermined" || typeof value === "undefined") {
-            // console.log(`[UTILS4] Spec principale à poser → retour "${field}"`);
-            return field;
-        }
-    }
-
-    // 4. Toutes les specs principales sont complètes → enchaîner sur questions génériques
-    const genericSpecs = ["wantsContact", "firstName", "lastName", "phone", "email"];
-
-    for (const field of genericSpecs) {
-        const asked = askedSpecs[field];
-        const value = specValues[field];
-
-        if (value === "E") continue;
-
-        // ✅ Retourner uniquement les champs jamais posés avec valeur floue
-        if (value === "undetermined" || typeof value === "undefined") {
-            console.log(`[UTILS5] Question générique à poser → retour "${field}"`);
-            return field;
-        }
-    }
-
-    return "summary"; // ✅ Toutes les specs sont traitées
 }
-
 function getCurrentSpec(session) {
     if (!session || typeof session.currentSpec !== "string") {
         return null;
@@ -276,7 +217,8 @@ function setAskedSpec(session, field, source = "unspecified") {
     if (!session.askedSpecs) session.askedSpecs = {};
     session.askedSpecs[field] = true;
     console.log(`[UTILS set Asked specs] for ["${field}"] ← true | par: ${source}`);
-}
+    }
+
 
 module.exports = {
     getNextSpec,
