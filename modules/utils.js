@@ -25,6 +25,7 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
         console.log(`[WHATNEXT] propertyUsage = "?" → à poser/reposer`);
         return "propertyUsage";
     }
+    return "summary";
 }
 function getCurrentSpec(session) {
     if (!session || typeof session.currentSpec !== "string") {
