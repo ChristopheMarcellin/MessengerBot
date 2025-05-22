@@ -14,7 +14,6 @@ async function stepWhatNext(context) {
 
     // 🚫 Refus explicite du projet → aucune suite à poser
     if (session.projectType === "E") {
-        // console.log('[WHATNEXT] projectType = "E" → refus explicite, aucune suite à poser.');
         return false;
     }
 
@@ -33,7 +32,7 @@ async function stepWhatNext(context) {
         console.log('[WHATNEXT] Toutes les specs traitées, on passe au sommaire');
         const summary = buildSpecSummary(session, lang);
         await sendMessage(senderId, summary);
-        return false; // ❗️Résumé envoyé → conversation terminée
+        return false;
     }
 
     // 🧭 Projet non défini → poser la question projet
@@ -50,13 +49,6 @@ async function stepWhatNext(context) {
 
     const questionText = getPromptForSpec(session.projectType, nextSpec, lang);
     await sendMessage(senderId, questionText);
-    return true;
-}
-
-    // Une spec ordinaire à poser
-    const prompt = getPromptForSpec(nextSpec, lang);
-    console.log(`[WHATNEXT] Pose de la spec "${nextSpec}" → ${prompt}`);
-    await sendMessage(senderId, prompt);
     return true;
 }
 
