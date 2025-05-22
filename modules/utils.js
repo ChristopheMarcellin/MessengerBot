@@ -276,6 +276,7 @@ module.exports = {
     initializeSpecFields,
     setProjectType,
     setSpecValue,
+    setAskedSpec,
     gptClassifyProject,
     chatOnly,
     detectLanguageFromText
