@@ -151,11 +151,10 @@ function setProjectType(session, value, reason = 'unknown') {
     console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
 
-function setSpecValue(session, key, value) {
-    traceCaller('setSpecValue');
+function setSpecValue(session, key, value, source = "unspecified") {
+   // traceCaller('setSpecValue');
 
     if (!session.specValues) session.specValues = {};
-    if (!session.askedSpecs) session.askedSpecs = {};
 
     const old = session.specValues[key];
 
@@ -171,19 +170,20 @@ function setSpecValue(session, key, value) {
         return;
     }
 
+    // 🔁 Traitement spécial pour propertyUsage
     if (key === "propertyUsage") {
         const usage = value === "1" ? "income" : "residential";
         session.propertyUsage = usage;
-        session.specValues[key] = usage; // ✅ nécessaire pour que getNextSpec et stepWhatNext fonctionnent
-        session.askedSpecs[key] = true;
+        session.specValues[key] = usage; // nécessaire pour stepWhatNext / getNextSpec
+        setAskedSpec(session, key, source);
 
         console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}`);
-        return; // on sort ici sans toucher specValues plus bas
+        return;
     }
 
     // ✅ Mise à jour standard
     session.specValues[key] = value;
-    session.askedSpecs[key] = true;
+    setAskedSpec(session, key, source);
 
     const specs = Object.entries(session.specValues)
         .map(([k, v]) => `${k}=${v}`)
@@ -262,6 +262,12 @@ function detectLanguageFromText(text) {
         /\b(le|la|est|une|bonjour|je|j’|ça|tu|vous|avec|maison|acheter|vendre|salut|allo|propriété)\b/i.test(text);
 
     return isFrench ? 'fr' : 'en';
+}
+
+function setAskedSpec(session, field, source = "unspecified") {
+    if (!session.askedSpecs) session.askedSpecs = {};
+    session.askedSpecs[field] = true;
+    console.log(`[UTILS set Asked specs] for ["${field}"] ← true | par: ${source}`);
 }
 
 module.exports = {

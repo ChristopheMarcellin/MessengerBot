@@ -45,7 +45,7 @@ const updateSpecFromInput = (field, decodedValue, specValues) => {
     const previous = specValues[field] ?? "undefined";
     const next = (decodedValue && decodedValue.trim() !== "") ? decodedValue : "?";
     specValues[field] = next;
-    console.log(`[UPDATE] spec field "${field}" changed from "${previous}" to "${next}"`);
+    console.log(`[SPEC ENGINE] spec field "${field}" changed from "${previous}" to "${next}" AND THIS LOG SHOULD SHOULD BE DEAD CODE`);
 };
 
 function getDisplayValue(field, value, lang = "en") {
