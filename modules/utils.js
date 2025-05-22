@@ -110,6 +110,9 @@ function initializeSpecFields(session, projectType) {
         session.askedSpecs[field] = false;
     }
 
+    // 🔒 Important : initialisation explicite de propertyUsage
+    session.propertyUsage = '?';
+
     console.log(`[UTILS] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
 }
 
