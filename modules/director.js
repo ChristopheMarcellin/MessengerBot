@@ -40,13 +40,14 @@ async function runDirector(context) {
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
-
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
 
     if (!isValid) {
         console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée`);
+        const alreadyAsked = session.askedSpecs[nextSpec] === true;
         setAskedSpec(session, nextSpec, "asked but invalid answer");
 
+        // 🧠 Cas particulier pour projectType
         if (nextSpec === "projectType") {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
@@ -61,11 +62,12 @@ async function runDirector(context) {
             return true;
         }
 
+        // 🧠 Cas des autres specs invalides
         const current = session.specValues[nextSpec];
         const protectedValues = ["E", 0];
 
         if (!protectedValues.includes(current)) {
-            if (session.askedSpecs[nextSpec] === true && current === "?") {
+            if (alreadyAsked && current === "?") {
                 setSpecValue(session, nextSpec, "E", "runDirector/?→E after 2 invalid");
                 console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" après deux réponses invalides`);
                 await stepWhatNext(context);
@@ -84,8 +86,7 @@ async function runDirector(context) {
         return true;
     }
 
-
-    // isValid === true
+    // ✅ Réponse valide
     console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
 
     if (nextSpec === "projectType") {
