@@ -14,6 +14,10 @@ function traceCaller(label) {
 // validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
+    if (specValues.projectType === "?") {
+        const asked = askedSpecs.projectType;
+        return "projectType"; // on le redemande toujours jusqu’à une réponse claire (E ou 1,2,3)
+    }
     // 🔐 Cas d’arrêt immédiat
     if (specValues.propertyUsage === "E") {
         console.log(`[WHATNEXT] propertyUsage = "E" → arrêt total`);
@@ -117,14 +121,23 @@ function setSpecValue(session, key, value, source = "unspecified") {
 
     // 🔁 Traitement spécial pour propertyUsage
     if (key === "propertyUsage") {
-        const usage = value === "1" ? "income" : "residential";
+        if (value !== "1" && value !== "2" && value !== "E") {
+            console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée`);
+            return; // ❌ Rejet immédiat
+        }
+
+        const usage = value === "1" ? "income"
+            : value === "2" ? "personal"
+                : "E";
+
         session.propertyUsage = usage;
-        session.specValues[key] = usage; // nécessaire pour stepWhatNext / getNextSpec
+        session.specValues[key] = usage;
         setAskedSpec(session, key, source);
 
         console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}`);
         return;
     }
+
 
     // ✅ Mise à jour standard
     session.specValues[key] = value;

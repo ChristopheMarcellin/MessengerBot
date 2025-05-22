@@ -38,6 +38,10 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+
+    if (session.askedSpecs[nextSpec] === undefined) {
+        session.askedSpecs[nextSpec] = false;
+    }
     console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);

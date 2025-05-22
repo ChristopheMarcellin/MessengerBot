@@ -58,6 +58,8 @@ async function stepInitializeSession(context) {
 
     if (hasProject && !hasAskedSpecs) {
         console.log('[INIT] ProjectType connu mais specs non commencées → prêt à commencer');
+
+        initializeSpecFields(session); // 🔧 correction ici
         setSession(senderId, session);
         context.session = session;
         return true;
