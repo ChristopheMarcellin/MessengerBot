@@ -117,7 +117,7 @@ function setProjectType(session, value, reason = 'unknown') {
     traceCaller('setProjectType');
 
     const old = session.projectType;
-    // Remove enventually CM
+
     // 🚫 Règle #1 : ne pas écraser B/S/R par "?"
     if (["B", "S", "R", "E"].includes(old) && value === "?") {
         console.warn(`[UTILS] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
@@ -129,19 +129,27 @@ function setProjectType(session, value, reason = 'unknown') {
         console.log(`[UTILS] projectType déjà égal à "${value}" — aucune modification`);
         return;
     }
-  
+
     // ✅ Initialisation globale de propertyUsage
     if (!session.specValues) session.specValues = {};
     if (!session.askedSpecs) session.askedSpecs = {};
     if (typeof session.specValues.propertyUsage === "undefined") {
-       // session.specValues.propertyUsage = "?";
         session.askedSpecs.propertyUsage = false;
     }
 
     session.projectType = value;
-    //Initialisation spécifique des specs en fonction du project type qui nécessitent des specs
+
+    // ✅ Sauvegarde de askedSpecs.propertyUsage avant reset
+    const preserveUsageAsked = session.askedSpecs?.propertyUsage;
+
+    // Réinitialisation des specs selon le projet
     if (["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
+
+        // Restauration de propertyUsage si elle a déjà été traitée
+        if (typeof preserveUsageAsked !== "undefined") {
+            session.askedSpecs.propertyUsage = preserveUsageAsked;
+        }
     }
 
     const specs = Object.entries(session.specValues || {})
@@ -151,9 +159,8 @@ function setProjectType(session, value, reason = 'unknown') {
     console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
 
-function setSpecValue(session, key, value, source = "unspecified") {
-   // traceCaller('setSpecValue');
 
+function setSpecValue(session, key, value, source = "unspecified") {
     if (!session.specValues) session.specValues = {};
 
     const old = session.specValues[key];
@@ -183,7 +190,11 @@ function setSpecValue(session, key, value, source = "unspecified") {
 
     // ✅ Mise à jour standard
     session.specValues[key] = value;
-    setAskedSpec(session, key, source);
+
+    // ✅ Ne pas faire de double log si déjà fait manuellement dans runDirector
+    if (source !== "runDirector/?→E after 2 invalid") {
+        setAskedSpec(session, key, source);
+    }
 
     const specs = Object.entries(session.specValues)
         .map(([k, v]) => `${k}=${v}`)
@@ -191,6 +202,7 @@ function setSpecValue(session, key, value, source = "unspecified") {
 
     console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
+
 
 //gpt classifies project
 
