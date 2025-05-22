@@ -1,110 +1,244 @@
-const { setProjectType, initializeSpecFields } = require('../utils');
-const { sendMessage } = require('../messenger');
-const { getSession, setSession } = require('../sessionStore');
-const axios = require('axios');
 
-async function stepInitializeSession(context) {
-    const { senderId, message, cleanText, res } = context;
+const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
+const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject,
+    chatOnly, getNextSpec } = require('./utils'); // ajout ici
+const { stepInitializeSession } = require('./steps/index');
+const { stepHandleFallback } = require('./steps');
+const { stepWhatNext } = require('./steps');
 
-    let existing = getSession(senderId);
-    if (existing) {
-        context.session = existing;
+// 1 - *****************************Initialisation de la session**********************************
+const isReady = await stepInitializeSession(context);
+const session = context.session;
+
+
+// 🔍 Détection d'un blocage à l'initialisation
+if (!isReady || !session) {
+    console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
+    return false;
+}
+
+// 🔁 Si la propriété est à revenus, forcer certaines specs à 0 dès maintenant
+if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
+    const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
+    for (const field of specsToForce) {
+        session.specValues[field] = 0;
+        session.askedSpecs[field] = true;
+    }
+    session._incomeSpecsForced = true;
+}
+
+console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
+
+const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
+console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
+
+// On fait évoluer le statut de la spec vers E
+if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
+    setSpecValue(session, nextSpec, "E");
+    console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" `);
+}
+
+const isValid = isValidAnswer(message, session.projectType, nextSpec);
+
+if (!isValid) {
+    console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée `);
+    session.askedSpecs[nextSpec] = true;
+
+    if (nextSpec === "projectType") {
+        const interpreted = await gptClassifyProject(message, session.language || "fr");
+        const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
+
+        if (isValidGPT) {
+            setProjectType(session, interpreted, "GPT → valide");
+
+        } else {
+            setProjectType(session, "?", "GPT → invalide");
+        }
+
+        await stepWhatNext(context);
         return true;
     }
 
-    // Nouvelle session : liaison immédiate au store
-    const session = {};
-    setSession(senderId, session);
-    context.session = session;
+    // Toutes les autres specs non valides
+    const current = session.specValues[nextSpec];
+    const protectedValues = ["E", 0];
 
-    const vagueInputs = [
-        "bonjour", "allo", "salut", "hello", "hi", "cc", "ça va",
-        "comment ca va", "comment ça va", "yo", "hey", "coucou", "re"
-    ];
-
-    const isVagueMessage = vagueInputs.some(g => cleanText === g || cleanText.startsWith(g));
-
-    // Prompt structuré pour GPT
-    const prompt = `
-Tu es un assistant spécialisé en immobilier. Classe le message de l'utilisateur dans l'une des catégories suivantes :
-- B : l'utilisateur veut acheter une propriété
-- S : l'utilisateur veut vendre une propriété
-- R : l'utilisateur veut louer une propriété
-- E : toute autre situation (salutation, question, humour, etc.)
-
-Réponds uniquement par : B, S, R ou E.
-
-Message : "${message}"`.trim();
-
-    let project = "E";
-    let language = "fr";
-
-    try {
-        const gptRes = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 10,
-            temperature: 0
-        }, {
-            headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const content = gptRes.data.choices?.[0]?.message?.content?.trim().toUpperCase();
-        if (["B", "S", "R", "E"].includes(content)) {
-            project = content;
-        }
-
-    } catch (err) {
-        console.warn(`[GPT ERROR] Unable to classify project type:`, err.message);
-    }
-
-    if (isVagueMessage) {
-        console.log(`[DETECT] Message vague détecté → projectType annulé (était: ${project})`);
-        project = "E";
-    }
-
-    // Remplissage contrôlé de la session
-    session.language = language;
-    session.ProjectDate = new Date().toISOString();
-    session.questionCount = 1;
-    session.maxQuestions = 40;
-    session.askedSpecs = {};
-    session.specValues = {};
-
-    console.log(`[TRACK] projectType changed from undefined to ${project} | reason: GPT session init`);
-
-    const finalProject = ["B", "S", "R"].includes(project) ? project : "?";
-
-    if (finalProject !== "?") {
-        setProjectType(session, finalProject, "GPT session init (contexte structuré)");
-        initializeSpecFields(session);
+    if (!protectedValues.includes(current)) {
+        setSpecValue(session, nextSpec, "?");
     } else {
-        if (project === "E") {
-            console.log(`[TRACK] projectType changed from E to ? | reason: fallback → ?`);
-        }
-
-        setProjectType(session, "?", project === "E" ? "E → forced ?" : "fallback → ?");
-        session.awaitingProjectTypeAttempt = 1;
-
-        const retry = language === "fr"
-            ? "Quelle est le but de votre projet : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Répondez seulement par le chiffre svp)"
-            : "What is your project goal: 1-buy, 2-sell, 3-rent, 4-other reason?\n(Please reply with the number only)";
-
-        console.log(`[SEND] Asking for projectType after vague or unclear message (lang=${language}, GPT=${project})`);
-        console.log(`[MESSAGE] → ${retry}`);
-
-        await sendMessage(senderId, retry);
-        return false;
+        console.log(`[DIRECTOR] Pas de réécriture de "${nextSpec}" car déjà à valeur protégée "${current}"`);
     }
 
-    console.log(`[INIT] New session for ${senderId} | Lang: ${language} | Project: ${finalProject}`);
+    context.deferSpec = true;
+    context.gptAllowed = true;
+    await chatOnly(senderId, message, session.language || "fr");
+    await stepWhatNext(context);
     return true;
 }
 
-module.exports = { stepInitializeSession };
+
+//isValid === true
+console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
+
+if (nextSpec === "projectType") {
+    const interpreted = getProjectTypeFromNumber(message);
+    session.askedSpecs.projectType = true;
+    setProjectType(session, interpreted, "user input");
+} else {
+    setSpecValue(session, nextSpec, message);
+    session.askedSpecs[nextSpec] = true;
+}
+
+const continued = await stepWhatNext(context);
+if (!continued) {
+    console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
+    context.gptAllowed = true;
+    await chatOnly(senderId, message, session.language || "fr");
+
+    return true;
+}
+
+
+return true;
+}
+
+module.exports = { runDirector };
+
+
+
+
+
+
+
+
+
+
+
+
+
+newer code:
+
+const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
+const {
+    setProjectType,
+    initializeSpecFields,
+    setSpecValue,
+    gptClassifyProject,
+    chatOnly,
+    getNextSpec
+} = require('./utils');
+const { stepInitializeSession } = require('./steps/index');
+const { stepHandleFallback } = require('./steps');
+const { stepWhatNext } = require('./steps');
+
+async function runDirector(context) {
+    const { message, senderId } = context;
+
+    // 1 - *****************************Initialisation de la session**********************************
+    const isReady = await stepInitializeSession(context);
+    const session = context.session;
+
+    // 🔍 Détection d'un blocage à l'initialisation
+    if (!isReady || !session) {
+        console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
+        return false;
+    }
+
+    // 🔁 Si la propriété est à revenus, forcer certaines specs à 0 dès maintenant
+    if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
+        const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
+        for (const field of specsToForce) {
+            session.specValues[field] = 0;
+            session.askedSpecs[field] = true;
+        }
+        session._incomeSpecsForced = true;
+    }
+
+    console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
+
+    let nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
+    console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
+
+    // On fait évoluer le statut de la spec vers E
+    if (session.askedSpecs[nextSpec] === true && session.specValues[nextSpec] === "?") {
+        setSpecValue(session, nextSpec, "E");
+        console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E"`);
+    }
+
+    const isValid = isValidAnswer(message, session.projectType, nextSpec);
+
+    if (!isValid) {
+        console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée`);
+        session.askedSpecs[nextSpec] = true;
+
+        if (nextSpec === "projectType") {
+            const interpreted = await gptClassifyProject(message, session.language || "fr");
+            const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
+
+            if (isValidGPT) {
+                setProjectType(session, interpreted, "GPT → valide");
+            } else {
+                setProjectType(session, "?", "GPT → invalide");
+            }
+
+            await stepWhatNext(context);
+            return true;
+        }
+
+        // Toutes les autres specs non valides
+        const current = session.specValues[nextSpec];
+        const protectedValues = ["E", 0];
+
+        if (!protectedValues.includes(current)) {
+            setSpecValue(session, nextSpec, "?");
+        } else {
+            console.log(`[DIRECTOR] Pas de réécriture de "${nextSpec}" car déjà à valeur protégée "${current}"`);
+        }
+
+        context.deferSpec = true;
+        context.gptAllowed = true;
+        await chatOnly(senderId, message, session.language || "fr");
+        await stepWhatNext(context);
+        return true;
+    }
+
+    // Réponse valide
+    console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
+
+    if (nextSpec === "projectType") {
+        const interpreted = getProjectTypeFromNumber(message);
+        session.askedSpecs.projectType = true;
+        setProjectType(session, interpreted, "user input");
+    } else {
+        setSpecValue(session, nextSpec, message);
+        session.askedSpecs[nextSpec] = true;
+    }
+
+    // 🔁 Recalcul propre de la spec suivante après mise à jour
+    nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    session.currentSpec = nextSpec;
+    console.log('[DIRECTOR] Identification de la nextSpec à traiter =', nextSpec);
+    console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
+
+    const continued = await stepWhatNext(context);
+    if (!continued) {
+        console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
+        context.gptAllowed = true;
+        await chatOnly(senderId, message, session.language || "fr");
+        return true;
+    }
+
+    return true;
+}
+
+module.exports = { runDirector };
+
+
+
+
+
 
 
 
