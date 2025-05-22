@@ -5,23 +5,12 @@ const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject,
 const { stepInitializeSession } = require('./steps/index');
 const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
-const { sendGif } = require('./messenger'); // ajout ici
+
 
 
 async function runDirector(context) {
     const { message, senderId } = context;
 
-
-    const { text } = message;
-
-    console.log(`[DEBUG] Texte reçu AVANT interception : "${text}"`);
-
-    if (typeof text === 'string' && text.toLowerCase().includes("gif")) {
-        console.log(`[DIRECTOR] Intention détectée : envoi de GIF → "${text}"`);
-        console.log(`[DEBUG] Envoi du GIF en cours...`);
-        await sendGif(senderId, "https://media.giphy.com/media/3orieUe6ejxSFxYCXe/giphy.gif");
-        return true;
-    }
 
     // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);

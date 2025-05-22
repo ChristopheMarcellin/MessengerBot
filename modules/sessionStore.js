@@ -54,7 +54,7 @@ function logSessionState(label, senderId) {
         projectType: session.projectType,
         currentSpec: session.currentSpec
     };
-    console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
+  //  console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
 }
 
 module.exports = {

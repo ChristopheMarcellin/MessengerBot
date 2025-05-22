@@ -13,7 +13,13 @@ async function stepWhatNext(context) {
 
     const lang = session.language || 'fr';
 
-    console.log("[WHATNEXT Before getNextSpec] projectType =", session.projectType);
+    // 🚫 Refus explicite du projet → aucune suite à poser
+    if (session.projectType === "E") {
+       // console.log('[WHATNEXT] projectType = "E" → refus explicite, aucune suite à poser.');
+        return false;
+    }
+
+    console.log("[WHATNEXT getNextSpec] projectType is currently set at", session.projectType);
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log(`[WHATNEXT] Spec à traiter : ${nextSpec}`);
 

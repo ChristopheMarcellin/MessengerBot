@@ -20,7 +20,7 @@ async function stepInitializeSession(context) {
     }
 
     // 🔍 Log AVANT réparation
-    logSessionState("Vérification AVANT réparation", senderId);
+  //  logSessionState("Vérification AVANT réparation", senderId);
 
     // 🔧 Affecter les variables minimales suivant un End Session
     const isEndSession = message.trim().toLowerCase() === 'end session';
