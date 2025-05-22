@@ -30,7 +30,7 @@ async function stepInitializeSession(context) {
         context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
       //  logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
-        return true;
+        return false;
     }
 
     // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes
