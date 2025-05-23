@@ -20,7 +20,7 @@ async function stepInitializeSession(context) {
     }
 
     // 🔍 Log AVANT réparation
-  //  logSessionState("Vérification AVANT réparation", senderId);
+    logSessionState("Vérification AVANT réparation", senderId);
 
     // 🔧 Affecter les variables minimales suivant un End Session
     const isEndSession = message.trim().toLowerCase() === 'end session';
@@ -29,7 +29,7 @@ async function stepInitializeSession(context) {
         setSession(senderId, newSession);
         context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-      //  logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
+       logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
         return false;
     }
 
