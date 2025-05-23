@@ -19,13 +19,13 @@ async function runDirector(context) {
     const isReady = await stepInitializeSession(context);
     const session = context.session;
 
-    // 🔍 Détection d'un blocage à l'initialisation
+    // 🔍 Blocage volontaire après reset ou erreur
     if (!isReady || !session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
         return false;
     }
 
-    // 🔁 Si la propriété est à revenus, forcer certaines specs à 0 dès maintenant
+    // 🔁 Si propriété à revenus, forcer certaines specs à 0 immédiatement
     if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
         const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
         for (const field of specsToForce) {
@@ -38,10 +38,16 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    if (!nextSpec) {
+        console.log('[DIRECTOR] Aucune spec à poser');
+        return false;
+    }
 
     if (session.askedSpecs[nextSpec] === undefined) {
         session.askedSpecs[nextSpec] = false;
     }
+
+    console.log(`[DIRECTOR] Identification de la nextSpec à traiter = ${nextSpec}`);
     console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
@@ -51,7 +57,7 @@ async function runDirector(context) {
         const alreadyAsked = session.askedSpecs[nextSpec] === true;
         setAskedSpec(session, nextSpec, "asked but invalid answer");
 
-        // 🧠 Cas particulier pour projectType
+        // 🧠 Cas particulier : projectType
         if (nextSpec === "projectType") {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
@@ -70,7 +76,7 @@ async function runDirector(context) {
             return true;
         }
 
-        // 🧠 Cas des autres specs invalides
+        // 🔁 Cas général : deux tentatives avant de passer à "E"
         const current = session.specValues[nextSpec];
         const protectedValues = ["E", 0];
 
@@ -78,13 +84,11 @@ async function runDirector(context) {
             if (alreadyAsked && current === "?") {
                 setSpecValue(session, nextSpec, "E", "runDirector/?→E after 2 invalid");
                 console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" après deux réponses invalides`);
-                await stepWhatNext(context);
-                return true;
             } else {
-                setSpecValue(session, nextSpec, "?", "set by runDirector due to invalid answer");
+                setSpecValue(session, nextSpec, "?", "runDirector/invalid");
             }
         } else {
-            console.log(`[DIRECTOR] Réécriture de "${nextSpec}" car déjà à valeur protégée "${current}"`);
+            console.log(`[DIRECTOR] Réécriture bloquée de "${nextSpec}" car déjà à valeur protégée "${current}"`);
         }
 
         context.deferSpec = true;
@@ -100,7 +104,6 @@ async function runDirector(context) {
     if (nextSpec === "projectType") {
         const interpreted = getProjectTypeFromNumber(message);
         setAskedSpec(session, "projectType", "valid answer");
-
         const preserveUsageAsked = session.askedSpecs?.propertyUsage;
         setProjectType(session, interpreted, "user input");
         if (typeof preserveUsageAsked !== "undefined") {
@@ -108,6 +111,7 @@ async function runDirector(context) {
         }
     } else {
         setSpecValue(session, nextSpec, message, "runDirector/valid");
+        setAskedSpec(session, nextSpec, "valid answer");
     }
 
     const continued = await stepWhatNext(context);
