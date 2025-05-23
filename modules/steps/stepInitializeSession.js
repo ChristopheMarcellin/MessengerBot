@@ -80,8 +80,8 @@ async function stepInitializeSession(context) {
             },
             set(value) {
                 const err = new Error();
-                console.log(`[ALERTE] projectType modifié via setter piégé → ${value}`);
-                console.log(`[TRACE] setProjectType ←`, err.stack);
+                console.log(`[INIT ALERTE] projectType modifié via setter piégé → ${value}`);
+                console.log(`[INIT TRACE] setProjectType ←`, err.stack);
                 session._projectType = value;
             }
         });

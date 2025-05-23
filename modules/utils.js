@@ -8,15 +8,15 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 function traceCaller(label) {
     const stack = new Error().stack;
     const line = stack.split('\n')[3] || 'inconnu';
-    console.log(`[UTILS] ${label} ← ${line.trim()}`);
+    console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
 }
 
 // validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
-    console.log(`[DEBUG getNextSpec] projectType = "${specValues.projectType}"`);
-    console.log(`[DEBUG getNextSpec] specValues.projectType = "${specValues.projectType}"`);
-    console.log(`[DEBUG getNextSpec] specValues.propertyUsage =`, askedSpecs);
+    console.log(`[UTILS getNextSpec] projectType = "${specValues.projectType}"`);
+    console.log(`[UTILS getNextSpec] specValues.projectType = "${specValues.projectType}"`);
+    console.log(`[UTILS getNextSpec] specValues.propertyUsage =`, askedSpecs);
 
     if (projectType === "?") {
         const asked = askedSpecs.projectType;
@@ -24,13 +24,13 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
     }
     // 🔐 Cas d’arrêt immédiat
     if (specValues.propertyUsage === "E") {
-        console.log(`[WHATNEXT] propertyUsage = "E" → arrêt total`);
+        console.log(`[UTILS getNextSpec] propertyUsage = "E" → arrêt total`);
         return null;
     }
 
     // 🔁 Cas à reposer même si déjà posée
     if (specValues.propertyUsage === "?" || typeof specValues.propertyUsage === "undefined") {
-        console.log(`[WHATNEXT] propertyUsage = "?" → à poser/reposer`);
+        console.log(`[UTILS getNextSpec] propertyUsage = "?" → à poser/reposer`);
         return "propertyUsage";
     }
     return "summary";
@@ -63,7 +63,7 @@ function initializeSpecFields(session, projectType) {
     // 🔒 Important : initialisation explicite de propertyUsage
     session.propertyUsage = '?';
 
-    console.log(`[UTILS] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
+    console.log(`[UTILS initialize] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
 }
 
 function setProjectType(session, value, reason = 'unknown') {
@@ -73,13 +73,13 @@ function setProjectType(session, value, reason = 'unknown') {
 
     // 🚫 Règle #1 : ne pas écraser B/S/R par "?"
     if (["B", "S", "R", "E"].includes(old) && value === "?") {
-        console.warn(`[UTILS] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
+        console.warn(`[UTILS setProjectType] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
         return;
     }
 
     // 🚫 Règle #2 : ne pas réécrire la même valeur
     if (old === value) {
-        console.log(`[UTILS] projectType déjà égal à "${value}" — aucune modification`);
+        console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification`);
         return;
     }
 

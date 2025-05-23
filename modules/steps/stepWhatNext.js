@@ -6,7 +6,7 @@ const { buildSpecSummary } = require('../specEngine');
 /**
  * Décide et envoie la prochaine question à poser à l'utilisateur
  * @param {object} context - objet contenant session, senderId, etc.
- * @returns {boolean} true si une question a été posée, false sinon
+ * @returns {boolean} true si une question a été posée, false 
  */
 async function stepWhatNext(context) {
     const { senderId, session } = context;
