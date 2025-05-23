@@ -6,17 +6,18 @@ async function stepInitializeSession(context) {
 
     // 🔐 Vérifier présence du senderId
     if (typeof senderId !== 'string' || senderId.trim() === '') {
-    //    console.warn('[INIT] senderId manquant → impossible de poursuivre.');
+        console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return true;
     }
 
     // 🧠 Session existante ou création d'une session vide
     let session = getSession(senderId);
     if (!session || typeof session !== 'object') {
- //       console.log('[INIT] Aucune session trouvée dans le store → nouvelle session créée');
+        console.log('[INIT] Aucune session trouvée dans le store → nouvelle session créée');
         session = {};
-    } else {
-  //      console.log('[INIT] Session existante trouvée dans le store');
+    }
+    else {
+  //    console.log('[INIT] Session existante trouvée dans le store');
     }
 
     // 🔍 Log AVANT réparation
@@ -29,8 +30,8 @@ async function stepInitializeSession(context) {
         setSession(senderId, newSession);
         context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-       logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
-        return false;
+        logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
+        return true;
     }
 
     // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes
@@ -43,7 +44,7 @@ async function stepInitializeSession(context) {
     session.currentSpec ??= null;
 
     // 🔍 Log APRÈS réparation/normalisation
-    logSessionState("Vérification APRÈS réparation", senderId);
+ //   logSessionState("Vérification APRÈS réparation", senderId);
 
     // 🎯 Analyse état session existante
     const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);

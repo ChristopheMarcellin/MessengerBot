@@ -3,11 +3,11 @@ const { getPromptForSpec, getPromptForProjectType } = require('../questions');
 const { sendMessage } = require('../messenger');
 const { buildSpecSummary } = require('../specEngine');
 
-/**
- * Décide et envoie la prochaine question à poser à l'utilisateur
- * @param {object} context - objet contenant session, senderId, etc.
- * @returns {boolean} true si une question a été posée, false 
- */
+
+// Pose la prochaine question de spécification à l'utilisateur, si nécessaire.
+// Retourne true au directeur si une question a été posée, false sinon.
+// Cette fonction ne dirige PAS le flux général (chatOnly, résumé, etc.) — cela reste la responsabilité du runDirector.
+//
 async function stepWhatNext(context) {
     const { senderId, session } = context;
     const lang = session.language || 'fr';

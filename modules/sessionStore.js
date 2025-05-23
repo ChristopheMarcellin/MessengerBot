@@ -41,7 +41,7 @@ function resetSession(senderId) {
 function logSessionState(label, senderId) {
     const session = userSessions[senderId];
     if (!session) {
-        console.warn(`[DEBUG] Session absente pour ${senderId} → rien à afficher.`);
+        console.warn(`[SESSION] Session absente pour ${senderId} → rien à afficher.`);
         return;
     }
     const snapshot = {
