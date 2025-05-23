@@ -14,7 +14,11 @@ function traceCaller(label) {
 // validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
-    if (specValues.projectType === "?") {
+    console.log(`[DEBUG getNextSpec] projectType = "${specValues.projectType}"`);
+    console.log(`[DEBUG getNextSpec] specValues.projectType = "${specValues.projectType}"`);
+    console.log(`[DEBUG getNextSpec] specValues.propertyUsage =`, askedSpecs);
+
+    if (projectType === "?") {
         const asked = askedSpecs.projectType;
         return "projectType"; // on le redemande toujours jusqu’à une réponse claire (E ou 1,2,3)
     }

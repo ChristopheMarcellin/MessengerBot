@@ -35,7 +35,7 @@ async function runDirector(context) {
         session._incomeSpecsForced = true;
     }
 
-    console.log(`[DIRECTOR] Taitement du message reçu: "${message}"`);
+    console.log(`[DIRECTOR] Message: "${message}"`);
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     if (!nextSpec) {
