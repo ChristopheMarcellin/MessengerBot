@@ -5,9 +5,9 @@ const { buildSpecSummary } = require('../specEngine');
 
 
 // Pose la prochaine question de spécification à l'utilisateur, si nécessaire.
-// Retourne true au directeur si une question a été posée, false sinon.
+// Retourne true au directeur si une question a été posée, false sinon, indiquant la fin des questions.
 // Cette fonction ne dirige PAS le flux général (chatOnly, résumé, etc.) — cela reste la responsabilité du runDirector.
-//
+
 async function stepWhatNext(context) {
     const { senderId, session } = context;
     const lang = session.language || 'fr';

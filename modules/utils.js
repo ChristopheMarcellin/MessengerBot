@@ -14,7 +14,7 @@ function traceCaller(label) {
 // validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
-    console.log(`[UTILS getNextSpec] projectType = "${specValues.projectType}"`);
+    console.log(`[UTILS getNextSpec] projectType = "${projectType}"`);
     console.log(`[UTILS getNextSpec] specValues.projectType = "${specValues.projectType}"`);
     console.log(`[UTILS getNextSpec] specValues.propertyUsage =`, askedSpecs);
 

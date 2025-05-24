@@ -4,16 +4,16 @@ const { getSession, setSession, resetSession, logSessionState } = require('../se
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
 
-    // 🔐 Vérifier présence du senderId
+    // 🔐 Assurer la présence du senderId
     if (typeof senderId !== 'string' || senderId.trim() === '') {
         console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return true;
     }
 
-    // 🧠 Session existante ou création d'une session vide
+    // 🧠 Création d'une session lorsque manquante ou corrompue
     let session = getSession(senderId);
     if (!session || typeof session !== 'object') {
-        console.log('[INIT] Aucune session trouvée dans le store → nouvelle session créée');
+        console.log('[INIT] création d\'une session pcq manquante' );
         session = {};
     }
     else {
@@ -21,7 +21,7 @@ async function stepInitializeSession(context) {
     }
 
     // 🔍 Log AVANT réparation
-    logSessionState("Vérification AVANT réparation", senderId);
+   // logSessionState("Vérification AVANT réparation", senderId);
 
     // 🔧 Affecter les variables minimales suivant un End Session
     const isEndSession = message.trim().toLowerCase() === 'end session';
