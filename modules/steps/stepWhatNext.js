@@ -1,4 +1,4 @@
-const { getNextSpec } = require('../utils');
+const { getNextSpec, setAskedSpec } = require('../utils');
 const { getPromptForSpec, getPromptForProjectType } = require('../questions');
 const { sendMessage } = require('../messenger');
 const { buildSpecSummary } = require('../specEngine');
@@ -8,12 +8,13 @@ const { buildSpecSummary } = require('../specEngine');
 // Retourne true au directeur si une question a été posée, false sinon, indiquant la fin des questions.
 // Cette fonction ne dirige PAS le flux général (chatOnly, résumé, etc.) — cela reste la responsabilité du runDirector.
 
-async function stepWhatNext(context) {
+    async function stepWhatNext(context) {
     const { senderId, session } = context;
     const lang = session.language || 'fr';
 
-    // 🚫 Refus explicite du projet → aucune suite à poser
-    if (session.projectType === "E") {
+    // 🚫 Refus explicite du projet ou de la propriété → aucune suite à poser
+    if (session.projectType === "E" || session.specValues.propertyUsage === "E") {
+        console.log('[WHATNEXT] Refus explicite détecté → arrêt');
         return false;
     }
 
@@ -45,7 +46,7 @@ async function stepWhatNext(context) {
 
     // 🎯 Spécification normale à poser
     session.currentSpec = nextSpec;
-    session.askedSpecs[nextSpec] = true;
+    setAskedSpec(senderId, nextSpec, 'question posée via stepWhatNext');
 
     const questionText = getPromptForSpec(session.projectType, nextSpec, lang);
     await sendMessage(senderId, questionText);

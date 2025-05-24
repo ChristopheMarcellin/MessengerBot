@@ -10,31 +10,51 @@ function traceCaller(label) {
     const line = stack.split('\n')[3] || 'inconnu';
     console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
 }
-
-// validé par CM, attention le none devrait être extensionné lorsque toutes les specs sont
 function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
-    console.log(`[UTILS getNextSpec] projectType = "${projectType}"`);
-    console.log(`[UTILS getNextSpec] specValues.projectType = "${specValues.projectType}"`);
-    console.log(`[UTILS getNextSpec] specValues.propertyUsage =`, askedSpecs);
+    console.log(`[UTILS getNextSpec] État courant : projectType="${projectType}", specValues=`, specValues);
+    console.log(`[UTILS getNextSpec] État courant : propertyusage="${specValues.propertyUsage}", specValues=`, specValues);
 
-    if (projectType === "?") {
-        const asked = askedSpecs.projectType;
-        return "projectType"; // on le redemande toujours jusqu’à une réponse claire (E ou 1,2,3)
-    }
     // 🔐 Cas d’arrêt immédiat
-    if (specValues.propertyUsage === "E") {
-        console.log(`[UTILS getNextSpec] propertyUsage = "E" → arrêt total`);
+    if (projectType === "E" || specValues.propertyUsage === "E") {
+        console.log(`[UTILS getNextSpec] Arrêt du traitement : projectType ou propertyUsage = "E"`);
         return null;
     }
 
-    // 🔁 Cas à reposer même si déjà posée
-    if (specValues.propertyUsage === "?" || typeof specValues.propertyUsage === "undefined") {
-        console.log(`[UTILS getNextSpec] propertyUsage = "?" → à poser/reposer`);
+    // 1. 🔍 Priorité : projectType
+    if (projectType === "?" || typeof projectType === "undefined") {
+        return "projectType";
+    }
+
+    // 2. 🔍 Ensuite : propertyUsage
+    const puValue = specValues.propertyUsage;
+    if (puValue === "?" || typeof puValue === "undefined") {
         return "propertyUsage";
     }
-    return "summary";
+
+    // 3. 🔍 Ensuite : specs liées au type de projet
+    const specBlock = questions[projectType] || {};
+    for (const field of Object.keys(specBlock)) {
+        const value = specValues[field];
+        if (value === "?" || typeof value === "undefined") {
+            return field;
+        }
+    }
+
+    // 4. 🔍 Ensuite : champs génériques (nom, email, etc.)
+    const genericBlock = questions.generic || {};
+    for (const field of Object.keys(genericBlock)) {
+        const value = specValues[field];
+        if (value === "?" || typeof value === "undefined") {
+            return field;
+        }
+    }
+
+    return "summary"; // ✅ Toutes les specs sont complètes
 }
+
+
+module.exports = { getNextSpec };
 function getCurrentSpec(session) {
     if (!session || typeof session.currentSpec !== "string") {
         return null;

@@ -25,14 +25,10 @@ async function runDirector(context) {
         return false;
     }
 
-    // 🔁 Si propriété à revenus, forcer certaines specs à 0 immédiatement
-    if (session.specValues.propertyUsage === "income" && !session._incomeSpecsForced) {
-        const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
-        for (const field of specsToForce) {
-            session.specValues[field] = 0;
-            setAskedSpec(session, field, "asked set to true because income property");
-        }
-        session._incomeSpecsForced = true;
+    // 🔒 Blocage explicite si le projet ou l’usage sont refusés
+    if (session.projectType === "E" || session.specValues.propertyUsage === "E") {
+        console.log('[DIRECTOR] Session bloquée par refus explicite → arrêt du flux');
+        return false;
     }
 
     console.log(`[DIRECTOR] Message: "${message}"`);
@@ -109,10 +105,21 @@ async function runDirector(context) {
         if (typeof preserveUsageAsked !== "undefined") {
             session.askedSpecs.propertyUsage = preserveUsageAsked;
         }
-    } else {
+    } else  {
         setSpecValue(session, nextSpec, message, "runDirector/valid");
         setAskedSpec(session, nextSpec, "valid answer");
+
+        // 🎯 Si propertyUsage vaut "income", forcer les autres specs immédiatement
+        if (nextSpec === "propertyUsage" && message === "income" && !session._incomeSpecsForced) {
+            const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
+            for (const field of specsToForce) {
+                session.specValues[field] = 0;
+                setAskedSpec(session, field, "asked set to true because income property");
+            }
+            session._incomeSpecsForced = true;
+        }
     }
+        
 
     const continued = await stepWhatNext(context);
     if (!continued) {
