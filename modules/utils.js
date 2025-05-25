@@ -36,7 +36,9 @@ function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
 
     // 3. 🔍 Ensuite : specs liées au type de projet
     const specBlock = questions[projectType] || {};
+       const skipIfIncome = ["bedrooms", "bathrooms", "garage", "parking"];
     for (const field of Object.keys(specBlock)) {
+               if (puValue === "income" && skipIfIncome.includes(field)) continue;
         const value = specValues[field];
         if (value === "?" || typeof value === "undefined") {
             return field;

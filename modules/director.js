@@ -25,11 +25,6 @@ async function runDirector(context) {
         return false;
     }
 
-    // 🔒 Blocage explicite si le projet ou l’usage sont refusés
-    if (session.projectType === "E" || session.specValues.propertyUsage === "E") {
-        console.log('[DIRECTOR] Session bloquée par refus explicite → arrêt du flux');
-        return false;
-    }
 
     console.log(`[DIRECTOR] Message: "${message}"`);
 
@@ -39,9 +34,6 @@ async function runDirector(context) {
         return false;
     }
 
-    if (session.askedSpecs[nextSpec] === undefined) {
-        session.askedSpecs[nextSpec] = false;
-    }
 
     console.log(`[DIRECTOR] Identification de la nextSpec à traiter = ${nextSpec}`);
     console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
@@ -53,10 +45,8 @@ async function runDirector(context) {
     if (nextSpec === "projectType") {
         if (isValid) {
             const interpreted = getProjectTypeFromNumber(message);
-            setAskedSpec(session, "projectType", "valid answer");
             setProjectType(session, interpreted, "user input");
         } else {
-            setAskedSpec(session, "projectType", "asked but invalid answer");
 
             const interpreted = await gptClassifyProject(message, session.language || "fr");
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
@@ -68,15 +58,13 @@ async function runDirector(context) {
             }
         }
 
-        await stepWhatNext(context);
+        await stepWhatNext(context, nextSpec); // ✅ modifié
         return true;
     }
 
     // 🔁 Cas général : réponse invalide pour une autre spec
     if (!isValid) {
         const alreadyAsked = session.askedSpecs[nextSpec] === true;
-        setAskedSpec(session, nextSpec, "asked but invalid answer");
-
         const current = session.specValues[nextSpec];
         const protectedValues = ["E", 0];
 
@@ -94,25 +82,15 @@ async function runDirector(context) {
         context.deferSpec = true;
         context.gptAllowed = true;
         await chatOnly(senderId, message, session.language || "fr");
-        await stepWhatNext(context);
+        await stepWhatNext(context, nextSpec); // ✅ modifié
         return true;
     }
 
     // ✅ Cas général : réponse valide
     setSpecValue(session, nextSpec, message, "runDirector/valid");
-    setAskedSpec(session, nextSpec, "valid answer");
+  
 
-    // 🎯 Si propertyUsage vaut "income", forcer les autres specs immédiatement
-    if (nextSpec === "propertyUsage" && message === "income" && !session._incomeSpecsForced) {
-        const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
-        for (const field of specsToForce) {
-            session.specValues[field] = 0;
-            setAskedSpec(session, field, "asked set to true because income property");
-        }
-        session._incomeSpecsForced = true;
-    }
-
-    const continued = await stepWhatNext(context);
+    const continued = await stepWhatNext(context, nextSpec); // ✅ modifié
     if (!continued) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
         context.gptAllowed = true;
