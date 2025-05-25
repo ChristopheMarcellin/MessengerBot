@@ -53,17 +53,13 @@ async function runDirector(context) {
         const alreadyAsked = session.askedSpecs[nextSpec] === true;
         setAskedSpec(session, nextSpec, "asked but invalid answer");
 
-        // 🧠 Cas particulier : projectType
+        // 🧠 Cas particulier : projectType → GPT en renfort
         if (nextSpec === "projectType") {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
 
             if (isValidGPT) {
-                const preserveUsageAsked = session.askedSpecs?.propertyUsage;
                 setProjectType(session, interpreted, "GPT → valide");
-                if (typeof preserveUsageAsked !== "undefined") {
-                    session.askedSpecs.propertyUsage = preserveUsageAsked;
-                }
             } else {
                 setProjectType(session, "?", "GPT → invalide");
             }
@@ -100,12 +96,9 @@ async function runDirector(context) {
     if (nextSpec === "projectType") {
         const interpreted = getProjectTypeFromNumber(message);
         setAskedSpec(session, "projectType", "valid answer");
-        const preserveUsageAsked = session.askedSpecs?.propertyUsage;
         setProjectType(session, interpreted, "user input");
-        if (typeof preserveUsageAsked !== "undefined") {
-            session.askedSpecs.propertyUsage = preserveUsageAsked;
-        }
-    } else  {
+        return true;
+    } else {
         setSpecValue(session, nextSpec, message, "runDirector/valid");
         setAskedSpec(session, nextSpec, "valid answer");
 
@@ -119,7 +112,7 @@ async function runDirector(context) {
             session._incomeSpecsForced = true;
         }
     }
-        
+
 
     const continued = await stepWhatNext(context);
     if (!continued) {

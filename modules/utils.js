@@ -1,8 +1,10 @@
 // modules/utils.js
-const { getProjectTypeFromNumber } = require('./specEngine');
 const axios = require('axios');
-const { sendMessage } = require('./messenger');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const { getProjectTypeFromNumber } = require('./specEngine');
+const { sendMessage } = require('./messenger');
+const questions = require('./questions');
+
 
 
 function traceCaller(label) {
