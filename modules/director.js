@@ -60,8 +60,10 @@ async function runDirector(context) {
 
             if (isValidGPT) {
                 setProjectType(session, interpreted, "GPT → valide");
+                return true;
             } else {
                 setProjectType(session, "?", "GPT → invalide");
+                return true;
             }
 
             await stepWhatNext(context);
