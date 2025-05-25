@@ -47,30 +47,36 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
+    console.log(`[DIRECTOR] Réponse jugée ${isValid ? "valide" : "invalide"} pour "${nextSpec}" = "${message}"`);
 
-    if (!isValid) {
-        console.log(`[DIRECTOR] La réponse fournie pour la spec "${nextSpec}" ne peut être validée`);
-        const alreadyAsked = session.askedSpecs[nextSpec] === true;
-        setAskedSpec(session, nextSpec, "asked but invalid answer");
+    // 🧠 Cas particulier : projectType → traitement fusionné (valide + GPT fallback)
+    if (nextSpec === "projectType") {
+        if (isValid) {
+            const interpreted = getProjectTypeFromNumber(message);
+            setAskedSpec(session, "projectType", "valid answer");
+            setProjectType(session, interpreted, "user input");
+        } else {
+            setAskedSpec(session, "projectType", "asked but invalid answer");
 
-        // 🧠 Cas particulier : projectType → GPT en renfort
-        if (nextSpec === "projectType") {
             const interpreted = await gptClassifyProject(message, session.language || "fr");
             const isValidGPT = isValidAnswer(interpreted, session.projectType, "projectType");
 
             if (isValidGPT) {
                 setProjectType(session, interpreted, "GPT → valide");
-                return true;
             } else {
                 setProjectType(session, "?", "GPT → invalide");
-                return true;
             }
-
-            await stepWhatNext(context);
-            return true;
         }
 
-        // 🔁 Cas général : deux tentatives avant de passer à "E"
+        await stepWhatNext(context);
+        return true;
+    }
+
+    // 🔁 Cas général : réponse invalide pour une autre spec
+    if (!isValid) {
+        const alreadyAsked = session.askedSpecs[nextSpec] === true;
+        setAskedSpec(session, nextSpec, "asked but invalid answer");
+
         const current = session.specValues[nextSpec];
         const protectedValues = ["E", 0];
 
@@ -92,36 +98,25 @@ async function runDirector(context) {
         return true;
     }
 
-    // ✅ Réponse valide
-    console.log(`[DIRECTOR] Réponse jugée valide pour "${nextSpec}" = "${message}"`);
+    // ✅ Cas général : réponse valide
+    setSpecValue(session, nextSpec, message, "runDirector/valid");
+    setAskedSpec(session, nextSpec, "valid answer");
 
-    if (nextSpec === "projectType") {
-        const interpreted = getProjectTypeFromNumber(message);
-        setAskedSpec(session, "projectType", "valid answer");
-        setProjectType(session, interpreted, "user input");
-        return true;
-    } else {
-        setSpecValue(session, nextSpec, message, "runDirector/valid");
-        setAskedSpec(session, nextSpec, "valid answer");
-
-        // 🎯 Si propertyUsage vaut "income", forcer les autres specs immédiatement
-        if (nextSpec === "propertyUsage" && message === "income" && !session._incomeSpecsForced) {
-            const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
-            for (const field of specsToForce) {
-                session.specValues[field] = 0;
-                setAskedSpec(session, field, "asked set to true because income property");
-            }
-            session._incomeSpecsForced = true;
+    // 🎯 Si propertyUsage vaut "income", forcer les autres specs immédiatement
+    if (nextSpec === "propertyUsage" && message === "income" && !session._incomeSpecsForced) {
+        const specsToForce = ["bedrooms", "bathrooms", "garage", "parking"];
+        for (const field of specsToForce) {
+            session.specValues[field] = 0;
+            setAskedSpec(session, field, "asked set to true because income property");
         }
+        session._incomeSpecsForced = true;
     }
-
 
     const continued = await stepWhatNext(context);
     if (!continued) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
         context.gptAllowed = true;
         await chatOnly(senderId, message, session.language || "fr");
-        return true;
     }
 
     return true;
