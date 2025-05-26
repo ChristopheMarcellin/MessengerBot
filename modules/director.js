@@ -17,7 +17,8 @@ async function runDirector(context) {
 
     // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);
-    const session = context.session;
+
+    const session = context.session = getSession(senderId);
 
     // 🔍 Blocage volontaire après reset ou erreur
     if (!isReady || !session) {
