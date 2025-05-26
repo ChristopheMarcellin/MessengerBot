@@ -255,11 +255,14 @@ function detectLanguageFromText(text) {
     return isFrench ? 'fr' : 'en';
 }
 
-function setAskedSpec(session, field, source = "unspecified") {
-    if (!session.askedSpecs) session.askedSpecs = {};
-    session.askedSpecs[field] = true;
-    console.log(`[UTILS set Asked specs] for ["${field}"] ← true | par: ${source}`);
+function setAskedSpec(session, specKey, source = "manual") {
+    if (!session.askedSpecs) {
+        session.askedSpecs = {};
+        console.warn(`[UTILS] askedSpecs manquant → recréé`);
     }
+    session.askedSpecs[specKey] = true;
+    console.log(`[UTILS set Asked specs] for ["${specKey}"] ← true | par: ${source}`);
+}
 
 
 module.exports = {
