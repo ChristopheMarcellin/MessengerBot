@@ -11,54 +11,41 @@ function traceCaller(label) {
     const stack = new Error().stack;
     const line = stack.split('\n')[3] || 'inconnu';
     console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
-}
-function getNextSpec(projectType, specValues = {}, askedSpecs = {}) {
+ }
 
-    console.log(`[UTILS getNextSpec] État courant : projectType="${projectType}", specValues=`, specValues);
-    console.log(`[UTILS getNextSpec] État courant : propertyusage="${specValues.propertyUsage}", specValues=`, specValues);
+function getNextSpec(projectType, specValues = {}) {
 
-    // 🔐 Cas d’arrêt immédiat
-    if (projectType === "E" || specValues.propertyUsage === "E") {
-        console.log(`[UTILS getNextSpec] Arrêt du traitement : projectType ou propertyUsage = "E"`);
-        return null;
-    }
+    console.log(`[getNextSpec] projectType: ${projectType}, session.projectType: ${specValues.projectType}, propertyUsage: ${specValues.propertyUsage}, session.propertyUsage: ${specValues.propertyUsage}`);
 
-    // 1. 🔍 Priorité : projectType
-    if (projectType === "?" || typeof projectType === "undefined") {
-        return "projectType";
-    }
-
-    // 2. 🔍 Ensuite : propertyUsage
     const puValue = specValues.propertyUsage;
-    if (puValue === "?" || typeof puValue === "undefined") {
-        return "propertyUsage";
-    }
+    // Bloc 0 : refus explicite → pas de résumé, on arrête
+    if (projectType === 'E' || puValue === 'E') return null;
 
-    // 3. 🔍 Ensuite : specs liées au type de projet
-    const specBlock = questions[projectType] || {};
-       const skipIfIncome = ["bedrooms", "bathrooms", "garage", "parking"];
-    for (const field of Object.keys(specBlock)) {
-               if (puValue === "income" && skipIfIncome.includes(field)) continue;
-        const value = specValues[field];
-        if (value === "?" || typeof value === "undefined") {
+    // Bloc 1 : spec manquantes de base
+    if (projectType === '?') return 'projectType';
+    if (puValue === '?') return 'propertyUsage';
+
+    // Bloc 2 : specs spécifiques au projectType
+    const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
+    const typeBlock = questions[projectType] || {};
+    for (const field of Object.keys(typeBlock)) {
+        if (puValue === 'income' && skipIfIncome.includes(field)) continue;
+        if (specValues[field] === '?') {
             return field;
-        }
-    }
+        }    }
 
-    // 4. 🔍 Ensuite : champs génériques (nom, email, etc.)
-    const genericBlock = questions.generic || {};
+    // Bloc 3 : specs génériques
+    const genericBlock = questions._generic || {};
     for (const field of Object.keys(genericBlock)) {
-        const value = specValues[field];
-        if (value === "?" || typeof value === "undefined") {
+        if (specValues[field] === '?') {
             return field;
         }
     }
 
-    return "summary"; // ✅ Toutes les specs sont complètes
+    // Bloc 4 : tout est rempli → résumé
+    return 'summary';
 }
 
-
-module.exports = { getNextSpec };
 function getCurrentSpec(session) {
     if (!session || typeof session.currentSpec !== "string") {
         return null;
@@ -129,8 +116,6 @@ function setProjectType(session, value, reason = 'unknown') {
 
     console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
-
-
 
 
 function setSpecValue(session, key, value, source = "unspecified") {

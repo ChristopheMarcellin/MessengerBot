@@ -15,10 +15,15 @@ const { stepWhatNext } = require('./steps');
 
 async function runDirector(context) {
     const { message, senderId } = context;
-
+    //CM temporaire
+    context._entryCount = (context._entryCount || 0) + 1;
+    if (context._entryCount > 10) {
+        console.warn(`[STOP] runDirector appelé plus de 10 fois (${context._entryCount}) → interruption.`);
+        return false;
+    }
+    console.log(new Error().stack.split('\n')[2].trim());
     // 1 - *****************************Initialisation de la session**********************************
     const isReady = await stepInitializeSession(context);
-
     const session = context.session = getSession(senderId);
 
     // 🔍 Blocage volontaire après reset ou erreur
@@ -40,6 +45,17 @@ async function runDirector(context) {
 
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
     console.log(`[DIRECTOR] Réponse jugée ${isValid ? "valide" : "invalide"} pour "${nextSpec}" = "${message}"`);
+
+    if (nextSpec === "projectType") {
+        const interpreted = getProjectTypeFromNumber(message);
+        setAskedSpec(session, "projectType", "valid answer");
+        const preserveUsageAsked = session.askedSpecs?.propertyUsage;
+        setProjectType(session, interpreted, "user input");
+        if (typeof preserveUsageAsked !== "undefined") {
+            session.askedSpecs.propertyUsage = preserveUsageAsked;
+        }
+        return true; // pour forcer un appel propre sur l’itération suivante
+    }
 
     // 🔁 Bloc unifié pour les specs invalides, avec GPT fallback pour projectType
     if (!isValid) {
@@ -86,12 +102,9 @@ async function runDirector(context) {
     }
 
     // ✅ Cas général : réponse valide
-    if (nextSpec === "projectType") {
-        const interpreted = getProjectTypeFromNumber(message);
-        setProjectType(session, interpreted, "user input");
-    } else {
-        setSpecValue(session, nextSpec, message, "runDirector/valid");
-    }
+
+       setSpecValue(session, nextSpec, message, "runDirector/valid");
+    
 
     const continued = await stepWhatNext(context, nextSpec);
     if (!continued) {
