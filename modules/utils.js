@@ -85,7 +85,7 @@ function initializeSpecFields(session, projectType) {
     }
 
     // 🔒 Important : initialisation explicite de propertyUsage
-    session.propertyUsage = '?';
+    setSpecValue(session, "propertyUsage", "?", "initializeSpecFields");
 
     console.log(`[UTILS initialize] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
 }
@@ -95,7 +95,7 @@ function setProjectType(session, value, reason = 'unknown') {
 
     const old = session.projectType;
 
-    // 🚫 Règle #1 : ne pas écraser B/S/R par "?"
+    // 🚫 Règle #1 : ne pas écraser B/S/R/E par "?"
     if (["B", "S", "R", "E"].includes(old) && value === "?") {
         console.warn(`[UTILS setProjectType] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
         return;
@@ -107,16 +107,18 @@ function setProjectType(session, value, reason = 'unknown') {
         return;
     }
 
-    // ✅ Initialisation globale de propertyUsage
+    // ✅ Initialisation des structures
     if (!session.specValues) session.specValues = {};
     if (!session.askedSpecs) session.askedSpecs = {};
     if (typeof session.specValues.propertyUsage === "undefined") {
         session.askedSpecs.propertyUsage = false;
     }
 
+    // ✅ Mise à jour des deux emplacements, le premier est décisionnel, le deuxième (specValues) sert aux tests des specs
     session.projectType = value;
+    session.specValues.projectType = value;
 
-    // ✅ Initialisation des specs selon le type
+    // ✅ Initialisation des specs si applicable
     if (["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
     }
@@ -127,6 +129,7 @@ function setProjectType(session, value, reason = 'unknown') {
 
     console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
+
 
 
 
