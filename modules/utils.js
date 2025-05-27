@@ -82,31 +82,31 @@ function setProjectType(session, value, reason = 'unknown') {
 
     const old = session.projectType;
 
-    // 🚫 Règle #1 : ne pas écraser B/S/R/E par "?"
+    // 🚫 Règle #1 : ne jamais écraser B/S/R/E par "?"
     if (["B", "S", "R", "E"].includes(old) && value === "?") {
         console.warn(`[UTILS setProjectType] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
         return;
     }
 
-    // 🚫 Règle #2 : ne pas réécrire la même valeur
-    if (old === value) {
+    // 🚫 Règle #2 : si valeur forte identique → aucune action
+    if (["B", "S", "R", "E"].includes(old) && old === value) {
         console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification`);
         return;
     }
 
-    // ✅ Initialisation des structures
+    // ✅ Initialisation minimale si structures manquantes
     if (!session.specValues) session.specValues = {};
     if (!session.askedSpecs) session.askedSpecs = {};
     if (typeof session.specValues.propertyUsage === "undefined") {
         session.askedSpecs.propertyUsage = false;
     }
 
-    // ✅ Mise à jour des deux emplacements, le premier est décisionnel, le deuxième (specValues) sert aux tests des specs
+    // ✅ Mise à jour des deux emplacements
     session.projectType = value;
     session.specValues.projectType = value;
 
-    // ✅ Initialisation des specs si applicable
-    if (["B", "S", "R"].includes(value)) {
+    // ✅ Initialisation des specs uniquement si changement de ? → valeur forte
+    if (old === "?" && ["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
     }
 
