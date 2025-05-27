@@ -33,6 +33,8 @@ async function stepInitializeSession(context) {
     const isEndSession = message.trim().toLowerCase() === 'end session';
     if (isEndSession) {
         const newSession = resetSession(senderId);
+        newSession.specValues = {};
+        newSession.askedSpecs = {};
         setSession(senderId, newSession);
         context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
