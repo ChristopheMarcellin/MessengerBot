@@ -3,6 +3,7 @@ const { getSession, setSession, resetSession, logSessionState } = require('../se
 
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
+    const existingSession = getSession(senderId);
 
     // 🛡 Protection : session déjà initialisée
     if (existingSession?.specValues && existingSession?.askedSpecs) {
