@@ -10,89 +10,64 @@ const {
     setAskedSpec
 } = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
-const { stepHandleFallback } = require('./steps');
 const { stepWhatNext } = require('./steps');
 
 async function runDirector(context) {
     const { message, senderId } = context;
-    //CM temporaire
+
     context._entryCount = (context._entryCount || 0) + 1;
     if (context._entryCount > 10) {
         console.warn(`[STOP] runDirector appelé plus de 10 fois (${context._entryCount}) → interruption.`);
         return false;
     }
-    console.log(new Error().stack.split('\n')[2].trim());
-    // 1 - *****************************Initialisation de la session**********************************
+
     const isReady = await stepInitializeSession(context);
     const session = context.session = getSession(senderId);
-
-    // 🔍 Blocage volontaire après reset ou erreur
     if (!isReady || !session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
         return false;
     }
 
-    // 🧠 Tentative de classification GPT si projectType est encore indéfini
-    if (session.projectType === "?") {
-        const gptResult = await gptClassifyProject(message);
-        const interpreted = getProjectTypeFromNumber(gptResult);
-        if (isValidAnswer("projectType", interpreted)) {
-            setProjectType(session, interpreted, "gpt");
-            setAskedSpec(session, "projectType", "valid answer");
-            console.log(`[DIRECTOR] projectType défini par GPT → ${interpreted}`);
-            return true; // ⏹️ Stop ici pour repartir dans un flux propre
-        }
+    const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    if (nextSpec === "none") return false;
+
+    if (nextSpec === "projectType") {
+        const interpreted = await gptClassifyProject(message, session.language || "fr");
+        const isValidGPT = ["B", "S", "R", "E"].includes(interpreted);
+        setAskedSpec(session, "projectType", isValidGPT ? "valid answer" : "asked but invalid answer");
+        setProjectType(session, interpreted, "gpt");
+        return true;
     }
 
     console.log(`[DIRECTOR] Message: "${message}"`);
+    console.log(`[DIRECTOR] Spec en cours : ${nextSpec}`);
+    console.log(`[DIRECTOR] Valeur actuelle : ${session.specValues[nextSpec]}`);
+    console.log(`[DIRECTOR] Déjà posée ? ${session.askedSpecs[nextSpec]}`);
 
-    const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
-    if (!nextSpec) {
-        console.log('[DIRECTOR] Aucune spec à poser');
-        return false;
+    // 🔒 Protection stricte : projectType ne doit jamais passer ici
+    if (nextSpec === "projectType") {
+        throw new Error("[DIRECTOR] ERREUR CRITIQUE : projectType ne doit pas être validé ici");
     }
-
-    console.log(`[DIRECTOR] Identification de la nextSpec à traiter = ${nextSpec}`);
-    console.log(`[DIRECTOR] État de "${nextSpec}" → specValue = "${session.specValues[nextSpec]}", asked = ${session.askedSpecs[nextSpec]}`);
 
     const isValid = isValidAnswer(nextSpec, message, session.projectType);
     console.log(`[DIRECTOR] Réponse jugée ${isValid ? "valide" : "invalide"} pour "${nextSpec}" = "${message}"`);
 
-    // 🔁 Bloc unifié pour les specs invalides, avec GPT fallback pour projectType
     if (!isValid) {
         const alreadyAsked = session.askedSpecs[nextSpec] === true;
         const current = session.specValues[nextSpec];
         const protectedValues = ["E", 0];
 
-        // 🧠 Cas unique : projectType → GPT fallback en 1re tentative
-        if (nextSpec === "projectType" && !alreadyAsked) {
-            const interpreted = await gptClassifyProject(message, session.language || "fr");
-            const isValidGPT = isValidAnswer("projectType", interpreted, session.projectType);
-
-            if (isValidGPT) {
-                setProjectType(session, interpreted, "GPT → valide");
-                await stepWhatNext(context, nextSpec);
-                return true;
-            } else {
-                setProjectType(session, "?", "GPT → invalide");
-            }
-        }
-
-        // 🧠 Marquer la spec comme "posée" (uniquement pour projectType et propertyUsage)
-        if ((nextSpec === "projectType" || nextSpec === "propertyUsage") && !alreadyAsked) {
+        if ((nextSpec === "propertyUsage") && !alreadyAsked) {
             setAskedSpec(session, nextSpec, "asked but invalid answer");
         }
 
-        // 🔒 Si la valeur actuelle est protégée, on ne la touche plus
         if (!protectedValues.includes(current)) {
             if (alreadyAsked && current === "?") {
                 setSpecValue(session, nextSpec, "E", "runDirector/?→E after 2 invalid");
-                console.log(`[DIRECTOR] "${nextSpec}" → est passé de "?" à "E" après deux réponses invalides`);
+                console.log(`[DIRECTOR] "${nextSpec}" → passé à "E" après deux tentatives`);
             } else {
                 setSpecValue(session, nextSpec, "?", "runDirector/invalid");
             }
-        } else {
-            console.log(`[DIRECTOR] Réécriture bloquée de "${nextSpec}" car déjà à valeur protégée "${current}"`);
         }
 
         context.deferSpec = true;
@@ -102,7 +77,7 @@ async function runDirector(context) {
         return true;
     }
 
-    // ✅ Cas général : réponse valide
+    // ✅ Réponse valide
     setSpecValue(session, nextSpec, message, "runDirector/valid");
 
     const continued = await stepWhatNext(context, nextSpec);
