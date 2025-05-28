@@ -4,11 +4,6 @@ const { getSession, setSession, resetSession, logSessionState } = require('../se
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
 
-    if (context._hasInitializedOnce) {
-        console.warn('[⚠️INIT] Réentrée détectée dans stepInitializeSession — exécution bloquée pour éviter une boucle.');
-        return false;
-    }
-    context._hasInitializedOnce = true;
 
     // 🔐 Assurer la présence du senderId
     if (typeof senderId !== 'string' || senderId.trim() === '') {
