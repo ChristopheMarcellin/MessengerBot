@@ -38,11 +38,11 @@ async function stepInitializeSession(context) {
         setSession(senderId, newSession);
         context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-        setProjectType(context.session, "?", "reset after end session"); // 👈 INSERTION ICI
+    //    setProjectType(context.session, "?", "reset after end session"); // 👈 INSERTION ICI
         logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
         return false;
     }
-    // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes
+    // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes **** NE JAMAIS TRAITER PROJECT TYPE DE LA SESSION QUI BRISERAIT LE ROLE DE SETPROJECTTYPE
     session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue
     session.ProjectDate ??= new Date().toISOString();
     session.questionCount ??= 1;

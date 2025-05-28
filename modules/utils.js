@@ -123,8 +123,6 @@ function setProjectType(session, value, reason = 'unknown') {
     console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
 
-
-
 function setSpecValue(session, key, value, source = "unspecified") {
     if (!session.specValues) session.specValues = {};
 
@@ -176,7 +174,6 @@ function setSpecValue(session, key, value, source = "unspecified") {
 
     console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
-
 
 //gpt classifies project
 
