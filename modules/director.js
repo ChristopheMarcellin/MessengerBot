@@ -1,5 +1,5 @@
 const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
-const { getSession } = require('./sessionStore');
+const { getSession, resetSession } = require('./sessionStore');
 const {
     setProjectType,
     initializeSpecFields,
@@ -17,10 +17,18 @@ async function runDirector(context) {
 
     context._entryCount = (context._entryCount || 0) + 1;
     if (context._entryCount > 10) {
-        console.warn(`[STOP] runDirector appelé plus de 10 fois (${context._entryCount}) → interruption.`);
+        console.warn(`[DIRECTOR STOP] runDirector appelé plus de 10 fois (${context._entryCount}) → interruption.`);
         return false;
     }
 
+    // 🛑 Bloc d'interruption immédiate : "end session"
+    if (typeof message === "string" && message.trim().toLowerCase() === "end session") {
+        resetSession(senderId);
+        console.log('[DIRECTOR] "end session" détecté → session réinitialisée à neuf');
+        return false;
+    }
+
+    // 🧠 Initialisation ou récupération de session
     const isReady = await stepInitializeSession(context);
     const session = context.session = getSession(senderId);
     if (!isReady || !session) {
@@ -28,9 +36,11 @@ async function runDirector(context) {
         return false;
     }
 
+    // 🎯 Détermination de la prochaine spec à traiter
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     if (nextSpec === "none") return false;
 
+    // 🔒 Traitement exclusif de projectType via GPT
     if (nextSpec === "projectType") {
         const interpreted = await gptClassifyProject(message, session.language || "fr");
         const isValidGPT = ["B", "S", "R", "E"].includes(interpreted);
@@ -39,16 +49,13 @@ async function runDirector(context) {
         return true;
     }
 
-    console.log(`[DIRECTOR] Message: "${message}"`);
-    console.log(`[DIRECTOR] Spec en cours : ${nextSpec}`);
-    console.log(`[DIRECTOR] Valeur actuelle : ${session.specValues[nextSpec]}`);
-    console.log(`[DIRECTOR] Déjà posée ? ${session.askedSpecs[nextSpec]}`);
 
-    // 🔒 Protection stricte : projectType ne doit jamais passer ici
+    // 🛡 Sécurité absolue : ne jamais valider projectType ici
     if (nextSpec === "projectType") {
-        throw new Error("[DIRECTOR] ERREUR CRITIQUE : projectType ne doit pas être validé ici");
+        throw new Error("[DIRECTOR] ERREUR CRITIQUE : projectType ne doit pas passer dans le pipeline standard");
     }
 
+    // ✅ Validation classique des autres specs
     const isValid = isValidAnswer(nextSpec, message, session.projectType);
     console.log(`[DIRECTOR] Réponse jugée ${isValid ? "valide" : "invalide"} pour "${nextSpec}" = "${message}"`);
 
@@ -57,7 +64,7 @@ async function runDirector(context) {
         const current = session.specValues[nextSpec];
         const protectedValues = ["E", 0];
 
-        if ((nextSpec === "propertyUsage") && !alreadyAsked) {
+        if (nextSpec === "propertyUsage" && !alreadyAsked) {
             setAskedSpec(session, nextSpec, "asked but invalid answer");
         }
 
