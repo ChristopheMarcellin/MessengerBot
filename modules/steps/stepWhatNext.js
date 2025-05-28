@@ -9,7 +9,7 @@ async function stepWhatNext(context, nextSpec) {
     const lang = session.language || 'fr';
 
     if (!nextSpec || nextSpec === "none") {
-        console.warn('[WHATNEXT] Appel avec nextSpec vide ou invalide');
+        console.warn('[WHATNEXT] Appel avec nextSpec est vide ou invalide');
         return false;
     }
 

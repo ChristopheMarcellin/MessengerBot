@@ -22,12 +22,7 @@ async function runDirector(context) {
         return false;
     }
 
-    session._entryCount = (session._entryCount || 0) + 1;
-    if (session._entryCount > 10) {
-        console.warn(`[DIRECTOR STOP] session.runDirector appelé plus de 10 fois (${session._entryCount}) → interruption.`);
-        console.log('[DIRECTOR] Fin prématurée : boucle infinie (session)');
-        return false;
-    }
+
 
     // 🛑 Bloc d’interruption explicite : message = "end session"
     if (typeof message === "string" && message.trim().toLowerCase() === "end session") {
@@ -40,6 +35,17 @@ async function runDirector(context) {
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
     const session = context.session = getSession(senderId);
+
+    session._entryCount = (session._entryCount || 0) + 1;
+    if (session._entryCount > 10) {
+        console.warn(`[DIRECTOR STOP] session.runDirector appelé plus de 10 fois (${session._entryCount}) → interruption.`);
+        console.log('[DIRECTOR] Fin prématurée : boucle infinie (session)');
+        return false;
+    }
+
+
+
+
     if (!isReady || !session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
         console.log('[DIRECTOR] Fin : session absente ou erreur init');
