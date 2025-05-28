@@ -1,17 +1,3 @@
-const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
-const { getSession, resetSession } = require('./sessionStore');
-const {
-    setProjectType,
-    initializeSpecFields,
-    setSpecValue,
-    gptClassifyProject,
-    chatOnly,
-    getNextSpec,
-    setAskedSpec
-} = require('./utils');
-const { stepInitializeSession } = require('./steps/index');
-const { stepWhatNext } = require('./steps');
-
 async function runDirector(context) {
     const { message, senderId } = context;
 
@@ -19,6 +5,7 @@ async function runDirector(context) {
     context._entryCount = (context._entryCount || 0) + 1;
     if (context._entryCount > 10) {
         console.warn(`[DIRECTOR STOP] runDirector appelé plus de 10 fois (${context._entryCount}) → interruption.`);
+        console.log('[DIRECTOR] Fin prématurée : boucle infinie');
         return false;
     }
 
@@ -26,6 +13,7 @@ async function runDirector(context) {
     if (typeof message === "string" && message.trim().toLowerCase() === "end session") {
         resetSession(senderId);
         console.log('[DIRECTOR] "end session" détecté → session réinitialisée à neuf');
+        console.log('[DIRECTOR] Fin : end session explicite');
         return false;
     }
 
@@ -34,13 +22,17 @@ async function runDirector(context) {
     const session = context.session = getSession(senderId);
     if (!isReady || !session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
+        console.log('[DIRECTOR] Fin : session absente ou erreur init');
         return false;
     }
 
     // 🧭 Détermination de la prochaine spec à traiter
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
     console.log(`[director] Avant getNextSpec: session.projectType = ${session.projectType}`);
-    if (nextSpec === "none") return false;
+    if (nextSpec === "none") {
+        console.log('[DIRECTOR] Fin : aucune spec à traiter');
+        return false;
+    }
 
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
     if (nextSpec === "projectType") {
@@ -63,10 +55,10 @@ async function runDirector(context) {
             setAskedSpec(session, "projectType", "asked but invalid answer");
         }
 
-        return true; // Fin du tour : projectType traité
+        console.log('[DIRECTOR] Fin : projectType traité via GPT');
+        return true;
     }
 
-   
     // 🔒 Protection stricte : projectType ne doit jamais passer ici
     if (nextSpec === "projectType") {
         throw new Error("[DIRECTOR] ERREUR CRITIQUE : projectType ne doit pas passer dans le pipeline standard");
@@ -81,12 +73,10 @@ async function runDirector(context) {
         const current = session.specValues[nextSpec];
         const protectedValues = ["E", 0];
 
-        // 📌 On marque comme posée uniquement pour propertyUsage
         if (nextSpec === "propertyUsage" && !alreadyAsked) {
             setAskedSpec(session, nextSpec, "asked but invalid answer");
         }
 
-        // 🚫 Protection : on ne modifie pas les valeurs protégées
         if (!protectedValues.includes(current)) {
             if (alreadyAsked && current === "?") {
                 setSpecValue(session, nextSpec, "E", "runDirector/?→E after 2 invalid");
@@ -96,11 +86,11 @@ async function runDirector(context) {
             }
         }
 
-        // 🧠 On redirige vers chat + relance stepWhatNext
         context.deferSpec = true;
         context.gptAllowed = true;
         await chatOnly(senderId, message, session.language || "fr");
         await stepWhatNext(context, nextSpec);
+        console.log('[DIRECTOR] Fin : réponse invalide, relance via GPT + stepWhatNext');
         return true;
     }
 
@@ -112,9 +102,9 @@ async function runDirector(context) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
         context.gptAllowed = true;
         await chatOnly(senderId, message, session.language || "fr");
+        console.log('[DIRECTOR] Fin : fin de parcours après stepWhatNext');
     }
 
-    return true; // Fin du traitement normal
+    console.log('[DIRECTOR] Fin : réponse valide traitée normalement');
+    return true;
 }
-
-module.exports = { runDirector };

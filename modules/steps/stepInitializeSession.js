@@ -42,6 +42,12 @@ async function stepInitializeSession(context) {
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
         //    setProjectType(context.session, "?", "reset after end session"); // 👈 INSERTION ICI
         setProjectType(newSession, "?", "reset after end session");
+
+
+        console.log(`[TEST] newSession.projectType après setProjectType = ${newSession.projectType}`);
+        console.log(`[TEST] context.session.projectType = ${context.session?.projectType}`);
+        console.log(`[TEST] getSession(senderId).projectType = ${getSession(senderId)?.projectType}`);
+
         logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
         return true;
     }
