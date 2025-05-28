@@ -98,8 +98,9 @@ function setProjectType(session, value, reason = 'unknown') {
     }
 
     // ✅ Mise à jour du champ principal
-    console.log(`[UTILS setProjectType] tentative de synchronisation du projectType avec la valeur "${value}"`);
+    console.log(`[UTILS setProjectType] la valeur qui sera affectée à session.projectType = "${value}"`);
     session.projectType = value;
+    console.log(`[UTILS setProjectType] vérification de session.projectType, sa valeur est maintenant = "${session.projectType}"`);
 
     // ✅ Initialisation des specs uniquement si changement de ? → valeur forte
     if (old === "?" && ["B", "S", "R"].includes(value)) {
