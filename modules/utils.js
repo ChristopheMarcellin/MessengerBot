@@ -99,16 +99,20 @@ function setProjectType(session, value, reason = 'unknown') {
     if (!session.specValues) session.specValues = {};
     if (!session.askedSpecs) session.askedSpecs = {};
     if (typeof session.specValues.propertyUsage === "undefined") {
+        console.log(`[UTILS setProjectType] property usage undefined end of setProjectType`);
         session.askedSpecs.propertyUsage = false;
     }
 
     // ✅ Mise à jour des deux emplacements
+    console.log(`[UTILS setProjectType] tentative de synchronisation du projectType dans setProjectType`);
     session.projectType = value;
     session.specValues.projectType = value;
+    console.log(`[UTILS setProjectType] synchronisation du projectType dans setProjectType compltée`);
 
     // ✅ Initialisation des specs uniquement si changement de ? → valeur forte
     if (old === "?" && ["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
+
     }
 
     // ✅ Initialisation forcée si value === "?" et aucune spec encore définie
@@ -121,7 +125,7 @@ function setProjectType(session, value, reason = 'unknown') {
         .map(([k, v]) => `${k}=${v}`)
         .join(', ');
 
-    console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
+    console.log(`[setProjectType] ... specs: ${JSON.stringify(session.specValues)}`);
 }
 
 function setSpecValue(session, key, value, source = "unspecified") {

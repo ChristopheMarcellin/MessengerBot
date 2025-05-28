@@ -39,6 +39,7 @@ async function runDirector(context) {
 
     // 🧭 Détermination de la prochaine spec à traiter
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
+    console.log(`[director] Avant getNextSpec: session.projectType = ${session.projectType}`);
     if (nextSpec === "none") return false;
 
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
