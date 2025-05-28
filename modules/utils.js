@@ -16,10 +16,11 @@ function traceCaller(label) {
 function getNextSpec(projectType, specValues = {}) {
 
     console.log(`[getNextSpec] projectType: ${projectType}, session.projectType: ${specValues.projectType}, propertyUsage: ${specValues.propertyUsage}, session.propertyUsage: ${specValues.propertyUsage}`);
-
+    if (!projectType || projectType === '?') return 'projectType';
     const puValue = specValues.propertyUsage;
     // Bloc 0 : refus explicite → pas de résumé, on arrête
     if (projectType === 'E' || puValue === 'E') return null;
+
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';

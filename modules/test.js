@@ -43,7 +43,9 @@ const tests = [
     { label: "12. projectType = ? AND propertyUsage = ?", input: { projectType: '?', specValues: { propertyUsage: '?' }, askedSpecs: { propertyUsage: '?' } }, expected: 'projectType' },
     { label: "13. projectType = B, propertyUsage = ?", input: { projectType: 'B', specValues: { propertyUsage: '?' }, askedSpecs: { propertyUsage: '?' } }, expected: 'propertyUsage' },
     { label: "14. B + residential → toutes specs = E", input: { projectType: 'B', specValues: { propertyUsage: 'residential', price: 'E', bedrooms: 'E', bathrooms: 'E', garage: 'E', location: 'E' }, askedSpecs: { price: true, bedrooms: true, bathrooms: true, garage: true, location: true } }, expected: 'summary' },
-    { label: "15. specValue = ?, asked = true → doit reposer", input: { projectType: 'B', specValues: { propertyUsage: 'residential', price: 400, bedrooms: '?', location: '?' }, askedSpecs: { price: true, bedrooms: true } }, expected: 'bedrooms' }
+    { label: "15. specValue = ?, asked = true → doit reposer", input: { projectType: 'B', specValues: { propertyUsage: 'residential', price: 400, bedrooms: '?', location: '?' }, askedSpecs: { price: true, bedrooms: true } }, expected: 'bedrooms' },
+{ label: "16. projectType = undefined → comportement inattendu", input: { projectType: undefined, specValues: {}, askedSpecs: {} }, expected: 'projectType' }
+
 ];
 
 for (const { label, input, expected } of tests) {
