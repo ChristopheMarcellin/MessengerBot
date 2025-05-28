@@ -40,7 +40,7 @@ async function stepInitializeSession(context) {
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
         setProjectType(context.session, "?", "reset after end session"); // 👈 INSERTION ICI
         logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
-        return true;
+        return false;
     }
     // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes
     session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue

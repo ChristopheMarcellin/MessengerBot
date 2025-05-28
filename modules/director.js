@@ -32,6 +32,19 @@ async function runDirector(context) {
         return false;
     }
 
+    // 🧠 Tentative de classification GPT si projectType est encore indéfini
+    if (session.projectType === "?") {
+        const gptResult = await gptClassifyProject(message);
+        const interpreted = getProjectTypeFromNumber(gptResult);
+        if (isValidAnswer("projectType", interpreted)) {
+            setProjectType(session, interpreted, "gpt");
+            setAskedSpec(session, "projectType", "valid answer");
+            console.log(`[DIRECTOR] projectType défini par GPT → ${interpreted}`);
+            return true; // ⏹️ Stop ici pour repartir dans un flux propre
+        }
+    }
+
+
     console.log(`[DIRECTOR] Message: "${message}"`);
 
     const nextSpec = getNextSpec(session.projectType, session.specValues, session.askedSpecs);
@@ -46,16 +59,6 @@ async function runDirector(context) {
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
     console.log(`[DIRECTOR] Réponse jugée ${isValid ? "valide" : "invalide"} pour "${nextSpec}" = "${message}"`);
 
-    if (nextSpec === "projectType") {
-        const interpreted = getProjectTypeFromNumber(message);
-        setAskedSpec(session, "projectType", "valid answer");
-        const preserveUsageAsked = session.askedSpecs?.propertyUsage;
-        setProjectType(session, interpreted, "user input");
-        if (typeof preserveUsageAsked !== "undefined") {
-            session.askedSpecs.propertyUsage = preserveUsageAsked;
-        }
-        return true; // pour forcer un appel propre sur l’itération suivante
-    }
 
     // 🔁 Bloc unifié pour les specs invalides, avec GPT fallback pour projectType
     if (!isValid) {

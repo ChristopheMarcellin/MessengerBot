@@ -110,12 +110,19 @@ function setProjectType(session, value, reason = 'unknown') {
         initializeSpecFields(session, value);
     }
 
+    // ✅ Initialisation forcée si value === "?" et aucune spec encore définie
+    if (value === "?" && Object.keys(session.specValues).length === 0) {
+        initializeSpecFields(session, value);
+        console.log(`[INIT] Specs initialisées pour projectType="?" (post-reset)`);
+    }
+
     const specs = Object.entries(session.specValues || {})
         .map(([k, v]) => `${k}=${v}`)
         .join(', ');
 
     console.log(`[TRACK] projectType changed from ${old} to ${value} | reason: ${reason} | current state: projectType=${value} | specs: ${specs}`);
 }
+
 
 
 function setSpecValue(session, key, value, source = "unspecified") {
