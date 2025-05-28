@@ -1,3 +1,16 @@
+const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
+const { getSession, resetSession } = require('./sessionStore');
+const {
+    setProjectType,
+    initializeSpecFields,
+    setSpecValue,
+    gptClassifyProject,
+    chatOnly,
+    getNextSpec,
+    setAskedSpec
+} = require('./utils');
+const { stepInitializeSession } = require('./steps/index');
+const { stepWhatNext } = require('./steps');
 async function runDirector(context) {
     const { message, senderId } = context;
 
@@ -108,3 +121,5 @@ async function runDirector(context) {
     console.log('[DIRECTOR] Fin : réponse valide traitée normalement');
     return true;
 }
+
+module.exports = { runDirector };
