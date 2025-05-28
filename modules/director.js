@@ -22,8 +22,6 @@ async function runDirector(context) {
         return false;
     }
 
-
-
     // 🛑 Bloc d’interruption explicite : message = "end session"
     if (typeof message === "string" && message.trim().toLowerCase() === "end session") {
         resetSession(senderId);
@@ -42,9 +40,6 @@ async function runDirector(context) {
         console.log('[DIRECTOR] Fin prématurée : boucle infinie (session)');
         return false;
     }
-
-
-
 
     if (!isReady || !session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
