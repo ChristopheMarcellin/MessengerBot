@@ -14,7 +14,7 @@ async function stepWhatNext(context, nextSpec) {
     }
 
     session.currentSpec = nextSpec;
-    setAskedSpec(senderId, nextSpec, 'question posée via stepWhatNext');
+    setAskedSpec(session, nextSpec, 'question posée via stepWhatNext');
 
     const questionText = (nextSpec === "projectType")
         ? getPromptForProjectType(lang)

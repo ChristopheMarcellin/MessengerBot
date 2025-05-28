@@ -33,6 +33,10 @@ function resetSession(senderId) {
         ProjectDate: new Date().toISOString()
     };
 
+
+    setProjectType(freshSession, "?", "resetSession");
+
+    setSession(senderId, freshSession);
     console.log(`[RESET] Nouvelle session propre créée pour ${senderId}`);
     return freshSession;
 }

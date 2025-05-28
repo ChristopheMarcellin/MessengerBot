@@ -22,6 +22,13 @@ async function runDirector(context) {
         return false;
     }
 
+    session._entryCount = (session._entryCount || 0) + 1;
+    if (session._entryCount > 10) {
+        console.warn(`[DIRECTOR STOP] session.runDirector appelé plus de 10 fois (${session._entryCount}) → interruption.`);
+        console.log('[DIRECTOR] Fin prématurée : boucle infinie (session)');
+        return false;
+    }
+
     // 🛑 Bloc d’interruption explicite : message = "end session"
     if (typeof message === "string" && message.trim().toLowerCase() === "end session") {
         resetSession(senderId);
