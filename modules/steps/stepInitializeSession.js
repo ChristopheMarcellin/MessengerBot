@@ -84,19 +84,7 @@ async function stepInitializeSession(context) {
         const realSession = context.session;
         //   console.log("[CHECK] Définition du setter projectType dans stepInitializeSession");
 
-        Object.defineProperty(session, 'projectType', {
-            configurable: true,
-            enumerable: true,
-            get() {
-                return session._projectType;
-            },
-            set(value) {
-                const err = new Error();
-                console.log(`[INIT ALERTE] projectType modifié via setter piégé → ${value}`);
-                console.log(`[INIT TRACE] setProjectType ←`, err.stack);
-                session._projectType = value;
-            }
-        });
+     
     }
 
     return true;
