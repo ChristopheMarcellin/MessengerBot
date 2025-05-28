@@ -83,13 +83,7 @@ function setProjectType(session, value, reason = 'unknown') {
 
     const old = session.projectType;
 
-    // 🚫 Règle #1 : ne jamais écraser B/S/R/E par "?"
-    if (["B", "S", "R", "E"].includes(old) && value === "?") {
-        console.warn(`[UTILS setProjectType] Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
-        return;
-    }
-
-    // 🚫 Règle #2 : si valeur forte identique → aucune action
+    // 🚫 Règle : si valeur forte identique → aucune action
     if (["B", "S", "R", "E"].includes(old) && old === value) {
         console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification`);
         return;
@@ -103,16 +97,13 @@ function setProjectType(session, value, reason = 'unknown') {
         session.askedSpecs.propertyUsage = false;
     }
 
-    // ✅ Mise à jour des deux emplacements
-    console.log(`[UTILS setProjectType] tentative de synchronisation du projectType dans setProjectType`);
+    // ✅ Mise à jour du champ principal
+    console.log(`[UTILS setProjectType] tentative de synchronisation du projectType avec la valeur "${value}"`);
     session.projectType = value;
-    session.specValues.projectType = value;
-    console.log(`[UTILS setProjectType] synchronisation du projectType dans setProjectType compltée`);
 
     // ✅ Initialisation des specs uniquement si changement de ? → valeur forte
     if (old === "?" && ["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
-
     }
 
     // ✅ Initialisation forcée si value === "?" et aucune spec encore définie
