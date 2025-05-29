@@ -80,7 +80,7 @@ async function runDirector(context) {
         }
 
         console.log('[DIRECTOR] Fin : projectType traité via GPT');
-        await stepWhatNext(context);
+        await stepWhatNext(context, nextSpec);
        
         return true;
     }
