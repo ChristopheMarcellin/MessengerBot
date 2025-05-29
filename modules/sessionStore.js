@@ -64,7 +64,6 @@ function logSessionState(label, senderId) {
   //  console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
 }
 
-const userSessions = {};
 
 function wrapSessionWithLogger(session) {
     return new Proxy(session, {
