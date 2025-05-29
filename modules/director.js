@@ -35,8 +35,11 @@ async function runDirector(context) {
     const isReady = await stepInitializeSession(context);
     context.session = getSession(senderId);
 
+ 
     context.session._entryCount = (context.session._entryCount || 0) + 1;
     if (context.session._entryCount > 10) {
+
+
         console.warn(`[DIRECTOR STOP] session.runDirector appelé plus de 10 fois (${context.session._entryCount}) → interruption.`);
         console.log('[DIRECTOR] Fin prématurée : boucle infinie (session)');
         return false;
@@ -49,7 +52,7 @@ async function runDirector(context) {
     }
 
     // 🧭 Détermination de la prochaine spec à traiter
-    const nextSpec = getNextSpec(context.session.projectType, context.session.specValues, context.session.askedSpecs);
+    const nextSpec = getNextSpec(context.session);
     console.log(`[DIRECTOR] Avant getNextSpec: session.projectType = ${context.session.projectType}`);
     if (nextSpec === "none") {
         console.log('[DIRECTOR] Fin : aucune spec à traiter');

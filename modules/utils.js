@@ -13,37 +13,35 @@ function traceCaller(label) {
     console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
  }
 
-function getNextSpec(projectType, specValues = {}) {
+function getNextSpec(session) {
+    const { projectType, specValues = {}, askedSpecs = {} } = session;
 
-    console.log(`[getNextSpec] projectType: ${projectType}, session.projectType: ${specValues.projectType}, propertyUsage: ${specValues.propertyUsage}, session.propertyUsage: ${specValues.propertyUsage}`);
-    if (!projectType || projectType === '?') return 'projectType';
     const puValue = specValues.propertyUsage;
-    // Bloc 0 : refus explicite → pas de résumé, on arrête
-    if (projectType === 'E' || puValue === 'E') return null;
 
+    console.log(`[getNextSpec] projectType: ${projectType}, propertyUsage: ${puValue}`);
+
+    // Bloc 0 : refus explicite
+    if (projectType === 'E' || puValue === 'E') return null;
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
     if (puValue === '?') return 'propertyUsage';
 
-    // Bloc 2 : specs spécifiques au projectType
+    // Bloc 2 : specs spécifiques
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
     const typeBlock = questions[projectType] || {};
     for (const field of Object.keys(typeBlock)) {
         if (puValue === 'income' && skipIfIncome.includes(field)) continue;
-        if (specValues[field] === '?') {
-            return field;
-        }    }
+        if (specValues[field] === '?') return field;
+    }
 
     // Bloc 3 : specs génériques
     const genericBlock = questions._generic || {};
     for (const field of Object.keys(genericBlock)) {
-        if (specValues[field] === '?') {
-            return field;
-        }
+        if (specValues[field] === '?') return field;
     }
 
-    // Bloc 4 : tout est rempli → résumé
+    // Bloc 4 : tout est rempli
     return 'summary';
 }
 
