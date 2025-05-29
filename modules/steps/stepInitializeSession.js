@@ -19,10 +19,10 @@ async function stepInitializeSession(context) {
     }
 
     // 🧠 Création d'une session lorsque manquante ou corrompue
-    let session = getSession(senderId);
-    if (!session || typeof session !== 'object') {
+    context.session = getSession(senderId);
+    if (!context.session || typeof context.session !== 'object') {
         console.log('[INIT] création d\'une session pcq manquante');
-        session = {};
+        context.session = {};
     }
     else {
         //    console.log('[INIT] Session existante trouvée dans le store');
@@ -40,58 +40,50 @@ async function stepInitializeSession(context) {
         setSession(senderId, newSession);
         context.session = newSession;
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-        //    setProjectType(context.session, "?", "reset after end session"); // 👈 INSERTION ICI
-        setProjectType(newSession, "?", "reset after end session");
+        setProjectType(context.session, "?", "reset after end session");
 
-
-        console.log(`[TEST] newSession.projectType après setProjectType = ${newSession.projectType}`);
-        console.log(`[TEST] context.session.projectType = ${context.session?.projectType}`);
-        console.log(`[TEST] getSession(senderId).projectType = ${getSession(senderId)?.projectType}`);
+        console.log(`[TEST] context.session.projectType = ${context.session?.projectType} (via newSession assigné)`);
+        console.log(`[TEST] getSession(senderId).projectType = ${getSession(senderId)?.projectType} (comparaison mémoire)`);
 
         logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
         return true;
     }
 
     // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes **** NE JAMAIS TRAITER PROJECT TYPE DE LA SESSION QUI BRISERAIT LE ROLE DE SETPROJECTTYPE
-    session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue
-    session.ProjectDate ??= new Date().toISOString();
-    session.questionCount ??= 1;
-    session.maxQuestions ??= 40;
-    session.askedSpecs ??= {};
-    session.specValues ??= {};
-    session.currentSpec ??= null;
+    context.session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue
+    context.session.ProjectDate ??= new Date().toISOString();
+    context.session.questionCount ??= 1;
+    context.session.maxQuestions ??= 40;
+    context.session.askedSpecs ??= {};
+    context.session.specValues ??= {};
+    context.session.currentSpec ??= null;
 
     // 🔍 Log APRÈS réparation/normalisation
-    //   logSessionState("Vérification APRÈS réparation", senderId);
+    // logSessionState("Vérification APRÈS réparation", senderId);
 
     // 🎯 Analyse état session existante
-    const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);
-    const hasAskedSpecs = Object.values(session.askedSpecs).some(v => v === true);
+    const hasProject = typeof context.session.projectType === 'string' && ['B', 'S', 'R'].includes(context.session.projectType);
+    const hasAskedSpecs = Object.values(context.session.askedSpecs).some(v => v === true);
 
     if (hasProject && hasAskedSpecs) {
         console.log('[INIT] Session en cours détectée → reprise possible');
-        setSession(senderId, session);
-        context.session = session;
+        setSession(senderId, context.session);
         return true;
     }
 
     if (hasProject && !hasAskedSpecs) {
         console.log('[INIT] ProjectType connu mais specs non commencées → prêt à commencer');
-        setSession(senderId, session);
-        context.session = session;
+        setSession(senderId, context.session);
         return true;
     }
 
     // 📌 Aucune classification ici — laissé au directeur
-    setSession(senderId, session);
-    context.session = session;
+    setSession(senderId, context.session);
 
     // 🧩 Sécuriser l’observation de projectType via un setter piégé
     if (context?.session) {
         const realSession = context.session;
-        //   console.log("[CHECK] Définition du setter projectType dans stepInitializeSession");
-
-     
+        // console.log("[CHECK] Définition du setter projectType dans stepInitializeSession");
     }
 
     return true;
