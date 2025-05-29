@@ -3,7 +3,8 @@ const { setProjectType } = require('./utils');
 const userSessions = {};
 
 function getSession(senderId) {
-    return userSessions[senderId];
+    const session = userSessions[senderId];
+    return session ? wrapSessionWithLogger(session) : undefined;
 }
 
 function setSession(senderId, sessionData) {
@@ -61,6 +62,26 @@ function logSessionState(label, senderId) {
         currentSpec: session.currentSpec
     };
   //  console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
+}
+
+const userSessions = {};
+
+function wrapSessionWithLogger(session) {
+    return new Proxy(session, {
+        get(target, prop) {
+            if (prop === 'projectType') {
+                console.log(`[WATCH-GET] projectType = ${target[prop]} | stack: ${new Error().stack.split('\n')[2].trim()}`);
+            }
+            return target[prop];
+        },
+        set(target, prop, value) {
+            if (prop === 'projectType') {
+                console.log(`[WATCH-SET] projectType = ${value} | old=${target[prop]} | stack: ${new Error().stack.split('\n')[2].trim()}`);
+            }
+            target[prop] = value;
+            return true;
+        }
+    });
 }
 
 module.exports = {
