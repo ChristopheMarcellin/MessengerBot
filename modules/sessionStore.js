@@ -4,7 +4,8 @@ const userSessions = {};
 
 function getSession(senderId) {
     const session = userSessions[senderId];
-  //  return session ? wrapSessionWithLogger(session) : undefined;
+    return userSessions[senderId] || undefined;
+   // return session ? wrapSessionWithLogger(session) : undefined;
 }
 
 function setSession(senderId, sessionData) {
