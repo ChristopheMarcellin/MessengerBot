@@ -34,13 +34,9 @@ async function runDirector(context) {
     const isReady = await stepInitializeSession(context);
     context.session = getSession(senderId);
 
- 
     context.session._entryCount = (context.session._entryCount || 0) + 1;
     if (context.session._entryCount > 10) {
-
-
         console.warn(`[DIRECTOR STOP] session.runDirector appelé plus de 10 fois (_${context.session._entryCount}_) → interruption.`);
-
         return false;
     }
 
@@ -60,6 +56,16 @@ async function runDirector(context) {
 
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
     if (nextSpec === "projectType") {
+        const isValid = isValidAnswer(message, "projectType", "projectType");
+
+        if (isValid) {
+            const interpreted = getProjectTypeFromNumber(message);
+            setProjectType(context.session, interpreted, "user input");
+            setAskedSpec(context.session, "projectType", "valid answer");
+            await stepWhatNext(context, nextSpec);
+            return true;
+        }
+
         const interpreted = await gptClassifyProject(message, context.session.language || "fr");
         const isValidGPT = ["B", "S", "R", "E"].includes(interpreted);
         const current = context.session.projectType;
@@ -80,7 +86,7 @@ async function runDirector(context) {
 
         console.log('[DIRECTOR isValidGPT] projectType détecté et traité via GPT');
         await stepWhatNext(context, nextSpec);
-       
+
         return true;
     }
 
