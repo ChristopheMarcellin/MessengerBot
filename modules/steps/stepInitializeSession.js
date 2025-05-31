@@ -3,6 +3,21 @@ const { getSession, setSession, resetSession, logSessionState } = require('../se
 
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
+
+    // 🔧 Traitement prioritaire du End Session même si session absente
+    const isEndSession = message.trim().toLowerCase() === 'end session';
+    if (isEndSession) {
+        const newSession = resetSession(senderId);
+        newSession.specValues = {};
+        newSession.askedSpecs = {};
+        setSession(senderId, newSession);
+        context.session = newSession;
+        console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
+        setProjectType(context.session, "?", "reset after end session");
+        logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
+        return true;
+    }
+
     const session = getSession(senderId);
 
     // 🛡 Protection : session déjà initialisée
@@ -25,25 +40,8 @@ async function stepInitializeSession(context) {
         return false;
     }
 
-
     // 🔍 Log AVANT réparation
     // logSessionState("Vérification AVANT réparation", senderId);
-
-    // 🔧 Affecter les variables minimales suivant un End Session
-    const isEndSession = message.trim().toLowerCase() === 'end session';
-    if (isEndSession) {
-        const newSession = resetSession(senderId);
-        newSession.specValues = {};
-        newSession.askedSpecs = {};
-        setSession(senderId, newSession);
-        context.session = newSession;
-        console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-        setProjectType(context.session, "?", "reset after end session");
-
-
-        logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
-        return true;
-    }
 
     // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes 
     //**** NE JAMAIS configurer le PROJECT TYPE DE LA SESSION QUI BRISERAIT LE SETPROJECTTYPE effectué dans une autre étape
@@ -69,7 +67,6 @@ async function stepInitializeSession(context) {
     } else {
         console.log('[INIT] ProjectType non définit — classification déléguée au directeur');
     }
-
 
     // 📌 Aucune classification ici — laissé au directeur
     setSession(senderId, context.session);
