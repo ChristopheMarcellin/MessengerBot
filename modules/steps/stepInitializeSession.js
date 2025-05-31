@@ -3,11 +3,11 @@ const { getSession, setSession, resetSession, logSessionState } = require('../se
 
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
-    const existingSession = getSession(senderId);
+    const session = getSession(senderId);
 
     // 🛡 Protection : session déjà initialisée
-    if (existingSession?.specValues && existingSession?.askedSpecs) {
-        context.session = existingSession;
+    if (session?.specValues && session?.askedSpecs) {
+        context.session = session;
         console.log('[INIT] Session déjà initialisée → aucune action requise');
         return true;
     }
@@ -19,14 +19,12 @@ async function stepInitializeSession(context) {
     }
 
     // 🧠 Création d'une session lorsque manquante ou corrompue
-    context.session = getSession(senderId);
+    context.session = session;
     if (!context.session || typeof context.session !== 'object') {
-        console.log('[INIT] création d\'une session pcq manquante');
-        context.session = {};
+        console.log('[INIT] ALERTE session manquante problèmes en vue');
+        return false;
     }
-    else {
-        //    console.log('[INIT] Session existante trouvée dans le store');
-    }
+
 
     // 🔍 Log AVANT réparation
     // logSessionState("Vérification AVANT réparation", senderId);
@@ -42,14 +40,13 @@ async function stepInitializeSession(context) {
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
         setProjectType(context.session, "?", "reset after end session");
 
-        console.log(`[TEST] context.session.projectType = ${context.session?.projectType} (via newSession assigné)`);
-        console.log(`[TEST] getSession(senderId).projectType = ${getSession(senderId)?.projectType} (comparaison mémoire)`);
 
         logSessionState("Vérification APRÈS réparation (post-reset)", senderId);
         return true;
     }
 
-    // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes **** NE JAMAIS TRAITER PROJECT TYPE DE LA SESSION QUI BRISERAIT LE ROLE DE SETPROJECTTYPE
+    // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes 
+    //**** NE JAMAIS configurer le PROJECT TYPE DE LA SESSION QUI BRISERAIT LE SETPROJECTTYPE effectué dans une autre étape
     context.session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue
     context.session.ProjectDate ??= new Date().toISOString();
     context.session.questionCount ??= 1;
@@ -66,26 +63,16 @@ async function stepInitializeSession(context) {
     const hasAskedSpecs = Object.values(context.session.askedSpecs).some(v => v === true);
 
     if (hasProject && hasAskedSpecs) {
-        console.log('[INIT] Session en cours détectée → reprise possible');
-        setSession(senderId, context.session);
-        return true;
+        console.log('[INIT] Session en cours pret à poursuivre une conversation');
+    } else if (hasProject && !hasAskedSpecs) {
+        console.log('[INIT] ProjectType connu mais les specs sont à initialiser');
+    } else {
+        console.log('[INIT] ProjectType non définit — classification déléguée au directeur');
     }
 
-    if (hasProject && !hasAskedSpecs) {
-        console.log('[INIT] ProjectType connu mais specs non commencées → prêt à commencer');
-        setSession(senderId, context.session);
-        return true;
-    }
 
     // 📌 Aucune classification ici — laissé au directeur
     setSession(senderId, context.session);
-
-    // 🧩 Sécuriser l’observation de projectType via un setter piégé
-    if (context?.session) {
-        const realSession = context.session;
-        // console.log("[CHECK] Définition du setter projectType dans stepInitializeSession");
-    }
-
     return true;
 }
 

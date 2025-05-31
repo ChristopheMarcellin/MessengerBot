@@ -9,7 +9,7 @@ async function stepWhatNext(context, nextSpec) {
     const lang = context.session.language || 'fr';
 
     if (!nextSpec || nextSpec === "none") {
-        console.warn('[WHATNEXT] Appel avec nextSpec est vide ou invalide');
+        console.warn('[WHATNEXT] nextspec = none');
         return false;
     }
 
@@ -20,7 +20,7 @@ async function stepWhatNext(context, nextSpec) {
         ? getPromptForProjectType(lang)
         : getPromptForSpec(context.session.projectType, nextSpec, lang);
 
-    console.log(`[WHATNEXT] Pose de la spec "${nextSpec}" → ${questionText}`);
+    console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
     await sendMessage(senderId, questionText);
 
     return true;

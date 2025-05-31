@@ -76,69 +76,55 @@ function initializeSpecFields(session, projectType) {
     console.log(`[UTILS initialize] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
 }
 
-function setProjectType(session, value, reason = 'unknown') {
+function setProjectType(session, value, caller = 'unknown') {
     traceCaller('setProjectType');
 
     const old = session.projectType;
 
     // 🚫 Règle : si valeur forte identique → aucune action
     if (["B", "S", "R", "E"].includes(old) && old === value) {
-        console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification`);
+        console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification, caller ="${caller}`);
         return;
     }
 
     // ✅ Initialisation minimale si structures manquantes
     if (!session.specValues) session.specValues = {};
     if (!session.askedSpecs) session.askedSpecs = {};
-    if (typeof session.specValues.propertyUsage === "undefined") {
-        console.log(`[UTILS setProjectType] property usage undefined end of setProjectType`);
-        session.askedSpecs.propertyUsage = false;
-    }
 
     // ✅ Mise à jour du champ principal
-    console.log(`[UTILS setProjectType] la valeur qui sera affectée à session.projectType = "${value}"`);
+    console.log(`[UTILS setProjectType] la valeur qui sera affectée à session.projectType = "${value}", caller ="${caller}`);
     session.projectType = value;
-    console.log(`[UTILS setProjectType] vérification de session.projectType, sa valeur est maintenant = "${session.projectType}"`);
+
 
     // ✅ Initialisation des specs uniquement si changement de ? → valeur forte
     if (old === "?" && ["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
     }
 
-    // ✅ Initialisation forcée si value === "?" et aucune spec encore définie
-    if (value === "?" && Object.keys(session.specValues).length === 0) {
-        initializeSpecFields(session, value);
-        console.log(`[INIT] Specs initialisées pour projectType="?" (post-reset)`);
-    }
-
-    const specs = Object.entries(session.specValues || {})
-        .map(([k, v]) => `${k}=${v}`)
-        .join(', ');
-
-    console.log(`[setProjectType] ... specs: ${JSON.stringify(session.specValues)}`);
+    console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
 
-function setSpecValue(session, key, value, source = "unspecified") {
+function setSpecValue(session, key, value, caller = "unspecified") {
     if (!session.specValues) session.specValues = {};
 
     const old = session.specValues[key];
 
     // 🚫 Ne pas écraser une vraie valeur par "?" (ex: 3 → ?)
     if (old && old !== "?" && old !== "E" && value === "?") {
-        console.warn(`[UTILS] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué`);
+        console.warn(`[UTILS] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué, caller ="${caller}`);
         return;
     }
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
-        console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture`);
+        console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture, caller ="${caller}`);
         return;
     }
 
     // 🔁 Traitement spécial pour propertyUsage
     if (key === "propertyUsage") {
         if (value !== "1" && value !== "2" && value !== "E") {
-            console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée`);
+            console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}`);
             return; // ❌ Rejet immédiat
         }
 
@@ -146,11 +132,10 @@ function setSpecValue(session, key, value, source = "unspecified") {
             : value === "2" ? "personal"
                 : "E";
 
-        session.propertyUsage = usage;
         session.specValues[key] = usage;
         setAskedSpec(session, key, source);
 
-        console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}`);
+        console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}, caller ="${caller}`);
         return;
     }
 
@@ -245,10 +230,10 @@ function detectLanguageFromText(text) {
 function setAskedSpec(session, specKey, source = "manual") {
     if (!session.askedSpecs) {
         session.askedSpecs = {};
-        console.warn(`[UTILS] askedSpecs manquant → recréé`);
+        console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
     }
     session.askedSpecs[specKey] = true;
-    console.log(`[UTILS set Asked specs] for ["${specKey}"] ← true | par: ${source}`);
+    console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
 }
 
 
