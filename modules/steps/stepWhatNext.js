@@ -1,6 +1,7 @@
 const { setAskedSpec } = require('../utils');
 const { getPromptForSpec, getPromptForProjectType } = require('../questions');
 const { sendMessage } = require('../messenger');
+const { setSession } = require('../sessionStore');
 
 // Pose la question associée à la spec fournie.
 // Retourne true si une question a été posée, false sinon (par sécurité, mais en pratique jamais appelé avec nextSpec null).
@@ -23,6 +24,7 @@ async function stepWhatNext(context, nextSpec) {
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
     await sendMessage(senderId, questionText);
 
+    setSession(context.session.senderId, context.session);
     return true;
 }
 

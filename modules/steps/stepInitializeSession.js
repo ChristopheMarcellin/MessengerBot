@@ -69,7 +69,7 @@ async function stepInitializeSession(context) {
     }
 
     // 📌 Aucune classification ici — laissé au directeur
-    setSession(senderId, context.session);
+    setSession(context.session.senderId, context.session);
     return true;
 }
 
