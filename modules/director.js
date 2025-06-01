@@ -32,7 +32,7 @@ async function runDirector(context) {
 
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
-    context.session = getSession(senderId);
+  //  context.session = getSession(senderId);
 
     context.session._entryCount = (context.session._entryCount || 0) + 1;
     if (context.session._entryCount > 10) {
