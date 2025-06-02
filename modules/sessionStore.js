@@ -45,7 +45,6 @@ function resetSession(context) {
 
     setProjectType(freshSession, "?", "resetSession");
 
-  //  setSession(senderId, freshSession);
     console.log(`[RESET] Nouvelle session propre créée pour ${senderId}`);
     return freshSession;
 }
@@ -110,6 +109,6 @@ module.exports = {
     deleteSession,
     getAllSessions,
     resetSession,
-    logSessionState,
+    logSessionState
  
 };
