@@ -106,7 +106,7 @@ function wrapSessionWithLogger(session) {
 
 module.exports = {
     getSession,
-    saveSession
+    saveSession,
     deleteSession,
     getAllSessions,
     resetSession,
