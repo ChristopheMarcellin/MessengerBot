@@ -6,12 +6,12 @@ async function stepInitializeSession(context) {
 
     // 🔧 Traitement prioritaire du End Session même si session absente
     const isEndSession = message.trim().toLowerCase() === 'end session';
+
     if (isEndSession) {
-        const newSession = resetSession(context);
-        saveSession(context);
-        context.session = newSession;
+        const newSession = resetSession(context); // 🧠 on passe senderId, pas context
+        context.session = newSession;                      // ✅ on met à jour d'abord
+        saveSession(context);                              // ✅ puis on enregistre la bonne session
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-        setProjectType(context.session, "?", "reset after end session");
         logSessionState("Vérification APRÈS end session", context.session);
         return true;
     }

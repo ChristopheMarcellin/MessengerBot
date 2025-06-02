@@ -54,7 +54,7 @@ function resetSession(context) {
 function logSessionState(label, session) {
 
     if (!session) {
-        console.warn(`[SESSION] Session absente pour ${senderId} → rien à afficher.`);
+        console.warn(`[SESSION State] Session absente pour ${senderId} → rien à afficher.`);
         return;
     }
 
@@ -76,11 +76,11 @@ function logSessionState(label, session) {
     const hasAskedSpecs = session.askedSpecs && Object.values(session.askedSpecs).some(v => v === true);
 
     if (hasProject && hasAskedSpecs) {
-        console.log(`[INIT] ${label} : Session en cours prête à poursuivre une conversation`);
+        console.log(`[SESSION State] ${label} : Session en cours prête à poursuivre une conversation`);
     } else if (hasProject && !hasAskedSpecs) {
-        console.log(`[INIT] ${label} : ProjectType connu mais les specs sont à initialiser`);
+        console.log(`[SESSION State] ${label} : ProjectType connu mais les specs sont à initialiser`);
     } else {
-        console.log(`[INIT] ${label} : ProjectType non défini — classification déléguée au directeur`);
+        console.log(`[SESSION State] ${label} : ProjectType non défini — classification déléguée au directeur`);
     }
 }
 
