@@ -1,5 +1,5 @@
 const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
-const { getSession, resetSession } = require('./sessionStore');
+const { getSession, resetSession, saveSession } = require('./sessionStore');
 const {
     setProjectType,
     initializeSpecFields,
