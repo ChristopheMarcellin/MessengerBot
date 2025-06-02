@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 
 const { sendMessage, sendMarkSeen } = require('./modules/messenger');
-const { getSession, setSession } = require('./modules/sessionStore');
+const { getSession } = require('./modules/sessionStore');
 const { runDirector } = require('./modules/director');
 const {
     isValidIncomingMessage,
@@ -75,7 +75,6 @@ app.post('/webhook', async (req, res) => {
         setLastPayload(session, receivedMessage, timestamp);
 
         session.lastUserMessage = receivedMessage;
-        setSession(senderId, session);
 
         const context = {
             senderId,
