@@ -16,29 +16,22 @@ async function runDirector(context) {
     const { message, senderId } = context;
 
     // 🛑 Sécurité anti-boucle infinie
-    context._entryCount = (context._entryCount || 0) + 1;
-    if (context._entryCount > 10) {
-        console.warn(`[DIRECTOR STOP] runDirector appelé plus de 10 fois (_${context._entryCount}_) → interruption.`);
-        console.log('[DIRECTOR] Fin prématurée : boucle infinie');
-        return false;
-    }
-
-    // 🛑 Bloc d’interruption explicite : message = "end session"
-    if (typeof message === "string" && message.trim().toLowerCase() === "end session") {
-        resetSession(senderId);
-        console.log('[DIRECTOR] Fin : end session explicite appelé');
-        return false;
-    }
+    //context._entryCount = (context._entryCount || 0) + 1;
+    //if (context._entryCount > 10) {
+    //    console.warn(`[DIRECTOR STOP] runDirector appelé plus de 10 fois (_${context._entryCount}_) → interruption.`);
+    //    console.log('[DIRECTOR] Fin prématurée : boucle infinie');
+    //    return false;
+    //}
 
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
   //  context.session = getSession(senderId);
 
-    context.session._entryCount = (context.session._entryCount || 0) + 1;
-    if (context.session._entryCount > 10) {
-        console.warn(`[DIRECTOR STOP] session.runDirector appelé plus de 10 fois (_${context.session._entryCount}_) → interruption.`);
-        return false;
-    }
+    //context.session._entryCount = (context.session._entryCount || 0) + 1;
+    //if (context.session._entryCount > 10) {
+    //    console.warn(`[DIRECTOR STOP] session.runDirector appelé plus de 10 fois (_${context.session._entryCount}_) → interruption.`);
+    //    return false;
+    //}
 
     if (!isReady || !context.session) {
         console.log('[DIRECTOR] Session non initialisable ou blocage explicite dans l\'initialisation');
@@ -63,6 +56,7 @@ async function runDirector(context) {
             setProjectType(context.session, interpreted, "user input");
             setAskedSpec(context.session, "projectType", "valid answer");
             await stepWhatNext(context, nextSpec);
+            saveSession(context);
             return true;
         }
 
@@ -86,7 +80,7 @@ async function runDirector(context) {
 
         console.log('[DIRECTOR isValidGPT] projectType détecté et traité via GPT');
         await stepWhatNext(context, nextSpec);
-
+        saveSession(context)
         return true;
     }
 
@@ -120,6 +114,7 @@ async function runDirector(context) {
         await chatOnly(senderId, message, context.session.language || "fr");
         await stepWhatNext(context, nextSpec);
         console.log('[DIRECTOR !isValid] Fin : réponse invalide, relance via GPT + stepWhatNext');
+        saveSession(context)
         return true;
     }
 
@@ -134,6 +129,7 @@ async function runDirector(context) {
     }
 
     console.log('[DIRECTOR] Fin : réponse valide traitée normalement');
+    saveSession(context)
     return true;
 }
 

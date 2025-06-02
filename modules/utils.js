@@ -81,22 +81,27 @@ function setProjectType(session, value, caller = 'unknown') {
 
     const old = session.projectType;
 
-    // 🚫 Règle : si valeur forte identique → aucune action
-    if (["B", "S", "R", "E"].includes(old) && old === value) {
-        console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification, caller ="${caller}`);
-        return;
+    // 🚫 Règle fusionnée : aucune modification si écrasement par "?" ou si redondant
+    if (["B", "S", "R", "E"].includes(old)) {
+        if (value === "?") {
+            console.warn(`[UTILS setProjectType] Tentative d'écrasement de projectType "${old}" par "?" — bloqué, caller = "${caller}"`);
+            return;
+        }
+        if (old === value) {
+            console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification, caller ="${caller}"`);
+            return;
+        }
     }
 
     // ✅ Initialisation minimale si structures manquantes
     if (!session.specValues) session.specValues = {};
     if (!session.askedSpecs) session.askedSpecs = {};
 
-    // ✅ Mise à jour du champ principal
-    console.log(`[UTILS setProjectType] la valeur qui sera affectée à session.projectType = "${value}", caller ="${caller}`);
+    // ✅ Mise à jour
+    console.log(`[UTILS setProjectType] la valeur qui sera affectée à session.projectType = "${value}", caller ="${caller}"`);
     session.projectType = value;
 
-
-    // ✅ Initialisation des specs uniquement si changement de ? → valeur forte
+    // ✅ Initialisation des specs uniquement si changement de ? → B/S/R
     if (old === "?" && ["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
     }

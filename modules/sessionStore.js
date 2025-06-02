@@ -8,8 +8,12 @@ function getSession(senderId) {
    // return session ? wrapSessionWithLogger(session) : undefined;
 }
 
-function setSession(senderId, sessionData) {
-    userSessions[senderId] = sessionData;
+//function setSession(senderId, sessionData) {
+//// //remplacée par saveSession
+//}
+
+function saveSession(context) {
+    userSessions[context.senderId] = context.session;
 }
 
 function deleteSession(senderId) {
@@ -21,9 +25,9 @@ function getAllSessions() {
 }
 
 // ✅ Fusion : reset enrichi sans effet de bord
-function resetSession(senderId) {
+function resetSession(context) {
     const freshSession = {
-        senderId,
+        senderId : context.senderId,
         language: 'fr',
         projectType: "?",
         specValues: {},
@@ -35,23 +39,26 @@ function resetSession(senderId) {
         questionCount: 0,
         maxQuestions: 40,
         ProjectDate: new Date().toISOString()
+
     };
 
 
     setProjectType(freshSession, "?", "resetSession");
 
-    setSession(senderId, freshSession);
+  //  setSession(senderId, freshSession);
     console.log(`[RESET] Nouvelle session propre créée pour ${senderId}`);
     return freshSession;
 }
 
 // ✅ Log centralisé, appelé depuis stepInitializeSession ou autre
-function logSessionState(label, senderId) {
-    const session = userSessions[senderId];
+
+function logSessionState(label, session) {
+
     if (!session) {
         console.warn(`[SESSION] Session absente pour ${senderId} → rien à afficher.`);
         return;
     }
+
     const snapshot = {
         language: session.language,
         ProjectDate: session.ProjectDate,
@@ -63,7 +70,19 @@ function logSessionState(label, senderId) {
         currentSpec: session.currentSpec
     };
 
-  //  console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
+    // console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
+
+    // 🔍 Ajout des lignes déplacées ici, pour interprétation de l’état
+    const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);
+    const hasAskedSpecs = session.askedSpecs && Object.values(session.askedSpecs).some(v => v === true);
+
+    if (hasProject && hasAskedSpecs) {
+        console.log(`[INIT] ${label} : Session en cours prête à poursuivre une conversation`);
+    } else if (hasProject && !hasAskedSpecs) {
+        console.log(`[INIT] ${label} : ProjectType connu mais les specs sont à initialiser`);
+    } else {
+        console.log(`[INIT] ${label} : ProjectType non défini — classification déléguée au directeur`);
+    }
 }
 
 
@@ -87,9 +106,10 @@ function wrapSessionWithLogger(session) {
 
 module.exports = {
     getSession,
-    setSession,
+    saveSession
     deleteSession,
     getAllSessions,
     resetSession,
-    logSessionState
+    logSessionState,
+ 
 };
