@@ -16,7 +16,12 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-    const session = context.session;
+    // 🧠 Charger la session existante ou en créer une vide si nécessaire
+    let session = getSession(senderId);
+    if (!session) {
+        session = resetSession(context); // ta version personnalisée qui fouille context.senderId
+    }
+    context.session = session;
 
 
     // 🛡 Protection : session déjà initialisée
@@ -54,7 +59,7 @@ async function stepInitializeSession(context) {
 
     saveSession(context);
     // 🔍 Log APRÈS réparation/normalisation
-    logSessionState("Vérification APRÈS une initialisation propre", context.sesion);
+    logSessionState("Vérification APRÈS une initialisation propre", context.session);
     return true;
 }
 

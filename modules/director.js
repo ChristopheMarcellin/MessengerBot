@@ -75,7 +75,7 @@ async function runDirector(context) {
             } else {
                 setProjectType(context.session, "?", "GPT → invalide");
             }
-            setAskedSpec(context.session, "projectType", "asked but invalid answer");
+           // setAskedSpec(context.session, "projectType", "asked but invalid answer");
         }
 
         console.log('[DIRECTOR isValidGPT] projectType détecté et traité via GPT');

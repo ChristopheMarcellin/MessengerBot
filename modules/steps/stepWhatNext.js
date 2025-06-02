@@ -24,7 +24,7 @@ async function stepWhatNext(context, nextSpec) {
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
     await sendMessage(senderId, questionText);
 
-    saveSession(context);
+    //saveSession(context);
     return true;
 }
 
