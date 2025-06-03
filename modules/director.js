@@ -89,8 +89,8 @@ async function runDirector(context) {
         }
 
         console.log('[DIRECTOR isValidGPT] projectType détecté et traité via GPT');
-        await stepWhatNext(context, nextSpec);
         saveSession(context);
+        await stepWhatNext(context, nextSpec);
         return true;
     }
 
@@ -118,15 +118,15 @@ async function runDirector(context) {
 
         context.deferSpec = true;
         context.gptAllowed = true;
+        saveSession(context)
         await chatOnly(senderId, message, context.session.language || "fr");
         await stepWhatNext(context, nextSpec);
         console.log('[DIRECTOR !isValid] Fin : réponse invalide, relance via GPT + stepWhatNext');
-        saveSession(context)
         return true;
     }
     //if is valid
     setSpecValue(context.session, nextSpec, message, "runDirector/valid");
-
+    saveSession(context)
     const continued = await stepWhatNext(context, nextSpec);
 
     if (!continued) {
