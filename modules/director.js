@@ -24,7 +24,12 @@ async function runDirector(context) {
     //}
 
     // 🔄 Initialisation ou récupération de session valide
-    const isReady = await stepInitializeSession(context,isEndSession);
+    const isReady = await stepInitializeSession(context, isEndSession);
+    if (isEndSession) {
+        saveSession(context)
+        return false;
+    }
+
   //  context.session = getSession(senderId);
 
     //context.session._entryCount = (context.session._entryCount || 0) + 1;
@@ -42,11 +47,12 @@ async function runDirector(context) {
     // 🧭 Détermination de la prochaine spec à traiter
     const nextSpec = getNextSpec(context.session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
-    console.log(`Current projectType status = _${context.session.projectType}_`);
+    console.log(`[DIRECTOR] Current projectType status = _${context.session.projectType}_`);
     
     //Case nextSpec === "none"
     if (nextSpec === "none") {
         console.log('[DIRECTOR] nextSpec = "none"');
+        saveSession(context)
         return false;
     }
 
@@ -118,7 +124,7 @@ async function runDirector(context) {
         saveSession(context)
         return true;
     }
-
+    //if is valid
     setSpecValue(context.session, nextSpec, message, "runDirector/valid");
 
     const continued = await stepWhatNext(context, nextSpec);

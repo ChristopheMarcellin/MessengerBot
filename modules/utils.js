@@ -138,7 +138,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
                 : "E";
 
         session.specValues[key] = usage;
-        setAskedSpec(session, key, source);
+   //     setAskedSpec(session, key, source);
 
         console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}, caller ="${caller}`);
         return;
@@ -150,7 +150,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     // ✅ Ne pas faire de double log si déjà fait manuellement dans runDirector
     if (source !== "runDirector/?→E after 2 invalid") {
-        setAskedSpec(session, key, source);
+    //    setAskedSpec(session, key, source);
     }
 
     const specs = Object.entries(session.specValues)

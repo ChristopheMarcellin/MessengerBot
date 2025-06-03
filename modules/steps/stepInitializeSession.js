@@ -8,7 +8,7 @@ async function stepInitializeSession(context,isEndSession) {
     if (isEndSession) {
         const newSession = resetSession(context); // 🧠 on passe senderId, pas context
         context.session = newSession;                      // ✅ on met à jour d'abord
-        saveSession(context);                              // ✅ puis on enregistre la bonne session
+       // saveSession(context);                              // ✅ puis on enregistre la bonne session
         console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
         logSessionState("Vérification APRÈS end session", context.session);
         return true;
@@ -55,7 +55,7 @@ async function stepInitializeSession(context,isEndSession) {
     context.session.specValues ??= {};
     context.session.currentSpec ??= null;
 
-    saveSession(context);
+ //   saveSession(context);
     // 🔍 Log APRÈS réparation/normalisation
     logSessionState("Vérification APRÈS une initialisation propre", context.session);
     return true;
