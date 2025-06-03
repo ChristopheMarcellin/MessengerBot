@@ -1,11 +1,9 @@
 const { setProjectType, initializeSpecFields, detectLanguageFromText } = require('../utils');
 const { getSession, saveSession, resetSession, logSessionState } = require('../sessionStore');
 
-async function stepInitializeSession(context) {
+async function stepInitializeSession(context,isEndSession) {
     const { senderId, message } = context;
 
-    // 🔧 Traitement prioritaire du End Session même si session absente
-    const isEndSession = message.trim().toLowerCase() === 'end session';
 
     if (isEndSession) {
         const newSession = resetSession(context); // 🧠 on passe senderId, pas context

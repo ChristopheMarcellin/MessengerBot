@@ -78,12 +78,12 @@ const resetInvalidSpecs = (session) => {
 };
 
 // ✅ Validation spécifique pour projectType
-function isValidAnswer(value, projectType, field) {
+function isValidAnswer(message, projectType, field) {
     //cm
-    console.log(`[spec Engine] validating message or interpretation text value: __${value}_ and projecttype: _${projectType} for: field=_${field}`);
-    if (!value) return false;
+    console.log(`[spec Engine] validating message or interpretation text value: __${message}_ and projecttype: _${projectType} for: field=_${field}`);
+    if (!message) return false;
 
-    const input = value.trim();
+    const input = message.trim();
 
     // 🎯 0. Cas spécial : refus explicite (valable sauf pour projectType)
     if (input === "E" && field !== "projectType") {
@@ -93,8 +93,8 @@ function isValidAnswer(value, projectType, field) {
 
     // 🎯 1. valide le texte de location
     if (field === "location") {
-        const isValid = typeof value === "string" && input.length > 0 && input.length <= 25;
-        console.log(`[spec Engine] validating field=location | input=__${value}_ | valid=_${isValid}_`);
+        const isValid = typeof message === "string" && input.length > 0 && input.length <= 25;
+        console.log(`[spec Engine] validating field=location | input=__${input}_ | valid=_${isValid}_`);
         return isValid;
     }
 

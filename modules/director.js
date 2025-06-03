@@ -14,7 +14,7 @@ const { stepWhatNext } = require('./steps');
 
 async function runDirector(context) {
     const { message, senderId } = context;
-
+    const isEndSession = message.trim().toLowerCase() === 'end session';
     // 🛑 Sécurité anti-boucle infinie
     //context._entryCount = (context._entryCount || 0) + 1;
     //if (context._entryCount > 10) {
@@ -24,7 +24,7 @@ async function runDirector(context) {
     //}
 
     // 🔄 Initialisation ou récupération de session valide
-    const isReady = await stepInitializeSession(context);
+    const isReady = await stepInitializeSession(context,isEndSession);
   //  context.session = getSession(senderId);
 
     //context.session._entryCount = (context.session._entryCount || 0) + 1;
@@ -41,20 +41,24 @@ async function runDirector(context) {
 
     // 🧭 Détermination de la prochaine spec à traiter
     const nextSpec = getNextSpec(context.session);
-    console.log(`[DIRECTOR] Avant getNextSpec: session.projectType = _${context.session.projectType}_`);
+    console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
+    console.log(`Current projectType status = _${context.session.projectType}_`);
+    
+    //Case nextSpec === "none"
     if (nextSpec === "none") {
-        console.log('[DIRECTOR] Fin : aucune spec à traiter');
+        console.log('[DIRECTOR] nextSpec = "none"');
         return false;
     }
 
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
-    if (nextSpec === "projectType") {
+    if (nextSpec === "projectType"&&!isEndSession) {
+        
         const isValid = isValidAnswer(message, "projectType", "projectType");
 
         if (isValid) {
             const interpreted = getProjectTypeFromNumber(message);
             setProjectType(context.session, interpreted, "user input");
-            setAskedSpec(context.session, "projectType", "valid answer");
+          //  setAskedSpec(context.session, "projectType", "valid answer");
             await stepWhatNext(context, nextSpec);
             saveSession(context);
             return true;
@@ -67,7 +71,7 @@ async function runDirector(context) {
 
         if (isValidGPT) {
             setProjectType(context.session, interpreted, "interprétation par gpt");
-            setAskedSpec(context.session, "projectType", "valid answer");
+          //  setAskedSpec(context.session, "projectType", "valid answer");
         } else {
             if (alreadyAsked && current === "?") {
                 setProjectType(context.session, "E", "GPT → refus après 2 échecs");
@@ -80,15 +84,12 @@ async function runDirector(context) {
 
         console.log('[DIRECTOR isValidGPT] projectType détecté et traité via GPT');
         await stepWhatNext(context, nextSpec);
-        saveSession(context)
+        saveSession(context);
         return true;
     }
 
-    if (nextSpec === "projectType") {
-        throw new Error("[DIRECTOR] ERREUR CRITIQUE : projectType ne doit pas passer dans le pipeline standard");
-    }
 
-    const isValid = isValidAnswer(nextSpec, message, context.session.projectType);
+    const isValid = isValidAnswer(message, context.session.projectType, nextSpec);
     console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${nextSpec}"_ = _"${message}"_`);
 
     if (!isValid) {
@@ -97,7 +98,7 @@ async function runDirector(context) {
         const protectedValues = ["E", 0];
 
         if (nextSpec === "propertyUsage" && !alreadyAsked) {
-            setAskedSpec(context.session, nextSpec, "!isValid asked but invalid answer");
+          //  setAskedSpec(context.session, nextSpec, "!isValid asked but invalid answer");
         }
 
         if (!protectedValues.includes(current)) {
@@ -121,6 +122,7 @@ async function runDirector(context) {
     setSpecValue(context.session, nextSpec, message, "runDirector/valid");
 
     const continued = await stepWhatNext(context, nextSpec);
+
     if (!continued) {
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
         context.gptAllowed = true;
