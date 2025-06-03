@@ -1,13 +1,18 @@
-const { setAskedSpec } = require('../utils');
+const { setAskedSpec, getNextSpec } = require('../utils');
 const { getPromptForSpec, getPromptForProjectType } = require('../questions');
 const { sendMessage } = require('../messenger');
 const { saveSession } = require('../sessionStore');
 
 // Pose la question associée à la spec fournie.
 // Retourne true si une question a été posée, false sinon (par sécurité, mais en pratique jamais appelé avec nextSpec null).
-async function stepWhatNext(context, nextSpec) {
+async function stepWhatNext(context, spec) {
     const { senderId } = context;
     const lang = context.session.language || 'fr';
+    const nextSpec = getNextSpec(context.sesion);
+    if (nextSpec === spec) {
+        //construire un prefixe pour questionText indiquant qu'on revient une fois de plus sur la question
+
+    }
 
     if (!nextSpec || nextSpec === "none") {
         console.warn('[WHATNEXT] nextspec = none');
