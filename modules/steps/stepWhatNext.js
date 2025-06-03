@@ -8,7 +8,7 @@ const { saveSession } = require('../sessionStore');
 async function stepWhatNext(context, spec) {
     const { senderId } = context;
     const lang = context.session.language || 'fr';
-    const nextSpec = getNextSpec(context.sesion);
+    const nextSpec = getNextSpec(context.session);
     if (nextSpec === spec) {
         //construire un prefixe pour questionText indiquant qu'on revient une fois de plus sur la question
 
