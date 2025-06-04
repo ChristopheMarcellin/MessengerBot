@@ -14,6 +14,7 @@ function traceCaller(label) {
  }
 
 function getNextSpec(session) {
+    //jfonction qui retourne la prochaine spec à traiter
     const { projectType, specValues = {}, askedSpecs = {} } = session;
 
     const puValue = specValues.propertyUsage;
@@ -31,7 +32,9 @@ function getNextSpec(session) {
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
     const typeBlock = questions[projectType] || {};
     for (const field of Object.keys(typeBlock)) {
+        console.log(`Spécification en cours : ${field} → valeur = ${specValues[field]}`);
         if (puValue === 'income' && skipIfIncome.includes(field)) continue;
+
         if (specValues[field] === '?') return field;
     }
 
