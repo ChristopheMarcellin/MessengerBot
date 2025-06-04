@@ -3,7 +3,8 @@ const axios = require('axios');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const { getProjectTypeFromNumber } = require('./specEngine');
 const { sendMessage } = require('./messenger');
-const questions = require('./questions');
+
+const { questions } = require('./questions');
 
 
 
