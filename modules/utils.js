@@ -105,7 +105,7 @@ function setProjectType(session, value, caller = 'unknown') {
     session.projectType = value;
 
     // ✅ Initialisation des specs uniquement si changement de ? → B/S/R
-    if (old === "?" && ["B", "S", "R"].includes(value)) {
+    if ((old === undefined || old === "?") && ["B", "S", "R"].includes(value)) {
         initializeSpecFields(session, value);
     }
 
