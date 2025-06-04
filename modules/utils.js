@@ -43,6 +43,11 @@ function getNextSpec(session) {
     const { projectType, specValues = {}, askedSpecs = {} } = session;
     const puValue = specValues.propertyUsage;
 
+    // 🧩 LOGS DIAGNOSTIQUES
+    console.log(`[getNextSpec] État initial → projectType="${projectType}", propertyUsage="${puValue}"`);
+    console.log(`[getNextSpec] specValues =`, JSON.stringify(specValues));
+    console.log(`[getNextSpec] askedSpecs =`, JSON.stringify(askedSpecs));
+
     // Bloc 0 : refus explicite
     if (projectType === 'E' || puValue === 'E') return null;
 
@@ -50,25 +55,30 @@ function getNextSpec(session) {
     if (projectType === '?') return 'projectType';
     if (puValue === '?' || puValue === undefined) return 'propertyUsage';
 
-    // Bloc DEBUG : état complet avant bloc 2
-    console.log('[DEBUG] État complet avant bloc 2 →', JSON.stringify(specValues));
-
     // Bloc 2 : specs spécifiques
+    const typeBlock = questions[projectType];
+    if (!typeBlock || typeof typeBlock !== 'object') {
+        console.warn(`[getNextSpec] ❌ Aucune spec définie pour projectType="${projectType}"`);
+        return 'summary'; // ou null selon stratégie
+    }
+    console.log(`[getNextSpec] ✅ Champs spécifiques pour ${projectType} =`, Object.keys(typeBlock));
+
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
-    const typeBlock = questions[projectType] || {};
     for (const field of Object.keys(typeBlock)) {
         console.log(`[DEBUG] Spéc = ${field} → ${specValues[field]}`);
-
-        // ⚠️ Ne sauter les champs que si la propriété est à revenus
         if (puValue === 'income' && skipIfIncome.includes(field)) continue;
-
         if (specValues[field] === '?') return field;
     }
 
     // Bloc 3 : specs génériques
-    const genericBlock = questions.generic || {};
-    for (const field of Object.keys(genericBlock)) {
-        if (specValues[field] === '?') return field;
+    const genericBlock = questions.generic;
+    if (!genericBlock || typeof genericBlock !== 'object') {
+        console.warn(`[getNextSpec] ❌ Bloc générique introuvable`);
+    } else {
+        console.log(`[getNextSpec] ✅ Champs génériques =`, Object.keys(genericBlock));
+        for (const field of Object.keys(genericBlock)) {
+            if (specValues[field] === '?') return field;
+        }
     }
 
     // Bloc 4 : tout est rempli
