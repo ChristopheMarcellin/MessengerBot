@@ -13,30 +13,30 @@ function traceCaller(label) {
     console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
  }
 
-function getNextSpec(session) {
-    //jfonction qui retourne la prochaine spec à traiter
-    const { projectType, specValues = {}, askedSpecs = {} } = session;
+//function getNextSpec(session) {
+//    //jfonction qui retourne la prochaine spec à traiter
+//    const { projectType, specValues = {}, askedSpecs = {} } = session;
 
-    const puValue = specValues.propertyUsage;
+//    const puValue = specValues.propertyUsage;
 
-  //  console.log(`[getNextSpec] projectType: ${projectType}, propertyUsage: ${puValue}`);
+//  //  console.log(`[getNextSpec] projectType: ${projectType}, propertyUsage: ${puValue}`);
 
-    // Bloc 0 : refus explicite
-    if (projectType === 'E' || puValue === 'E') return null;
+//    // Bloc 0 : refus explicite
+//    if (projectType === 'E' || puValue === 'E') return null;
 
-    // Bloc 1 : spec manquantes de base
-    if (projectType === '?') return 'projectType';
-    if (puValue === '?' || puValue === undefined) return 'propertyUsage';
+//    // Bloc 1 : spec manquantes de base
+//    if (projectType === '?') return 'projectType';
+//    if (puValue === '?' || puValue === undefined) return 'propertyUsage';
 
-    // Bloc 2 : specs spécifiques
-    const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
-    const typeBlock = questions[projectType] || {};
-    for (const field of Object.keys(typeBlock)) {
-        console.log(`Spécification en cours : ${field} → valeur = ${specValues[field]}`);
-        if (puValue === 'income' && skipIfIncome.includes(field)) continue;
+//    // Bloc 2 : specs spécifiques
+//    const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
+//    const typeBlock = questions[projectType] || {};
+//    for (const field of Object.keys(typeBlock)) {
+//        console.log(`Spécification en cours : ${field} → valeur = ${specValues[field]}`);
+//        if (puValue === 'income' && skipIfIncome.includes(field)) continue;
 
-        if (specValues[field] === '?') return field;
-    }
+//        if (specValues[field] === '?') return field;
+//    }
 
 
     function getNextSpec(session) {
