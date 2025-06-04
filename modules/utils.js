@@ -38,6 +38,44 @@ function getNextSpec(session) {
         if (specValues[field] === '?') return field;
     }
 
+
+    function getNextSpec(session) {
+        // Fonction qui retourne la prochaine spec à traiter
+        const { projectType, specValues = {}, askedSpecs = {} } = session;
+
+        const puValue = specValues.propertyUsage;
+
+        // Bloc 0 : refus explicite
+        if (projectType === 'E' || puValue === 'E') return null;
+
+        // Bloc 1 : spec manquantes de base
+        if (projectType === '?') return 'projectType';
+        if (puValue === '?' || puValue === undefined) return 'propertyUsage';
+
+        // Bloc DEBUG : état complet avant bloc 2
+        console.log('[DEBUG] État complet avant bloc 2 →', JSON.stringify(specValues));
+
+        // Bloc 2 : specs spécifiques
+        const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
+        const typeBlock = questions[projectType] || {};
+        for (const field of Object.keys(typeBlock)) {
+            console.log(`[DEBUG] Spéc = ${field} → ${specValues[field]}`);
+            if (puValue === 'income' && skipIfIncome.includes(field)) continue;
+
+            if (specValues[field] === '?') return field;
+        }
+
+        // Bloc 3 : specs génériques
+        const genericBlock = questions._generic || {};
+        for (const field of Object.keys(genericBlock)) {
+            if (specValues[field] === '?') return field;
+        }
+
+        // Bloc 4 : tout est rempli
+        return 'summary';
+    }
+
+
     // Bloc 3 : specs génériques
     const genericBlock = questions._generic || {};
     for (const field of Object.keys(genericBlock)) {
@@ -106,6 +144,7 @@ function setProjectType(session, value, caller = 'unknown') {
 
     // ✅ Initialisation des specs uniquement si changement de ? → B/S/R
     if ((old === undefined || old === "?") && ["B", "S", "R"].includes(value)) {
+
         initializeSpecFields(session, value);
     }
 
