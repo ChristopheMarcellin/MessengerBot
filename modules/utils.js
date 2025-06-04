@@ -40,7 +40,6 @@ function traceCaller(label) {
 
 
 function getNextSpec(session) {
-    // Fonction qui retourne la prochaine spec à traiter
     const { projectType, specValues = {}, askedSpecs = {} } = session;
     const puValue = specValues.propertyUsage;
 
@@ -59,7 +58,10 @@ function getNextSpec(session) {
     const typeBlock = questions[projectType] || {};
     for (const field of Object.keys(typeBlock)) {
         console.log(`[DEBUG] Spéc = ${field} → ${specValues[field]}`);
+
+        // ⚠️ Ne sauter les champs que si la propriété est à revenus
         if (puValue === 'income' && skipIfIncome.includes(field)) continue;
+
         if (specValues[field] === '?') return field;
     }
 
