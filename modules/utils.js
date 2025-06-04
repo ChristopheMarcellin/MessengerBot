@@ -18,14 +18,14 @@ function getNextSpec(session) {
 
     const puValue = specValues.propertyUsage;
 
-    console.log(`[getNextSpec] projectType: ${projectType}, propertyUsage: ${puValue}`);
+  //  console.log(`[getNextSpec] projectType: ${projectType}, propertyUsage: ${puValue}`);
 
     // Bloc 0 : refus explicite
     if (projectType === 'E' || puValue === 'E') return null;
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
-    if (puValue === '?') return 'propertyUsage';
+    if (puValue === '?' || puValue === undefined) return 'propertyUsage';
 
     // Bloc 2 : specs spécifiques
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
@@ -73,7 +73,7 @@ function initializeSpecFields(session, projectType) {
     // 🔒 Important : initialisation explicite de propertyUsage
     setSpecValue(session, "propertyUsage", "?", "initializeSpecFields");
 
-    console.log(`[UTILS initialize] Champs de spec initialisés pour ${projectType}: ${list.join(', ')}`);
+    console.log(`[UTILS initialize] Champs de spec initialisés pour project Type ${projectType}: ${list.join(', ')}`);
 }
 
 function setProjectType(session, value, caller = 'unknown') {
@@ -116,20 +116,26 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     // 🚫 Ne pas écraser une vraie valeur par "?" (ex: 3 → ?)
     if (old && old !== "?" && old !== "E" && value === "?") {
-        console.warn(`[UTILS] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué, caller ="${caller}`);
+        console.warn(`[UTILS] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué, caller ="${caller}"`);
         return;
     }
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
-        console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture, caller ="${caller}`);
+        console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture, caller ="${caller}"`);
         return;
     }
 
     // 🔁 Traitement spécial pour propertyUsage
     if (key === "propertyUsage") {
+        if (value === "?") {
+            session.specValues[key] = "?";
+            console.trace(`[utilsTRACK] propriété "propertyUsage" initialisée à "?" | caller ="${caller}"`);
+            return;
+        }
+
         if (value !== "1" && value !== "2" && value !== "E") {
-            console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}`);
+            console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}"`);
             return; // ❌ Rejet immédiat
         }
 
@@ -138,12 +144,14 @@ function setSpecValue(session, key, value, caller = "unspecified") {
                 : "E";
 
         session.specValues[key] = usage;
-   //     setAskedSpec(session, key, source);
-
-        console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}, caller ="${caller}`);
+        console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}, caller ="${caller}"`);
         return;
     }
 
+    // 🌐 Cas générique
+    session.specValues[key] = value;
+    console.log(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType}, caller ="${caller}"`);
+}
 
     // ✅ Mise à jour standard
     session.specValues[key] = value;
