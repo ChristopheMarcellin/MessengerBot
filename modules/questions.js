@@ -111,6 +111,7 @@ function getPromptForProjectType(lang = 'fr') {
 }
 
 module.exports = {
+    questions,
   getPromptForSpec,
   getPromptForProjectType
 };
