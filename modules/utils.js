@@ -108,7 +108,6 @@ function setProjectType(session, value, caller = 'unknown') {
 
     console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
-
 function setSpecValue(session, key, value, caller = "unspecified") {
     if (!session.specValues) session.specValues = {};
 
@@ -148,17 +147,12 @@ function setSpecValue(session, key, value, caller = "unspecified") {
         return;
     }
 
-    // 🌐 Cas générique
-    session.specValues[key] = value;
-    console.log(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType}, caller ="${caller}"`);
-}
-
     // ✅ Mise à jour standard
     session.specValues[key] = value;
 
     // ✅ Ne pas faire de double log si déjà fait manuellement dans runDirector
-    if (source !== "runDirector/?→E after 2 invalid") {
-    //    setAskedSpec(session, key, source);
+    if (caller !== "runDirector/?→E after 2 invalid") {
+        //    setAskedSpec(session, key, caller);
     }
 
     const specs = Object.entries(session.specValues)
@@ -167,7 +161,6 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
-
 //gpt classifies project
 
 async function gptClassifyProject(message, language = "fr") {
