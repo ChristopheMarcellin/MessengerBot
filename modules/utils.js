@@ -78,7 +78,7 @@ function getNextSpec(session) {
     } else {
         console.log(`[getNextSpec] ✅ Champs génériques =`, Object.keys(genericBlock));
         for (const field of Object.keys(genericBlock)) {
-            if (specValues[field] === '?') return field;
+            if (specValues[field] === '?' || specValues[field] === undefined) return field;
         }
     }
 

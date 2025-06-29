@@ -8,13 +8,8 @@ const { saveSession } = require('../sessionStore');
 async function stepWhatNext(context, spec) {
     const { senderId } = context;
     const lang = context.session.language || 'fr';
+    const nextSpec = spec;
 
-    const nextSpec = getNextSpec(context.session);
-
-    // 💬 Étape spéciale : détection de relance (même spec que précédente)
-    if (nextSpec === spec) {
-        // construire un prefixe pour questionText indiquant qu'on revient une fois de plus sur la question
-    }
 
     // === Initialisation obligatoire ===
     context.session.currentSpec = nextSpec;
