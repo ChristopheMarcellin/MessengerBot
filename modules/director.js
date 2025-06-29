@@ -1,4 +1,4 @@
-const { isValidAnswer, getProjectTypeFromNumber } = require('./specEngine');
+const { isValidAnswer, getProjectTypeFromNumber, buildSpecSummary } = require('./specEngine');
 const { getSession, resetSession, saveSession } = require('./sessionStore');
 const {
     setProjectType,
@@ -49,9 +49,11 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
     console.log(`[DIRECTOR] Current projectType status = _${context.session.projectType}_`);
     
-    //Case nextSpec === "none"
-    if (nextSpec === "none") {
-        console.log('[DIRECTOR] nextSpec = "none"');
+
+    //Case nextSpec === "null"
+    if (nextSpec === null) {
+        console.log('[DIRECTOR] nextSpec = "null"');
+        buildSpecSummary(context.session, context.language);
         saveSession(context)
         return false;
     }
