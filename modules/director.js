@@ -51,7 +51,7 @@ async function runDirector(context) {
     
 
     //Case nextSpec === "none"
-    if (nextSpec === "none") {
+    if (nextSpec === "summary") {
         console.log('[DIRECTOR] nextSpec = "none"');
         buildSpecSummary(context.session, context.language);
         saveSession(context)

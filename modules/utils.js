@@ -85,7 +85,7 @@ function getNextSpec(session) {
     }
 
     // Bloc 4 : tout est rempli
-    return "none";
+    return "summary";
 }
 
 function getCurrentSpec(session) {
