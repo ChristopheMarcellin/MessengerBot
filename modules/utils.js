@@ -60,7 +60,7 @@ function getNextSpec(session) {
     const typeBlock = questions[projectType];
     if (!typeBlock || typeof typeBlock !== 'object') {
         console.warn(`[getNextSpec] ❌ Aucune spec définie pour projectType="${projectType}"`);
-        return 'summary'; // ou null selon stratégie
+        return 'none'; // ou null selon stratégie
     }
     console.log(`[getNextSpec] ✅ Champs spécifiques pour ${projectType} =`, Object.keys(typeBlock));
 
@@ -83,7 +83,7 @@ function getNextSpec(session) {
     }
 
     // Bloc 4 : tout est rempli
-    return "summary";
+    return "none";
 }
 
 function getCurrentSpec(session) {
