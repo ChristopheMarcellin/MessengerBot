@@ -28,20 +28,20 @@ async function stepWhatNext(context, spec) {
         return true;
     }
 
-    //// === Étape 2 : propertyUsage ===
-    //if (nextSpec === "propertyUsage") {
-    //    const usage = context.session.specValues?.propertyUsage;
+    // === Étape 2 : propertyUsage ===
+    if (nextSpec === "propertyUsage") {
+        const usage = context.session.specValues?.propertyUsage;
 
-    //    if (usage === "personal") {
-    //        ["bedrooms", "bathrooms", "garage"].forEach(field => {
-    //            if (context.session.askedSpecs?.[field] !== true) {
-    //                setAskedSpec(context.session, field, "auto → propertyUsage=personal");
-    //            }
-    //        });
-    //    } else if (usage === "income") {
-    //        console.log("[WHATNEXT] propertyUsage = income → aucune exclusion de specs");
-    //    }
-    //}
+        if (usage === "personal") {
+            ["bedrooms", "bathrooms", "garage"].forEach(field => {
+                if (context.session.askedSpecs?.[field] !== true) {
+                    setAskedSpec(context.session, field, "auto → propertyUsage=personal");
+                }
+            });
+        } else if (usage === "income") {
+            console.log("[WHATNEXT] propertyUsage = income → aucune exclusion de specs");
+        }
+    }
 
     // === Étape 3 : specs ordinaires ===
     if (!nextSpec || nextSpec === "none") {
