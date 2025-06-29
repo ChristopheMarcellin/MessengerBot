@@ -49,11 +49,13 @@ function getNextSpec(session) {
     console.log(`[getNextSpec] specValues =`, JSON.stringify(specValues));
     console.log(`[getNextSpec] askedSpecs =`, JSON.stringify(askedSpecs));
 
-    // Bloc 0 : refus explicite
-    if (projectType === 'E' || puValue === 'E') return null;
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
+
+    // Bloc 0 : refus explicite
+    if (projectType === 'E' || puValue === 'E') return null;
+
     if (puValue === '?' || puValue === undefined) return 'propertyUsage';
 
     // Bloc 2 : specs spécifiques
@@ -66,7 +68,7 @@ function getNextSpec(session) {
 
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
     for (const field of Object.keys(typeBlock)) {
-        console.log(`[DEBUG] Spéc = ${field} → ${specValues[field]}`);
+        console.log(`[getNextSpec DEBUG] Spéc = ${field} → ${specValues[field]}`);
         if (puValue === 'income' && skipIfIncome.includes(field)) continue;
         if (specValues[field] === '?') return field;
     }
