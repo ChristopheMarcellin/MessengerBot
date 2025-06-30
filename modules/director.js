@@ -50,9 +50,9 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] Current projectType status = _${context.session.projectType}_`);
     
 
-    //Case nextSpec === "none"
+    //Case nextSpec === "summary"
     if (nextSpec === "summary") {
-        console.log('[DIRECTOR] nextSpec = "none"');
+        console.log('[DIRECTOR] nextSpec = "summary"');
         buildSpecSummary(context.session, context.language);
         saveSession(context)
         return false;

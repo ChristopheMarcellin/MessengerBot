@@ -49,11 +49,6 @@ async function stepWhatNext(context, spec) {
         return false;
     }
 
-    // === Étape 4 : specs ordinaires ===
-    if (nextSpec === "summary") {
-        console.warn('[WHATNEXT] nextspec = summary');
-        return true;
-    }
 
     setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
