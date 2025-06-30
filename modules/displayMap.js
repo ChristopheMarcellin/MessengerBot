@@ -1,7 +1,7 @@
 module.exports = {
     projectType: {
-        fr: { B: "Achat", S: "Vente", R: "Location", E: "Autre" },
-        en: { B: "Buying", S: "Selling", R: "Renting", E: "Other" }
+        fr: { B: "Intention: Achat", S: "Intention: Vente", R: "Intention: Location", E: "Intention: Autre" },
+        en: { B: "Goal: Buying", S: "Goal: Selling", R: "Goal: Renting", E: "Goal: Other" }
     },
 
     propertyUsage: {

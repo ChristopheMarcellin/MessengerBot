@@ -96,10 +96,10 @@ function buildSpecSummary(session, lang = "fr") {
     const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
     const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);
 
-    let summary = `${summaryHeader}- ${translatedProjectType}\n`;
+    let summary = `${summaryHeader} ${translatedProjectType}\n`;
 
     if (fields.propertyUsage && fields.propertyUsage !== "?") {
-        summary += `- ${lang === "fr" ? "usage de la propriété" : "property usage"}: ${translatedPropertyUsage}\n`;
+        summary += `${translatedPropertyUsage}\n`;
     }
 
     for (const key in fields) {
