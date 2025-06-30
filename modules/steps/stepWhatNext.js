@@ -2,6 +2,7 @@ const { setAskedSpec, getNextSpec } = require('../utils');
 const { getPromptForSpec, getPromptForProjectType } = require('../questions');
 const { sendMessage } = require('../messenger');
 const { saveSession } = require('../sessionStore');
+const { buildSpecSummary } = require('../specEngine');
 
 // Pose la question associée à la spec fournie.
 // Retourne true si une question a été posée, false sinon (par sécurité, mais en pratique jamais appelé avec nextSpec null).
@@ -47,6 +48,14 @@ async function stepWhatNext(context, spec) {
     if (!nextSpec || nextSpec === "none") {
         console.warn('[WHATNEXT] nextspec = none');
         return false;
+    }
+
+    // === Étape 4
+    if (nextSpec === "summary") {
+        console.log('[DIRECTOR] nextSpec = "summary"');
+        buildSpecSummary(context.session, context.language);
+        saveSession(context)
+        return true;
     }
 
 

@@ -50,14 +50,6 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] Current projectType status = _${context.session.projectType}_`);
     
 
-    //Case nextSpec === "summary"
-    if (nextSpec === "summary") {
-        console.log('[DIRECTOR] nextSpec = "summary"');
-        buildSpecSummary(context.session, context.language);
-        saveSession(context)
-        return false;
-    }
-
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
     if (nextSpec === "projectType"&&!isEndSession) {
         
