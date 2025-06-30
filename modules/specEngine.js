@@ -90,7 +90,7 @@ function getDisplayValue(field, value, lang = "fr") {
 function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
     const summaryHeader = lang === "fr"
-        ? "Voici un petit résumé des informations que vous nous avez fournies:\n"
+        ? "Voici un petit résumé des informations que vous nous avez transmises:\n"
         : "Here is a short summary of the information you provided:\n";
 
     const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
@@ -106,7 +106,7 @@ function buildSpecSummary(session, lang = "fr") {
         if (key === "propertyUsage") continue;
         if (fields[key] !== "?") {
             const display = getDisplayValue(key, fields[key], lang);
-            summary += `- ${key}: ${display}\n`;
+            summary += `${display}\n`;
         }
     }
 
