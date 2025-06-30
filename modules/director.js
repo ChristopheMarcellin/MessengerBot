@@ -131,10 +131,7 @@ async function runDirector(context) {
         context.gptAllowed = true;
         await chatOnly(senderId, message, context.session.language || "fr");
         console.log('[DIRECTOR] Fin : fin de parcours après stepWhatNext');
-        if (getNextSpec(context.session) === "summary") {
-            const recap = buildSpecSummary(context.session, context.session.language);
-            await sendMessage(senderId, recap);
-        }  
+
     }
 
     console.log('[DIRECTOR] Fin : réponse valide traitée normalement');
