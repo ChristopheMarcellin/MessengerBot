@@ -71,33 +71,44 @@ module.exports = {
         }
     },
 
-    price: {
-        fr: {
-            1: "Moins de 200 000$",
-            2: "Entre 200 000$ et 400 000$",
-            3: "Entre 400 000$ et 600 000$",
-            4: "Plus de 600 000$"
-        },
-        en: {
-            1: "Less than $200,000",
-            2: "$200,000 to $400,000",
-            3: "$400,000 to $600,000",
-            4: "More than $600,000"
-        }
+    wantsContact: {
+    fr: {
+        1: "Suivi demandé: oui",
+        2: "Suivi demandé: non"
     },
-
-    location: {
-        fr: {
-            "Montreal": "Montréal",
-            "Laval": "Laval",
-            "Quebec City": "Québec",
-            "Other": "Autre localisation"
-        },
-        en: {
-            "Montreal": "Montreal",
-            "Laval": "Laval",
-            "Quebec City": "Quebec City",
-            "Other": "Other location"
-        }
+    en: {
+        1: "Requested follow-up: yes",
+        2: "Requested follow-up: no"
     }
+}
+
+    //price: {
+    //    fr: {
+    //        1: "Moins de 200 000$",
+    //        2: "Entre 200 000$ et 400 000$",
+    //        3: "Entre 400 000$ et 600 000$",
+    //        4: "Plus de 600 000$"
+    //    },
+    //    en: {
+    //        1: "Less than $200,000",
+    //        2: "$200,000 to $400,000",
+    //        3: "$400,000 to $600,000",
+    //        4: "More than $600,000"
+    //    }
+    //},
+
+    //location: {
+    //    fr: {
+    //        "Montreal": "Montréal",
+    //        "Laval": "Laval",
+    //        "Quebec City": "Québec",
+    //        "Other": "Autre localisation"
+    //    },
+    //    en: {
+    //        "Montreal": "Montreal",
+    //        "Laval": "Laval",
+    //        "Quebec City": "Quebec City",
+    //        "Other": "Other location"
+    //    }
+    //}
 };

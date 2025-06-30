@@ -90,8 +90,8 @@ function getDisplayValue(field, value, lang = "fr") {
 function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
     const summaryHeader = lang === "fr"
-        ? "Voici un petit résumé des informations que vous nous avez transmises:\n"
-        : "Here is a short summary of the information you provided:\n";
+        ? "Voici un petit résumé des informations que vous nous avez transmises:  \n"
+        : "Here is a short summary of the information you provided:   \n";
 
     const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
     const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);
