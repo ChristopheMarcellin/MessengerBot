@@ -53,9 +53,9 @@ async function stepWhatNext(context, spec) {
     // === Étape 4
     if (nextSpec === "summary") {
         console.log('[WHATNEXT ÉTAPE4] nextSpec = "summary"');
-        buildSpecSummary(context.session, context.language);
-        saveSession(context)
-        return true;
+        const recap = buildSpecSummary(context.session, context.language);
+        await sendMessage(senderId, recap);
+        return false;
     }
 
 
