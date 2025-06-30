@@ -1,8 +1,8 @@
 const questions = {
   B: {
     price: {
-      en: "What kind of budget are you looking at (please provide a numeric answer, for example 500 for 500 000)?",
-      fr: "Quel serait votre budget (svp fournir une réponse numérique, par exemple 500 pour 500 000) ?",
+      en: "What kind of budget are you looking at in thousands (please provide a numeric answer, for example 500 for 500 000 or 1000 for 1 000 000)?",
+      fr: "Quel serait votre budget en milliers (svp fournir une réponse numérique, par exemple 500 pour 500 000 ou 1000 pour 1 000 000) ?",
     },
     bedrooms: {
       en: "How many bedrooms minimum would you be looking for (numeric answer please)?",
@@ -40,25 +40,25 @@ const questions = {
     },
     location: {
         en: "In which city / neighborhood are you located (numeric answer please)?",
-        fr: "Dans quelle ville / quartier êtes vous situé (réponse numérique SVP) ?",
+        fr: "Dans quelle ville / quartier êtes vous situé (valeur numérique SVP) ?",
     },
   },
   R: {
     price: {
-      en: "What rental price target do you have in mind (monthly numeric only please)?",
-      fr: "Quel prix de location (mensuel) avez-vous en tête ?",
+      en: "What rental price target do you have in mind (monthly value, for example: for 2 thousands say 2000)?",
+      fr: "Quel prix de location (mensuel) avez-vous en tête (Entrer une valeur numérique SVP, pour 2 milles dites 2000) ?",
     },
     bedrooms: {
         en: "How many bedrooms do you have (numeric answer please)?",
-      fr: "Combien de chambre à coucher avez-vous ?",
+      fr: "Combien de chambre à coucher avez-vous (valeur numérique SVP)?",
     },
     bathrooms: {
         en: "How many bathrooms do you have (numeric answer please)?",
-      fr: "Combien de salles de bains avez-vous ?",
+        fr: "Combien de salles de bains avez-vous  (valeur numérique SVP) ?",
     },
     parking: {
-        en: "Do you have private parking space, how many space(s) (numeric answer please)?",
-      fr: "Avez-vous des places de stationnement privées, combien ?",
+        en: "Do you have private parking space available, how many space(s) (numeric answer please)?",
+        fr: "Avez-vous des places de stationnement privées, combien (valeur numérique SVP) ?",
     },
     location: {
       en: "In which city/neighborhood are you located?",
@@ -106,8 +106,8 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
   return lang === 'en'
-    ? "Thanks for contacting us before going further, do you have a real estate project in mind ?: 1-buy, 2-sell, 3-rent, 4-other? Please answer with a number only."
-    : "Merci de nous contacter, avant de poursuivre, avez-vous un projet immobilier en tête : 1-acheter, 2-vendre, 3-louer, 4-autre raison ?\n(Svp, répondre seulement par un chiffre.)";
+    ? "Hello, thank you for contacting us, before going further, do you have a real estate project in mind ?: 1-buy, 2-sell, 3-rent, 4-other? Please provide the matching number only."
+    : "Bonjour, merci de nous contacter, avant de poursuivre, avez-vous un projet immobilier en tête : 1-acheter, 2-vendre, 3-offrir en location, 4-autre raison ?\n(SVP, répondre avec le chiffre correspondant.)";
 }
 
 module.exports = {
