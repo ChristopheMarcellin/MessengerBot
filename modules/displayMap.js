@@ -4,9 +4,15 @@ module.exports = {
         en: { B: "Buying", S: "Selling", R: "Renting", E: "Other" }
     },
 
-    intention: {
-        fr: { 1: "Acheter", 2: "Vendre", 3: "Louer", 4: "Autre raison" },
-        en: { 1: "Buy", 2: "Sell", 3: "Rent", 4: "Other reason" }
+    propertyUsage: {
+        fr: {
+            personal: "Propriété pour usage personnel",
+            income: "Propriété à revenus"
+        },
+        en: {
+            personal: "Personal use",
+            income: "Income property"
+        }
     },
 
     bedrooms: {

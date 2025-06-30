@@ -48,21 +48,65 @@ const updateSpecFromInput = (field, decodedValue, specValues) => {
     console.log(`[SPEC ENGINE] spec field "${field}" changed from "${previous}" to "${next}" AND THIS LOG SHOULD SHOULD BE DEAD CODE`);
 };
 
-function getDisplayValue(field, value, lang = "en") {
+function getDisplayValue(field, value, lang = "fr") {
+    if (value === "?" || value === "E") {
+        return lang === "fr" ? "non précisé" : "not specified";
+    }
+
+    if (field === "price") {
+        const numericValue = Number(value);
+        if (!isNaN(numericValue)) {
+            return lang === "fr"
+                ? `Prix cible : ${numericValue} milles`
+                : `Target price: ${numericValue} thousands`;
+        }
+    }
+
+    if (field === "location") {
+        return lang === "fr"
+            ? `Région : ${value}`
+            : `Region: ${value}`;
+    }
+
+    if (field === "firstName") {
+        return lang === "fr" ? `Prénom : ${value}` : `First name: ${value}`;
+    }
+
+    if (field === "lastName") {
+        return lang === "fr" ? `Nom : ${value}` : `Last name: ${value}`;
+    }
+    if (field === "phone") {
+        return lang === "fr" ? `Téléphone : ${value}` : `Phone: ${value}`;
+    }
+
+    if (field === "email") {
+        return lang === "fr" ? `Courriel : ${value}` : `Email: ${value}`;
+    }
+
     const map = displayMap[field]?.[lang];
     return map?.[value] ?? value;
 }
 
-function buildSpecSummary(session, lang = "en") {
+function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
-    let summary = lang === "fr"
-        ? "Voici un petit résumé des informations fournies que vous nous avez fournies:\n"
+    const summaryHeader = lang === "fr"
+        ? "Voici un petit résumé des informations que vous nous avez fournies:\n"
         : "Here is a short summary of the information you provided:\n";
 
+    const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
+    const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);
+
+    let summary = `${summaryHeader}- ${translatedProjectType}\n`;
+
+    if (fields.propertyUsage && fields.propertyUsage !== "?") {
+        summary += `- ${lang === "fr" ? "usage de la propriété" : "property usage"}: ${translatedPropertyUsage}\n`;
+    }
+
     for (const key in fields) {
-        if (key !== "projectType" && fields[key] !== "?") {
+        if (key === "propertyUsage") continue;
+        if (fields[key] !== "?") {
             const display = getDisplayValue(key, fields[key], lang);
-            summary += `- _${key}: _${display}\n`;
+            summary += `- ${key}: ${display}\n`;
         }
     }
 
