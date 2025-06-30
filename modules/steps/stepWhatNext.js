@@ -52,7 +52,7 @@ async function stepWhatNext(context, spec) {
 
     // === Étape 4
     if (nextSpec === "summary") {
-        console.log('[DIRECTOR] nextSpec = "summary"');
+        console.log('[WHATNEXT ÉTAPE4] nextSpec = "summary"');
         buildSpecSummary(context.session, context.language);
         saveSession(context)
         return true;
