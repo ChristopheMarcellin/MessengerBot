@@ -123,17 +123,19 @@ async function runDirector(context) {
     }
     //if is valid
 
+
+    setSpecValue(context.session, nextSpec, message, "runDirector/valid");
+
     if (projectType === "R" && propertyUsage != "income")//si le projet en est un de location il faut automatiquement metionner qu'il s'agit d'une propriété à revenus
     //pour éviter de poser la question.
 
     {
-        setSpecValue(context.session, nextSpec, "income", "gestion d'exception en cas d'un rental");
-        setAskedSpec(context.session, nextSpec, "gestion d'exception en cas d'un rental" )
-
+     //   setSpecValue(context.session, nextSpec, "income", "gestion d'exception en cas d'un rental");
+        setAskedSpec(context.session, nextSpec, "gestion d'exception en cas d'un rental");
+        console.log('rental taken care of');
     }
 
 
-    setSpecValue(context.session, nextSpec, message, "runDirector/valid");
     saveSession(context)
     const continued = await stepWhatNext(context, nextSpec);
 
