@@ -11,6 +11,7 @@ const {
 } = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepWhatNext } = require('./steps');
+const { propertyUsage, projectType } = require('./displayMap');
 
 async function runDirector(context) {
     const { message, senderId } = context;
@@ -101,6 +102,8 @@ async function runDirector(context) {
           //  setAskedSpec(context.session, nextSpec, "!isValid asked but invalid answer");
         }
 
+
+
         if (!protectedValues.includes(current)) {
             if (alreadyAsked && current === "?") {
                 setSpecValue(context.session, nextSpec, "E", "passé à E après 2 tentatives");
@@ -119,6 +122,17 @@ async function runDirector(context) {
         return true;
     }
     //if is valid
+
+    if (projectType === "R" && propertyUsage != "income")//si le projet en est un de location il faut automatiquement metionner qu'il s'agit d'une propriété à revenus
+    //pour éviter de poser la question.
+
+    {
+        setSpecValue(context.session, nextSpec, "income", "gestion d'exception en cas d'un rental");
+        setAskedSpec(context.session, nextSpec, "gestion d'exception en cas d'un rental" )
+
+    }
+
+
     setSpecValue(context.session, nextSpec, message, "runDirector/valid");
     saveSession(context)
     const continued = await stepWhatNext(context, nextSpec);

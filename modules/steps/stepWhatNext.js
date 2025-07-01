@@ -60,8 +60,12 @@ async function stepWhatNext(context, spec) {
 
 
     setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
+
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
+
+
+        
     await sendMessage(senderId, questionText);
 
     return true;
