@@ -89,8 +89,8 @@ const questions = {
             en: "What is your email address?",
         },
         propertyUsage: {
-            fr: "S'agit-il d'une propriété à revenus ? (1-oui, 2-non)",
-            en: "Is this an income property? (1-yes, 2-no)",
+            fr: "S'agit-il d'une propriété à revenus ayant plus d'un logement ? (1-oui, 2-non)",
+            en: "Is this an income property with more than one apartment? (1-yes, 2-no)",
         },
     },
 };

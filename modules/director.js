@@ -64,17 +64,6 @@ async function runDirector(context) {
             const interpreted = getProjectTypeFromNumber(message);
             setProjectType(context.session, interpreted, "user input");
 
-
-            //Le if qui suit convertit automatiquement un rental en propriété à revenus pour éviter de poser une question à laquelle on connaît la réponse
-            console.log(`[DIRECTOR rental analysis] value is valid current spec(nextSpec): "${nextSpec}" projectType "${projectType}" message "${message}"`);
-
-            if (message === "3") {
-                setSpecValue(context.session, "propertyUsage", "income", "rental was selected");
-                setAskedSpec(context.session, "propertyUsage", 'question posée via director');
-                nextSpec = getNextSpec(context.session);
-            }
-
-
             await stepWhatNext(context, nextSpec);
             saveSession(context);
             return true;
