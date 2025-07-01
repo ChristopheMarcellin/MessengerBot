@@ -93,6 +93,11 @@ async function runDirector(context) {
     const isValid = isValidAnswer(message, context.session.projectType, nextSpec);
     console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${nextSpec}"_ = _"${message}"_`);
 
+
+
+
+
+
     if (!isValid) {
         const alreadyAsked = context.session.askedSpecs[nextSpec] === true;
         const current = context.session.specValues[nextSpec];
@@ -101,8 +106,6 @@ async function runDirector(context) {
         if (nextSpec === "propertyUsage" && !alreadyAsked) {
           //  setAskedSpec(context.session, nextSpec, "!isValid asked but invalid answer");
         }
-
-
 
         if (!protectedValues.includes(current)) {
             if (alreadyAsked && current === "?") {
@@ -122,18 +125,16 @@ async function runDirector(context) {
         return true;
     }
     //if is valid
+    //Le if qui suit convertit automatiquement un rental en propriété à revenus pour éviter de poser une question à laquelle on connaît la réponse
+    console.log(`[DIRECTOR isValid] value is valid current spec(nextSpec): "${nextSpec}"`);
+    if (message === "3" && nextSpec === "projectType") {
 
+        setSpecValue(context.session, "propertyUsage", "income", "rental was selected");
+        setAskedSpec(context.session, "propertyUsage", 'question posée via director');
+
+    }
 
     setSpecValue(context.session, nextSpec, message, "runDirector/valid");
-
-    if (projectType === "R" && propertyUsage != "income")//si le projet en est un de location il faut automatiquement metionner qu'il s'agit d'une propriété à revenus
-    //pour éviter de poser la question.
-
-    {
-     //   setSpecValue(context.session, nextSpec, "income", "gestion d'exception en cas d'un rental");
-        setAskedSpec(context.session, nextSpec, "gestion d'exception en cas d'un rental");
-        console.log('rental taken care of');
-    }
 
 
     saveSession(context)
