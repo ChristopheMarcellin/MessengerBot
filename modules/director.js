@@ -52,14 +52,7 @@ async function runDirector(context) {
 
 
 
-    //Le if qui suit convertit automatiquement un rental en propriété à revenus pour éviter de poser une question à laquelle on connaît la réponse
-    console.log(`[DIRECTOR rental analysis] value is valid current spec(nextSpec): "${nextSpec}" projectType "${projectType}" message "${message}"`);
 
-    if (nextSpec === "projectType" && message === "3") {
-        setSpecValue(context.session, "propertyUsage", "income", "rental was selected");
-        setAskedSpec(context.session, "propertyUsage", 'question posée via director');
-        //nextSpec = getNextSpec(context.session);
-    }
 
   
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
@@ -70,7 +63,18 @@ async function runDirector(context) {
         if (isValid) {
             const interpreted = getProjectTypeFromNumber(message);
             setProjectType(context.session, interpreted, "user input");
-          //  setAskedSpec(context.session, "projectType", "valid answer");
+
+
+            //Le if qui suit convertit automatiquement un rental en propriété à revenus pour éviter de poser une question à laquelle on connaît la réponse
+            console.log(`[DIRECTOR rental analysis] value is valid current spec(nextSpec): "${nextSpec}" projectType "${projectType}" message "${message}"`);
+
+            if (message === "3") {
+                setSpecValue(context.session, "propertyUsage", "income", "rental was selected");
+                setAskedSpec(context.session, "propertyUsage", 'question posée via director');
+                nextSpec = getNextSpec(context.session);
+            }
+
+
             await stepWhatNext(context, nextSpec);
             saveSession(context);
             return true;
@@ -105,11 +109,6 @@ async function runDirector(context) {
 
     const isValid = isValidAnswer(message, context.session.projectType, nextSpec);
     console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${nextSpec}"_ = _"${message}"_`);
-
-
-
-
-
 
     if (!isValid) {
         const alreadyAsked = context.session.askedSpecs[nextSpec] === true;
