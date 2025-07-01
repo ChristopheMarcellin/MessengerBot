@@ -54,12 +54,11 @@ async function runDirector(context) {
 
     //Le if qui suit convertit automatiquement un rental en propriété à revenus pour éviter de poser une question à laquelle on connaît la réponse
     console.log(`[DIRECTOR rental analysis] value is valid current spec(nextSpec): "${nextSpec}" projectType "${projectType}" message "${message}"`);
-    if (nextSpec === "propertyUsage" && projectType === "R") {
 
+    if (nextSpec === "projectType" && message === "3") {
         setSpecValue(context.session, "propertyUsage", "income", "rental was selected");
         setAskedSpec(context.session, "propertyUsage", 'question posée via director');
-        nextSpec = getNextSpec(context.session);
-
+        //nextSpec = getNextSpec(context.session);
     }
 
   
