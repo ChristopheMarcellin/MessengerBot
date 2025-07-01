@@ -135,7 +135,7 @@ async function runDirector(context) {
 
     if (!continued) {
  
-              ;
+              
         console.log('[DIRECTOR] Aucun mouvement supplémentaire possible (whatNext) → passage en mode chatOnly');
 
         context.gptAllowed = true;
