@@ -49,8 +49,20 @@ async function runDirector(context) {
     const nextSpec = getNextSpec(context.session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
     console.log(`[DIRECTOR] Current projectType status = _${context.session.projectType}_`);
-    
 
+
+
+    //Le if qui suit convertit automatiquement un rental en propriété à revenus pour éviter de poser une question à laquelle on connaît la réponse
+    console.log(`[DIRECTOR rental analysis] value is valid current spec(nextSpec): "${nextSpec}" projectType "${projectType}" message "${message}"`);
+    if (nextSpec === "propertyUsage" && projectType === "R") {
+
+        setSpecValue(context.session, "propertyUsage", "income", "rental was selected");
+        setAskedSpec(context.session, "propertyUsage", 'question posée via director');
+        nextSpec = getNextSpec(context.session);
+
+    }
+
+  
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
     if (nextSpec === "projectType"&&!isEndSession) {
         
@@ -83,14 +95,7 @@ async function runDirector(context) {
            // setAskedSpec(context.session, "projectType", "asked but invalid answer");
         }
 
-        //Le if qui suit convertit automatiquement un rental en propriété à revenus pour éviter de poser une question à laquelle on connaît la réponse
-        console.log(`[DIRECTOR isValid] value is valid current spec(nextSpec): "${nextSpec}" interpreted "${interpreted}" message "${message}"`);
-        if (message === "3") {
 
-            setSpecValue(context.session, "propertyUsage", "income", "rental was selected");
-            setAskedSpec(context.session, "propertyUsage", 'question posée via director');
-
-        }
 
         console.log('[DIRECTOR isValidGPT] projectType détecté et traité via GPT');
         saveSession(context);
