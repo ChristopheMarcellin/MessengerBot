@@ -43,3 +43,4 @@ async function stepInitializeSession(context) {
     logSessionState("Vérification APRÈS une initialisation propre", context.session);
     return true;
 }
+module.exports = { stepInitializeSession };
