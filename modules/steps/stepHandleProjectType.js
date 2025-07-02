@@ -8,7 +8,7 @@ const {
     gptClassifyProject
 } = require('../utils');
 
-const { stepWhatNext } = require('./index');
+const { stepWhatNext } = require('./stepWhatNext');
 const { saveSession } = require('../sessionStore');
 
 async function stepHandleProjectType(context) {
