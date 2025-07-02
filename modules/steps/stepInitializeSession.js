@@ -1,53 +1,38 @@
 const { setProjectType, initializeSpecFields, detectLanguageFromText } = require('../utils');
 const { getSession, saveSession, resetSession, logSessionState } = require('../sessionStore');
 
-async function stepInitializeSession(context,isEndSession) {
+async function stepInitializeSession(context) {
     const { senderId, message } = context;
 
-
-    if (isEndSession) {
-        const newSession = resetSession(context); // 🧠 on passe senderId, pas context
-        context.session = newSession;                      // ✅ on met à jour d'abord
-       // saveSession(context);                              // ✅ puis on enregistre la bonne session
-        console.log('[INIT] "end session" détecté → session réinitialisée à neuf');
-        logSessionState("Vérification APRÈS end session", context.session);
-        return true;
-    }
-
-    // 🧠 Charger la session existante ou en créer une vide si nécessaire
-    let session = getSession(senderId);
-    if (!session) {
-        session = resetSession(context); // ta version personnalisée qui fouille context.senderId
-    }
-    context.session = session;
-
-
-    // 🛡 Protection : session déjà initialisée
-    if (session?.specValues && session?.askedSpecs) {
-        context.session = session;
-        console.log('[INIT] Session déjà initialisée → aucune action requise');
-        return true;
-    }
-
-    // 🔐 Assurer la présence du senderId
+    // 🔐 Assurer la présence du senderId dès le départ
     if (typeof senderId !== 'string' || senderId.trim() === '') {
         console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return false;
     }
 
-    // 🧠 Création d'une session lorsque manquante ou corrompue
-    context.session = session;
-    if (!context.session || typeof context.session !== 'object') {
-        console.log('[INIT] ALERTE session manquante problèmes en vue');
+    const isEndSession = message.trim().toLowerCase() === 'end session';
+    let session = getSession(senderId);
+
+    if (isEndSession) {
+        session = resetSession(context);
+        context.session = session;
+        console.log('[INIT] "end session" → session réinitialisée');
         return false;
     }
 
-    // 🔍 Log AVANT réparation
-    // logSessionState("Vérification AVANT réparation", senderId);
+    if (!session) {
+        session = resetSession(context);
+        console.log('[INIT] session créée car absente');
+    }
 
-    // 🧼 Normalisation, corrige/reset les variables suspectes ou aux données incomplètes 
-    //**** NE JAMAIS être tenté de configurer le PROJECT TYPE DE LA SESSION ICI, CE QUI BRISERAIT LE SETPROJECTTYPE effectué dans une autre étape
-    context.session.language ??= detectLanguageFromText(message); // 🌐 Détection automatique de la langue
+    context.session = session;
+
+    if (session.specValues && session.askedSpecs) {
+        console.log('[INIT] Session déjà initialisée → aucune action requise');
+        return true;
+    }
+
+    context.session.language ??= detectLanguageFromText(message);
     context.session.ProjectDate ??= new Date().toISOString();
     context.session.questionCount ??= 1;
     context.session.maxQuestions ??= 40;
@@ -55,10 +40,6 @@ async function stepInitializeSession(context,isEndSession) {
     context.session.specValues ??= {};
     context.session.currentSpec ??= null;
 
- //   saveSession(context);
-    // 🔍 Log APRÈS réparation/normalisation
     logSessionState("Vérification APRÈS une initialisation propre", context.session);
     return true;
 }
-
-module.exports = { stepInitializeSession };
