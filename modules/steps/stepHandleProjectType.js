@@ -1,52 +1,49 @@
-const { setProjectType, initializeSpecFields } = require('../utils');
-const { sendMessage } = require('../messenger');
+const {
+    isValidAnswer,
+    getProjectTypeFromNumber
+} = require('../specEngine');
 
+const {
+    setProjectType,
+    gptClassifyProject
+} = require('../utils');
 
-async function stepHandleProjectType({ senderId, session, message }) {
+const { stepWhatNext } = require('./index');
+const { saveSession } = require('../sessionStore');
 
-    if (!session) {
-        console.warn(`[WARN] stepHandleProjectType called with undefined session for ${senderId}`);
-        return false;
-    }
-    if (session.specValues?.projectType !== "?") return true;
+async function stepHandleProjectType(context) {
+    const { message, session } = context;
 
-    const lang = session.language || "fr";
-    const isFirstTry = !session.awaitingProjectTypeAttempt;
-    const attempt = isFirstTry ? 1 : session.awaitingProjectTypeAttempt + 1;
+    const isValid = isValidAnswer(message, "projectType", "projectType");
 
-    const number = parseInt(message.trim(), 10);
-    let mapped;
-
-    switch (number) {
-        case 1: mapped = "B"; break;
-        case 2: mapped = "S"; break;
-        case 3: mapped = "R"; break;
-        case 4: mapped = "E"; break;
-        default: mapped = "?";
-    }
-
-    if (["B", "S", "R", "E"].includes(mapped)) {
-        setProjectType(session, mapped, `user numeric selection (attempt ${attempt})`);
-        initializeSpecFields(session);
-        delete session.awaitingProjectTypeAttempt;
+    if (isValid) {
+        const interpreted = getProjectTypeFromNumber(message);
+        setProjectType(session, interpreted, "user input");
+        await stepWhatNext(context, "projectType");
+        saveSession(context);
         return true;
     }
 
-    if (attempt >= 2) {
-        setProjectType(session, "E", "failed 2 attempts");
-        delete session.awaitingProjectTypeAttempt;
-        return true;
+    const interpreted = await gptClassifyProject(message, session.language || "fr");
+    const isValidGPT = ["B", "S", "R", "E"].includes(interpreted);
+    const current = session.projectType;
+    const alreadyAsked = session.askedSpecs.projectType === true;
+
+    if (isValidGPT) {
+        setProjectType(session, interpreted, "interprétation par gpt");
+    } else {
+        if (alreadyAsked && current === "?") {
+            setProjectType(session, "E", "GPT → refus après 2 échecs");
+            console.log(`[DIRECTOR !isValidGPT] projectType passé à "E" après deux tentatives floues`);
+        } else {
+            setProjectType(session, "?", "GPT → invalide");
+        }
     }
 
-    // Repose la question une dernière fois
-    session.awaitingProjectTypeAttempt = attempt;
-
-    const retry = lang === "fr"
-        ? "Veuillez répondre en indiquant seulement le chiffre correspondant :\n1-acheter, 2-vendre, 3-louer, 4-autre raison."
-        : "Please answer by typing only the number:\n1-buy, 2-sell, 3-rent, 4-other reason.";
-
-    await sendMessage(senderId, retry);
-    return false;
+    console.log('[DIRECTOR isValidGPT] projectType détecté et traité via GPT');
+    saveSession(context);
+    await stepWhatNext(context, "projectType");
+    return true;
 }
 
-module.exports = { stepHandleProjectType };
+module.exports = stepHandleProjectType;
