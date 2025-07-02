@@ -1,31 +1,47 @@
-const { getSession, setSession } = require('../sessionStore');
-const { updateSpecFromInput, isValidAnswer } = require('../specEngine');
+const { setSpecValue } = require('../utils');
+const { chatOnly } = require('../utils');
+const { saveSession } = require('../sessionStore');
+const { stepWhatNext } = require('./stepWhatNext');
 
-/**
- * Gère une réponse utilisateur à une question spécifique
- */
-async function stepHandleSpecAnswer({ senderId, message }) {
-    const session = getSession(senderId);
-    if (!session) return true;
+// Traite une réponse utilisateur pour une spec donnée, déjà jugée invalide
+async function stepHandleSpecAnswer(context, spec, isValid) {
+    const { session, senderId, message } = context;
 
-    const field = session.currentSpec;
-    if (!field) {
-        console.log('[HANDLE] Aucun currentSpec défini → rien à traiter');
+    if (isValid) {
+        setSpecValue(session, spec, message, "runDirector/valid");
+        saveSession(context);
+        const continued = await stepWhatNext(context, spec);
+
+        if (!continued) {
+            context.gptAllowed = true;
+            await chatOnly(senderId, message, session.language || "fr");
+            console.log('[DIRECTOR] Fin : fin de parcours après stepWhatNext');
+        } else {
+            console.log('[DIRECTOR] Fin : réponse valide traitée normalement');
+        }
+
         return true;
     }
 
-    const value = updateSpecFromInput(field, message);
-    if (value === "?") {
-        console.log(`[WARN] Réponse invalide pour ${field} → répétition demandée`);
-        return false; // réponse invalide → on répétera la question
+    const alreadyAsked = session.askedSpecs[spec] === true;
+    const current = session.specValues[spec];
+    const protectedValues = ["E", 0];
+
+    if (!protectedValues.includes(current)) {
+        if (alreadyAsked && current === "?") {
+            setSpecValue(session, spec, "E", "passé à E après 2 tentatives");
+            console.log(`[DIRECTOR !isValid] nextSpec: "${spec}" passé à "E" après deux tentatives`);
+        } else {
+            setSpecValue(session, spec, "?", "runDirector/invalid");
+        }
     }
 
-    // Réponse valide → enregistrement
-    session.specValues[field] = value;
-    session.askedSpecs[field] = true;
-    session.currentSpec = null;
-
-    setSession(senderId, session);
+    context.deferSpec = true;
+    context.gptAllowed = true;
+    saveSession(context);
+    await chatOnly(senderId, message, session.language || "fr");
+    await stepWhatNext(context, spec);
+    console.log('[DIRECTOR !isValid] Fin : réponse invalide, relance via GPT + stepWhatNext');
     return true;
 }
 
