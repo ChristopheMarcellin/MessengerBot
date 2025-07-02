@@ -1,19 +1,11 @@
-const {
-    isValidAnswer,
-    getProjectTypeFromNumber
-} = require('../specEngine');
-
-const {
-    setProjectType,
-    gptClassifyProject
-} = require('../utils');
-
+const {isValidAnswer, getProjectTypeFromNumber} = require('../specEngine');
+const {setProjectType, gptClassifyProject} = require('../utils');
 const { stepWhatNext } = require('./stepWhatNext');
 const { saveSession } = require('../sessionStore');
 
 async function stepHandleProjectType(context) {
-    const { message, session } = context;
 
+    const { message, session } = context;
     const isValid = isValidAnswer(message, "projectType", "projectType");
 
     if (isValid) {
@@ -26,6 +18,7 @@ async function stepHandleProjectType(context) {
 
     const interpreted = await gptClassifyProject(message, session.language || "fr");
     const isValidGPT = ["B", "S", "R", "E"].includes(interpreted);
+    console.log(`[GPT DEBUG] interpreted = "${interpreted}"`);  
     const current = session.projectType;
     const alreadyAsked = session.askedSpecs.projectType === true;
 
