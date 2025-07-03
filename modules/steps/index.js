@@ -25,6 +25,6 @@ module.exports = {
   stepWhatNext: require('./stepWhatNext').stepWhatNext,
   stepHandleProjectType: require('./stepHandleProjectType'),
     stepHandleSpecAnswer: require('./stepHandleSpecAnswer'),
-  stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm'),
+  stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm')
 
 };

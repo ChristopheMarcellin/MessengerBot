@@ -15,4 +15,4 @@ async function stepSummarizeAndConfirm(context) {
     return true;
 }
 
-module.exports = {stepSummarizeAndConfirm};
+module.exports = stepSummarizeAndConfirm;
