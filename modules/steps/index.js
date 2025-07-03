@@ -22,7 +22,7 @@ module.exports = {
   stepHandleProjectType: require('./stepHandleProjectType'),
   stepHandleSpecAnswer: require('./stepHandleSpecAnswer'),
   stepAskNextSpec: require('./stepAskNextSpec').stepAskNextSpec,
-  stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm').stepSummarizeAndConfirm,
+  stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm'),
   stepCollectContact: require('./stepCollectContact').stepCollectContact,
   stepHandleFallback: require('./stepHandleFallback').stepHandleFallback,
   stepWhatNext: require('./stepWhatNext').stepWhatNext

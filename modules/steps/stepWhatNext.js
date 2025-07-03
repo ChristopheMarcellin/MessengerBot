@@ -11,6 +11,11 @@ async function stepWhatNext(context, spec) {
     const lang = context.session.language || 'fr';
 
     const nextSpec = getNextSpec(context.session);
+    //Toutes les specs sont complétées
+    if (!nextSpec) {
+        console.log('[WHATNEXT] ✅ Toutes les specs sont complètes → aucune question à poser.');
+        return false;
+    }
 
     // 💬 Étape spéciale : détection de relance (même spec que précédente)
     if (nextSpec === spec) {
@@ -44,23 +49,16 @@ async function stepWhatNext(context, spec) {
         }
     }
 
-    // === Étape 3 : specs ordinaires ===
-    if (!nextSpec || nextSpec === "none") {
-        console.warn('[WHATNEXT] nextspec = none');
-        return false;
-    }
 
-    // === Étape 4
-    if (nextSpec === "summary") {
-        console.log('[WHATNEXT ÉTAPE4] nextSpec = "summary"');
-        const recap = buildSpecSummary(context.session, context.session.language);
-        await sendMessage(senderId, recap);
-        return false;
-    }
-
+    //// === Étape 3
+    //if (nextSpec === "summary") {
+    //    console.log('[WHATNEXT ÉTAPE4] nextSpec = "summary"');
+    //    const recap = buildSpecSummary(context.session, context.session.language);
+    //    await sendMessage(senderId, recap);
+    //    return false;
+    //}
 
     setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
-
 
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);

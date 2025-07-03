@@ -1,22 +1,16 @@
-const { getSession, setSession } = require('../sessionStore');
 const { buildSpecSummary } = require('../specEngine');
 const { sendMessage } = require('../messenger');
 
-async function stepSummarizeAndConfirm({ senderId, message }) {
-    const session = getSession(senderId);
-    if (!session) return false;
+async function stepSummarizeAndConfirm(context) {
+    const { senderId, session } = context;
+    const lang = session.language || 'fr';
 
-    // Ne rien faire si des specs sont encore incomplètes
-    const hasUnanswered = Object.values(session.specValues || {}).includes("?");
-    if (hasUnanswered) return true;
+    const recap = buildSpecSummary(session, lang);
+    await sendMessage(senderId, recap);
 
-    if (session.summarySent) return true; // Ne pas résumer deux fois
+    session.mode = "chat";
+    console.log('[STEP] Résumé envoyé — passage en mode chat');
 
-    const summary = buildSpecSummary(session);
-    await sendMessage(senderId, summary);
-
-    session.summarySent = true;
-    setSession(senderId, session);
     return true;
 }
 
