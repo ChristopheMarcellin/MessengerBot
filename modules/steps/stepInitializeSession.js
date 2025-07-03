@@ -4,7 +4,7 @@ const { getSession, saveSession, resetSession, logSessionState } = require('../s
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
 
-    // 🔐 Sécurité de base
+    // 🔐 STOP PROBLÈME EN VUE
     if (typeof senderId !== 'string' || senderId.trim() === '') {
         console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return false;
@@ -13,15 +13,18 @@ async function stepInitializeSession(context) {
     const isEndSession = message.trim().toLowerCase() === 'end session';
     let session = getSession(senderId);
 
-    if (isEndSession || !session) {
+    if (isEndSession) {
         session = resetSession(context);
-        console.log(`[INIT] Session ${isEndSession ? 'réinitialisée par (end session)' : 'créée car absente'}`);
+        console.log('[INIT] Session réinitialisée par (end session)');
+    } else if (!session) {
+        session = resetSession(context);
+        console.log('[INIT] Session créée car absente');
     }
 
     // 🧠 Affectation obligatoire avant traitement
     context.session = session;
 
-    // 🌍 Détection de langue forcée AVANT test d'initialisation
+    // 🌍 Détection de langue forcée pour la suite de choses
     if (!context.session.language) {
         context.session.language = detectLanguageFromText(message);
     }
@@ -32,13 +35,7 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-    // 🧱 Initialisation de base
-    session.ProjectDate ??= new Date().toISOString();
-    session.questionCount ??= 1;//le nombre de fois qu'on repose la question
-    session.maxQuestions ??= 40;
-    session.askedSpecs ??= {};
-    session.specValues ??= {};
-    session.currentSpec ??= null;
+
 
     logSessionState("Vérification APRÈS une initialisation propre", session);
     return true;
