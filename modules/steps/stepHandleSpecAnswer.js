@@ -45,4 +45,4 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
     return true;
 }
 
-module.exports = { stepHandleSpecAnswer };
+module.exports =  stepHandleSpecAnswer ;
