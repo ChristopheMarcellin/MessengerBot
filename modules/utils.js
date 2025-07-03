@@ -267,6 +267,9 @@ async function chatOnly(senderId, message, lang = "fr") {
 }
 
 function detectLanguageFromText(text) {
+    console.log("testing the text value with detectLanguageFunction");
+    console.log(text);
+    console.log(detectLanguageFromText(message));
     if (typeof text !== "string") return 'fr'; // sécurité minimale
 
     const isFrench = /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||

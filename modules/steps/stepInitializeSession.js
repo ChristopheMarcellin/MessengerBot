@@ -31,7 +31,9 @@ async function stepInitializeSession(context) {
         console.log('[INIT] Session déjà initialisée → aucune action requise');
         return true;
     }
-
+    console.log("init language test")
+    console.log(message);
+    console.log(detectLanguageFromText(message));
     context.session.language ??= detectLanguageFromText(message);
     context.session.ProjectDate ??= new Date().toISOString();
     context.session.questionCount ??= 1;
