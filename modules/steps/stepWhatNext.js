@@ -9,7 +9,7 @@ const { buildSpecSummary } = require('../specEngine');
 async function stepWhatNext(context, spec) {
     const { senderId } = context;
     const lang = context.session.language || 'fr';
-
+    console.log(`[WHATNEXT] Langue dans session = ${lang}`);
     const nextSpec = getNextSpec(context.session);
     //Toutes les specs sont complétées
     if (!nextSpec) {
