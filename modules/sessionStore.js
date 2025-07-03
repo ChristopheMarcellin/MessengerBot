@@ -28,7 +28,7 @@ function getAllSessions() {
 function resetSession(context) {
     const freshSession = {
         senderId : context.senderId,
-        language: 'fr',
+     ///   language: 'fr',
         projectType: "?",
         specValues: {},
         askedSpecs: {},
