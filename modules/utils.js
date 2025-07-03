@@ -6,7 +6,35 @@ const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
 
 
+const faqMap = {
+    fr: {
+        "heures d'ouverture": "Nous sommes ouverts du lundi au vendredi, de 9h à 17h.",
+        "consultations gratuites": "Oui, la première consultation est gratuite, incluant l'estimation.",
+        "location ou louer": "Oui, nous pouvons vous accompagner pour trouver un locataire",
+        "commercial": "Oui, nous sommes accrédités tant côté, commercial que résidentiel",
+        "fonctionnement de l'estimation": "Nous possédons de nombreuses statistiques pour vous aider à établir un prix sur une base de comparables",
+        "quel est votre territoire ou votre secteur d'activité": "Nous sommes très actifs dans les sectueurs du Vieux Montréal, l'Ile des Soeurs, Griffintown et et Saint-Lambert",
 
+    },
+    en: {
+        "opening hours": "We are open Monday to Friday, from 9am to 5pm.",
+        "free consultations": "Yes, the first consultation is free, including the property evaluation.",
+        "rental or rent": "Yes, we can assist you in finding a tenant.",
+        "commercial": "Yes, we are accredited for both commercial and residential real estate.",
+        "how the evaluation works": "We use extensive statistics to help you establish a price based on comparable properties.",
+        "what is your territory or service area": "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
+    }
+};
+
+function getFAQResponse(message = "", lang = "fr") {
+    const cleaned = message.toLowerCase();
+    const langFaq = faqMap[lang] || {};
+
+    for (const key in langFaq) {
+        if (cleaned.includes(key)) return langFaq[key];
+    }
+    return null;
+}
 function traceCaller(label) {
     const stack = new Error().stack;
     const line = stack.split('\n')[3] || 'inconnu';
@@ -235,10 +263,21 @@ async function gptClassifyProject(message, language = "fr") {
     }
 }
 
+const { getFAQResponse } = require('./utils'); // doit être défini dans utils.js
+
 async function chatOnly(senderId, message, lang = "fr") {
+    // 🧠 1. Tester d'abord les FAQ
+    const faqReply = getFAQResponse(message, lang);
+    if (faqReply) {
+        console.log(`[CHAT] Réponse FAQ détectée (${lang})`);
+        await sendMessage(senderId, faqReply);
+        return;
+    }
+
+    // 💬 2. Sinon traitement GPT
     const prompt = lang === "fr"
-        ? `Tu es un assistant amical. Réagis à cette phrase sans chercher à interpréter des données : "${message}"`
-        : `You are a friendly assistant. React to this phrase without trying to interpret data: "${message}"`;
+        ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données: "${message}"`
+        : `You are a real estate professional always polite. React to this phrase without trying to interpret data: "${message}"`;
 
     console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
 
@@ -265,6 +304,7 @@ async function chatOnly(senderId, message, lang = "fr") {
         await sendMessage(senderId, fallback);
     }
 }
+
 
 function detectLanguageFromText(text) {
     if (typeof text !== "string" || text.trim() === "") return 'fr';

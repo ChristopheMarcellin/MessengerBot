@@ -81,8 +81,8 @@ const questions = {
 
 
         firstName: {
-            fr: "Quel est votre prénom SVP ?",
-            en: "What is your first name please ?",
+            fr: "Pour nos dossiers, quel est votre prénom SVP ?",
+            en: "For our records, What is your first name please ?",
         },
         lastName: {
             fr: "Nom de famille ?",
@@ -114,8 +114,8 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
   return lang === 'en'
-    ? "Hello, thank you for contacting us, before going further, do you have a real estate project in mind ?: 1-buy, 2-sell, 3-rent, 4-other? Please provide the matching number only."
-    : "Bonjour, merci de nous contacter, avant de poursuivre, avez-vous un projet immobilier en tête : 1-acheter, 2-vendre, 3-offrir en location, 4-autre raison ?\n(SVP, répondre avec le chiffre correspondant.)";
+    ? "Hello, thank you for contacting us, before going further, let us know if you have a real estate project in mind. We will provide you free of charge with a website that showcases properties that meet your criteria if you are on the market to buy. What are you planning: 1-buy, 2-sell, 3-rent, 4-other? Please provide the matching number only."
+    : "Bonjour, merci de nous contacter, avant de poursuivre, laissez nous savoir si vous avez un projet immobilier en tête. Nous vous fournirons grâcieusement un site de propriétés à vendre selon vos critères de recherche si vous envisagiez d'acquérir.  Quel est votre plan : 1-acheter, 2-vendre, 3-offrir en location, 4-autre raison ?\n(SVP, répondre avec le chiffre correspondant.)";
 }
 
 module.exports = {

@@ -12,12 +12,13 @@ async function runDirector(context) {
 
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
-    const session = context.session;
 
     if (!isReady) {
         console.log('[DIRECTOR] is not ready to continue')
         return false;
     }
+
+
 
     // 🧭 Détermination de la prochaine spec à traiter
     const nextSpec = getNextSpec(session);

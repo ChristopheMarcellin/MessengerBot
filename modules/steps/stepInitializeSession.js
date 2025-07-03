@@ -35,8 +35,6 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-
-
     logSessionState("Vérification APRÈS une initialisation propre", session);
     return true;
 }
