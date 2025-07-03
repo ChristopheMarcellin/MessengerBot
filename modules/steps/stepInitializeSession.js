@@ -4,7 +4,7 @@ const { getSession, saveSession, resetSession, logSessionState } = require('../s
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
 
-    // 🔐 Assurer la présence du senderId dès le départ
+    // 🔐 Sécurité de base
     if (typeof senderId !== 'string' || senderId.trim() === '') {
         console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return false;
@@ -13,36 +13,33 @@ async function stepInitializeSession(context) {
     const isEndSession = message.trim().toLowerCase() === 'end session';
     let session = getSession(senderId);
 
-    if (isEndSession) {
+    if (isEndSession || !session) {
         session = resetSession(context);
-        context.session = session;
-        console.log('[INIT] "end session" → session réinitialisée');
-        return false;
+        console.log(`[INIT] Session ${isEndSession ? 'réinitialisée (end session)' : 'créée car absente'}`);
     }
 
-    if (!session) {
-        session = resetSession(context);
-        console.log('[INIT] session créée car absente');
-    }
-
+    // 🧠 Affectation à context obligatoire avant traitement
     context.session = session;
 
+    // 🌍 Détection de langue toujours faite une seule fois
+    context.session.language ??= detectLanguageFromText(message);
+
+    // ✅ Session déjà initialisée = on saute l’initialisation
     if (session.specValues && session.askedSpecs) {
         console.log('[INIT] Session déjà initialisée → aucune action requise');
         return true;
     }
-    console.log("init language test")
-    console.log(message);
-    console.log(detectLanguageFromText(message));
-    context.session.language ??= detectLanguageFromText(message);
-    context.session.ProjectDate ??= new Date().toISOString();
-    context.session.questionCount ??= 1;
-    context.session.maxQuestions ??= 40;
-    context.session.askedSpecs ??= {};
-    context.session.specValues ??= {};
-    context.session.currentSpec ??= null;
 
-    logSessionState("Vérification APRÈS une initialisation propre", context.session);
+    // 🧱 Initialisation
+    session.ProjectDate ??= new Date().toISOString();
+    session.questionCount ??= 1;
+    session.maxQuestions ??= 40;
+    session.askedSpecs ??= {};
+    session.specValues ??= {};
+    session.currentSpec ??= null;
+
+    logSessionState("Vérification APRÈS une initialisation propre", session);
     return true;
 }
+
 module.exports = { stepInitializeSession };
