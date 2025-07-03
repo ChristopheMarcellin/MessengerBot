@@ -200,6 +200,7 @@ function isValidAnswer(message, projectType, field) {
     }
     // 🎯 10. Expectations
     if (field === "expectations") {
+        const isValid = true;
         return isValid; // tout est accepté sans validation
     }
 
