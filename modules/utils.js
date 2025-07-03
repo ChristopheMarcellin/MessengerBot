@@ -263,7 +263,6 @@ async function gptClassifyProject(message, language = "fr") {
     }
 }
 
-const { getFAQResponse } = require('./utils'); // doit être défini dans utils.js
 
 async function chatOnly(senderId, message, lang = "fr") {
     // 🧠 1. Tester d'abord les FAQ
