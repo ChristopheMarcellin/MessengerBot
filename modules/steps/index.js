@@ -19,11 +19,12 @@ module.exports = {
 
   stepCheckEndSession: require('./stepCheckEndSession').stepCheckEndSession,
   stepInitializeSession: require('./stepInitializeSession').stepInitializeSession,
-  stepHandleProjectType: require('./stepHandleProjectType'),
-  stepHandleSpecAnswer: require('./stepHandleSpecAnswer'),
   stepAskNextSpec: require('./stepAskNextSpec').stepAskNextSpec,
-  stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm'),
   stepCollectContact: require('./stepCollectContact').stepCollectContact,
   stepHandleFallback: require('./stepHandleFallback').stepHandleFallback,
-  stepWhatNext: require('./stepWhatNext').stepWhatNext
+  stepWhatNext: require('./stepWhatNext').stepWhatNext,
+  stepHandleProjectType: require('./stepHandleProjectType'),
+  stepHandleSpecAnswer: require('./stepHandleSpecAnswer'),
+  stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm'),
+
 };
