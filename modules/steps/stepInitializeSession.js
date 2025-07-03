@@ -18,19 +18,21 @@ async function stepInitializeSession(context) {
         console.log(`[INIT] Session ${isEndSession ? 'réinitialisée (end session)' : 'créée car absente'}`);
     }
 
-    // 🧠 Affectation à context obligatoire avant traitement
+    // 🧠 Affectation obligatoire avant traitement
     context.session = session;
 
-    // 🌍 Détection de langue toujours faite une seule fois
-    context.session.language ??= detectLanguageFromText(message);
+    // 🌍 Détection de langue forcée AVANT test d'initialisation
+    if (!context.session.language) {
+        context.session.language = detectLanguageFromText(message);
+    }
 
-    // ✅ Session déjà initialisée = on saute l’initialisation
+    // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {
         console.log('[INIT] Session déjà initialisée → aucune action requise');
         return true;
     }
 
-    // 🧱 Initialisation
+    // 🧱 Initialisation de base
     session.ProjectDate ??= new Date().toISOString();
     session.questionCount ??= 1;
     session.maxQuestions ??= 40;

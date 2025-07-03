@@ -267,15 +267,18 @@ async function chatOnly(senderId, message, lang = "fr") {
 }
 
 function detectLanguageFromText(text) {
-    console.log("testing the text value with detectLanguageFunction");
-    console.log(text);
-    console.log(detectLanguageFromText(message));
-    if (typeof text !== "string") return 'fr'; // sécurité minimale
+    if (typeof text !== "string" || text.trim() === "") return 'fr';
 
-    const isFrench = /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||
+    console.log("[LANG DETECT] Texte analysé :", text);
+
+    const isFrench =
+        /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||
         /\b(le|la|est|une|bonjour|je|j’|ça|tu|vous|avec|maison|acheter|vendre|salut|allo|propriété)\b/i.test(text);
 
-    return isFrench ? 'fr' : 'en';
+    const detected = isFrench ? 'fr' : 'en';
+    console.log(`[LANG DETECT] Langue détectée : ${detected}`);
+
+    return detected;
 }
 
 function setAskedSpec(session, specKey, source = "manual") {
