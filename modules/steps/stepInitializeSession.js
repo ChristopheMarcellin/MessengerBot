@@ -11,6 +11,7 @@ async function stepInitializeSession(context) {
     }
 
     const isEndSession = message.trim().toLowerCase() === 'end session';
+    let session = getSession(senderId);
 
     if (isEndSession || !session) {
         session = resetSession(context);
