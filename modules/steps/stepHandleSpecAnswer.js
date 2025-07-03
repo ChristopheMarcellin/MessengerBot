@@ -1,25 +1,13 @@
 const { setSpecValue } = require('../utils');
-const { chatOnly } = require('../utils');
 const { saveSession } = require('../sessionStore');
-const { stepWhatNext } = require('./stepWhatNext');
 
-// Traite une réponse utilisateur pour une spec donnée, déjà jugée invalide
+// Traite une réponse utilisateur pour une spec donnée, déjà jugée valide ou non
 async function stepHandleSpecAnswer(context, spec, isValid) {
-    const { session, senderId, message } = context;
+    const { session, message } = context;
 
     if (isValid) {
         setSpecValue(session, spec, message, "runDirector/valid");
         saveSession(context);
-        const continued = await stepWhatNext(context, spec);
-
-        if (!continued) {
-            context.gptAllowed = true;
-            await chatOnly(senderId, message, session.language || "fr");
-            console.log('[DIRECTOR] Fin : fin de parcours après stepWhatNext');
-        } else {
-            console.log('[DIRECTOR] Fin : réponse valide traitée normalement');
-        }
-
         return true;
     }
 
@@ -39,10 +27,7 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
     context.deferSpec = true;
     context.gptAllowed = true;
     saveSession(context);
-    await chatOnly(senderId, message, session.language || "fr");
-    await stepWhatNext(context, spec);
-    console.log('[DIRECTOR !isValid] Fin : réponse invalide, relance via GPT + stepWhatNext');
     return true;
 }
 
-module.exports =  stepHandleSpecAnswer ;
+module.exports = stepHandleSpecAnswer;

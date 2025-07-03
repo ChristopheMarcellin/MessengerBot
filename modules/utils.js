@@ -83,6 +83,7 @@ function getNextSpec(session) {
 
     console.warn('[getNextSpec] ⚠️ Specs terminées mais certaines non posées → incohérence');
     return 'none';
+
 }
 
 function getCurrentSpec(session) {
