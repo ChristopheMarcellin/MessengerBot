@@ -27,7 +27,9 @@ async function runDirector(context) {
 
     if (nextSpec === null) {
         // Appel du résumé seulement si on n'est pas encore en mode chat
+        console.log("CM la nextSpec est null")
         if (session.mode !== "chat") {
+            console.log("on appelle le summary")
             await stepSummarizeAndConfirm(context);
             return true; // ⛔ on stoppe ici pour éviter GPT sur ce message
         }
@@ -37,7 +39,7 @@ async function runDirector(context) {
         await chatOnly(senderId, message, session.language || "fr");
         return true;
     }
-
+    console.log(`CM la next spec n'est pas null, voici sa valeur "${nextSpec}"_ = _"${message}"_`)
       
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
     if (nextSpec === "projectType") {

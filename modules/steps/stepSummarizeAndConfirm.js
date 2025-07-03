@@ -6,6 +6,7 @@ async function stepSummarizeAndConfirm(context) {
     const lang = session.language || 'fr';
 
     const recap = buildSpecSummary(session, lang);
+    console.log("cm on sort de build summary")
     await sendMessage(senderId, recap);
 
     session.mode = "chat";

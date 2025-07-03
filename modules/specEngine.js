@@ -89,6 +89,7 @@ function getDisplayValue(field, value, lang = "fr") {
 
 function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
+    console.log("CM on entre dans specSummary")
     const summaryHeader = lang === "fr"
         ? "Voici un petit résumé des informations que vous nous avez transmises:  \n"
         : "Here is a short summary of the information you provided:   \n";
