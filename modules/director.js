@@ -15,6 +15,7 @@ async function runDirector(context) {
     const session = context.session;
 
     if (!isReady) {
+        console.log('[DIRECTOR] is not ready to continue')
         return false;
     }
 

@@ -11,11 +11,10 @@ async function stepInitializeSession(context) {
     }
 
     const isEndSession = message.trim().toLowerCase() === 'end session';
-    let session = getSession(senderId);
 
     if (isEndSession || !session) {
         session = resetSession(context);
-        console.log(`[INIT] Session ${isEndSession ? 'réinitialisée (end session)' : 'créée car absente'}`);
+        console.log(`[INIT] Session ${isEndSession ? 'réinitialisée par (end session)' : 'créée car absente'}`);
     }
 
     // 🧠 Affectation obligatoire avant traitement
@@ -34,7 +33,7 @@ async function stepInitializeSession(context) {
 
     // 🧱 Initialisation de base
     session.ProjectDate ??= new Date().toISOString();
-    session.questionCount ??= 1;
+    session.questionCount ??= 1;//le nombre de fois qu'on repose la question
     session.maxQuestions ??= 40;
     session.askedSpecs ??= {};
     session.specValues ??= {};
