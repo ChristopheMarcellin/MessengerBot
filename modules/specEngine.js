@@ -68,6 +68,12 @@ function getDisplayValue(field, value, lang = "fr") {
             : `Region: ${value}`;
     }
 
+    if (field === "expectations") {
+        return lang === "fr"
+            ? `Autres spécifications : ${value}`
+            : `Other specifications: ${value}`;
+    }
+
     if (field === "firstName") {
         return lang === "fr" ? `Prénom : ${value}` : `First name: ${value}`;
     }
@@ -192,8 +198,12 @@ function isValidAnswer(message, projectType, field) {
         console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_`);
         return isValid;
     }
+    // 🎯 10. Expectations
+    if (field === "expectations") {
+        return isValid; // tout est accepté sans validation
+    }
 
-    // 🎯 9. Fallback sur displayMap
+    // 🎯 11. Fallback sur displayMap
     const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
     const map = displayMap?.[field]?.[lang];
     const isValid = map ? Object.keys(map).includes(input) : true;

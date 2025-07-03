@@ -70,6 +70,10 @@ module.exports = {
             1: "Yes, private parking"
         }
     },
+    expectations: {
+        fr: {},
+        en: {}
+    },
 
     wantsContact: {
     fr: {

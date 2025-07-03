@@ -68,10 +68,18 @@ const questions = {
     E: {},
 
     generic: {
+
+        expectations: {
+            fr: "Vous pouvez énumérer à la suite d'autres spécifications en précisant ce qui est facultatif ou incontournable ? ",
+            en: "You may list next any other specifications, indicating which ones are optional and which are essential.",
+        },
+
         wantsContact: {
             fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte ? (1-oui, 2-non)",
             en: "Would you like someone from our team to contact you? (1-yes, 2-no)",
         },
+
+
         firstName: {
             fr: "Quel est votre prénom SVP ?",
             en: "What is your first name please ?",
