@@ -70,8 +70,8 @@ const questions = {
     generic: {
 
         expectations: {
-            fr: "Vous pouvez énumérer à la suite d'autres spécifications en précisant ce qui est facultatif ou incontournable ? ",
-            en: "You may list next any other specifications, indicating which ones are optional and which are essential.",
+            fr: "Laisser savoir si vous avez d'autres attentes :-) en précisant ce qui est un souhait ou un incontournable, par exemple: piscine creusée (incontournable), foyer (souhaitable)? ",
+            en: "If you have other specifications, list them next and mention if is a nice to have or a must, for example: inground pool (must), fireplace(nth).",
         },
 
         wantsContact: {
