@@ -16,35 +16,36 @@ function traceCaller(label) {
 
 function getNextSpec(session) {
     const { projectType, specValues = {}, askedSpecs = {} } = session;
-    const puValue = specValues.propertyUsage;
+    const propertyUsage = specValues.propertyUsage;
 
     // 🧩 LOGS DIAGNOSTIQUES
-    console.log(`[getNextSpec] État initial → projectType="${projectType}", propertyUsage="${puValue}"`);
+    console.log(`[getNextSpec] État initial → projectType="${projectType}", propertyUsage="${propertyUsage}"`);
     console.log(`[getNextSpec] specValues =`, JSON.stringify(specValues));
     console.log(`[getNextSpec] askedSpecs =`, JSON.stringify(askedSpecs));
-
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
 
     // Bloc 0 : refus explicite
-    if (projectType === 'E' || puValue === 'E') return null;
+    if (projectType === 'E' || propertyUsage === 'E') return null;
 
-    if (puValue === '?' || puValue === undefined) return 'propertyUsage';
+    if (propertyUsage === '?' || propertyUsage === undefined) return 'propertyUsage';
 
     // Bloc 2 : specs spécifiques
     const typeBlock = questions[projectType];
     if (!typeBlock || typeof typeBlock !== 'object') {
         console.warn(`[getNextSpec] ❌ Aucune spec définie pour projectType="${projectType}"`);
-        return 'none'; // ou null selon stratégie
+        return 'none';
     }
     console.log(`[getNextSpec] ✅ Champs spécifiques pour ${projectType} =`, Object.keys(typeBlock));
 
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
     for (const field of Object.keys(typeBlock)) {
         console.log(`[getNextSpec DEBUG] Spéc = ${field} → ${specValues[field]}`);
-        if (puValue === 'income' && skipIfIncome.includes(field)) continue;
-        if (specValues[field] === '?') return field;
+        if (propertyUsage === 'income' && skipIfIncome.includes(field)) continue;
+        if (specValues[field] === '?' || specValues[field] === undefined || specValues[field] === null) {
+            return field;
+        }
     }
 
     // Bloc 3 : specs génériques
@@ -54,12 +55,34 @@ function getNextSpec(session) {
     } else {
         console.log(`[getNextSpec] ✅ Champs génériques =`, Object.keys(genericBlock));
         for (const field of Object.keys(genericBlock)) {
-            if (specValues[field] === '?' || specValues[field] === undefined) return field;
+            if (
+                specValues[field] === '?' ||
+                specValues[field] === undefined ||
+                specValues[field] === null
+            ) {
+                return field;
+            }
         }
     }
 
-    // Bloc 4 : tout est rempli
-    return "summary";
+    // Bloc 4 : tout est rempli ou refusé → on vérifie que toutes les specs ont été posées
+    const allFields = [
+        ...Object.keys(typeBlock || {}),
+        ...Object.keys(genericBlock || {})
+    ];
+
+    const done = allFields.every(field =>
+        askedSpecs[field] === true &&
+        specValues[field] !== null
+    );
+
+    if (done) {
+        console.log('[getNextSpec] ✅ Toutes les specs ont été posées et ont une valeur définie (même "?" ou "E")');
+        return null;
+    }
+
+    console.warn('[getNextSpec] ⚠️ Specs terminées mais certaines non posées → incohérence');
+    return 'none';
 }
 
 function getCurrentSpec(session) {
