@@ -26,17 +26,17 @@ async function runDirector(context) {
 
 
     if (nextSpec === null) {
+        // Appel du résumé seulement si on n'est pas encore en mode chat
         if (session.mode !== "chat") {
             await stepSummarizeAndConfirm(context);
-        } else {
-            console.log('[DIRECTOR] ℹ️ Session déjà en mode chat — aucune action');
+            return true; // ⛔ on stoppe ici pour éviter GPT sur ce message
         }
 
+        // Si déjà en mode chat, alors on traite le message avec GPT
         context.gptAllowed = true;
         await chatOnly(senderId, message, session.language || "fr");
         return true;
     }
-
 
       
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
