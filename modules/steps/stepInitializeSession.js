@@ -15,10 +15,17 @@ async function stepInitializeSession(context) {
 
     if (isEndSession) {
         session = resetSession(context);
+        session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        context.session = session;
         console.log('[INIT] Session réinitialisée par (end session)');
+        return false;
+
     } else if (!session) {
         session = resetSession(context);
+        session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        context.session = session;
         console.log('[INIT] Session créée car absente');
+        return false;
     }
 
     // 🧠 Affectation obligatoire avant traitement

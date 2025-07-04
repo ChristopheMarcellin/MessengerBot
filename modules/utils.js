@@ -7,33 +7,60 @@ const { questions } = require('./questions');
 
 
 const faqMap = {
-    fr: {
-        "heures d'ouverture et d'affaires": "Nous sommes ouverts du lundi au vendredi, de 9h à 17h.",
-        "consultations gratuites": "Oui, la première consultation est gratuite, incluant l'estimation.",
-        "location ou louer": "Oui, nous pouvons vous accompagner pour trouver un locataire",
-        "commercial": "Oui, nous sommes accrédités tant côté, commercial que résidentiel",
-        "fonctionnement de l'estimation": "Nous possédons de nombreuses statistiques pour vous aider à établir un prix sur une base de comparables",
-        "quel est votre territoire ou votre secteur d'activité": "Nous sommes très actifs dans les sectueurs du Vieux Montréal, l'Ile des Soeurs, Griffintown et et Saint-Lambert",
-
-    },
-    en: {
-        "opening hours": "We are open Monday to Friday, from 9am to 5pm.",
-        "free consultations": "Yes, the first consultation is free, including the property evaluation.",
-        "rental or rent": "Yes, we can assist you in finding a tenant.",
-        "commercial": "Yes, we are accredited for both commercial and residential real estate.",
-        "how the evaluation works": "We use extensive statistics to help you establish a price based on comparable properties.",
-        "what is your territory or service area": "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
-    }
+    fr: [
+        {
+            keywords: ["heures d'ouverture", "heures d'affaires", "horaire", "ouvert"],
+            response: "Nous sommes ouverts du lundi au vendredi, de 9h à 17h."
+        },
+        {
+            keywords: ["consultation gratuite", "consultations gratuites"],
+            response: "Oui, la première consultation est gratuite, incluant l'estimation."
+        },
+        {
+            keywords: ["location", "louer"],
+            response: "Oui, nous pouvons vous accompagner pour trouver un locataire."
+        },
+        {
+            keywords: ["commercial"],
+            response: "Oui, nous sommes accrédités tant côté, commercial que résidentiel."
+        },
+        {
+            keywords: ["estimation", "comment estimer", "évaluation", "prix comparable"],
+            response: "Nous possédons de nombreuses statistiques pour vous aider à établir un prix sur une base de comparables."
+        },
+        {
+            keywords: ["territoire", "secteur d'activité", "secteur", "zone de service"],
+            response: "Nous sommes très actifs dans les secteurs du Vieux Montréal, l'Ile des Soeurs, Griffintown et Saint-Lambert."
+        }
+    ],
+    en: [
+        {
+            keywords: ["opening hours", "business hours", "schedule", "open"],
+            response: "We are open Monday to Friday, from 9am to 5pm."
+        },
+        {
+            keywords: ["free consultation", "free consultations"],
+            response: "Yes, the first consultation is free, including the property evaluation."
+        },
+        {
+            keywords: ["rental", "rent"],
+            response: "Yes, we can assist you in finding a tenant."
+        },
+        {
+            keywords: ["commercial"],
+            response: "Yes, we are accredited for both commercial and residential real estate."
+        },
+        {
+            keywords: ["evaluation", "estimate", "how does pricing work"],
+            response: "We use extensive statistics to help you establish a price based on comparable properties."
+        },
+        {
+            keywords: ["territory", "service area", "coverage", "sector"],
+            response: "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
+        }
+    ]
 };
 
-
-function getFAQResponse(message = "", lang = "fr") {
-    return (
-        matchFAQ(message, lang) ||
-        (lang !== "fr" && matchFAQ(message, "fr")) || // fallback français
-        null
-    );
-}
 
 function normalize(text) {
     return text
@@ -46,21 +73,19 @@ function normalize(text) {
 
 function matchFAQ(message, lang) {
     const cleaned = normalize(message);
-    const langFaq = faqMap[lang] || {};
+    const faqList = faqMap[lang] || [];
 
-    for (const key in langFaq) {
-        const keywords = key.split(/\s+ou\s+|,/); // supporte "ou" et ","
-        for (const word of keywords) {
-            if (cleaned.includes(normalize(word))) {
-                console.log(`[FAQ] Match trouvé → "${key}" (${lang})`);
-                return langFaq[key];
+    for (const entry of faqList) {
+        for (const keyword of entry.keywords) {
+            if (cleaned.includes(normalize(keyword))) {
+                console.log(`[FAQ] Match trouvé → "${keyword}" (${lang})`);
+                return entry.response;
             }
         }
     }
 
     return null;
 }
-
 
 //gpt classifies project
 
