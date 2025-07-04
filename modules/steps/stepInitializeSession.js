@@ -17,6 +17,10 @@ async function stepInitializeSession(context) {
         session = resetSession(context);
         session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         context.session = session;
+
+        // DEBUG VERROU
+        console.log("[DEBUG POST RESET] Session = ", JSON.stringify(session, null, 2));
+        console.log("[DEBUG NEXT SPEC] getNextSpec = ", getNextSpec(session));
         console.log('[INIT] Session réinitialisée par (end session)');
         return false;
 
