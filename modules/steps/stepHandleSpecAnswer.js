@@ -5,6 +5,11 @@ const { saveSession } = require('../sessionStore');
 async function stepHandleSpecAnswer(context, spec, isValid) {
     const { session, message } = context;
 
+    if (!spec || spec === "null") {
+        console.warn(`[BLOCKED] Réception d'une spec invalide: "${spec}" — message ignoré.`);
+        return false;
+    }
+
     if (isValid) {
         setSpecValue(session, spec, message, "runDirector/valid");
         saveSession(context);
