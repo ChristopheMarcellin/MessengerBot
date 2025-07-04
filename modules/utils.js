@@ -8,7 +8,7 @@ const { questions } = require('./questions');
 
 const faqMap = {
     fr: {
-        "heures d'ouverture": "Nous sommes ouverts du lundi au vendredi, de 9h à 17h.",
+        "heures d'ouverture et d'affaires": "Nous sommes ouverts du lundi au vendredi, de 9h à 17h.",
         "consultations gratuites": "Oui, la première consultation est gratuite, incluant l'estimation.",
         "location ou louer": "Oui, nous pouvons vous accompagner pour trouver un locataire",
         "commercial": "Oui, nous sommes accrédités tant côté, commercial que résidentiel",
@@ -26,15 +26,135 @@ const faqMap = {
     }
 };
 
+
 function getFAQResponse(message = "", lang = "fr") {
-    const cleaned = message.toLowerCase();
+    return (
+        matchFAQ(message, lang) ||
+        (lang !== "fr" && matchFAQ(message, "fr")) || // fallback français
+        null
+    );
+}
+
+function normalize(text) {
+    return text
+        .toLowerCase()
+        .normalize('NFD')                      // Décompose les caractères accentués
+        .replace(/[\u0300-\u036f]/g, '')       // Supprime les accents
+        .replace(/[’']/g, "'")                 // Standardise les apostrophes droites et typographiques
+        .trim();                               // Supprime les espaces superflus en début/fin
+}
+
+function matchFAQ(message, lang) {
+    const cleaned = normalize(message);
     const langFaq = faqMap[lang] || {};
 
     for (const key in langFaq) {
-        if (cleaned.includes(key)) return langFaq[key];
+        const keywords = key.split(/\s+ou\s+|,/); // supporte "ou" et ","
+        for (const word of keywords) {
+            if (cleaned.includes(normalize(word))) {
+                console.log(`[FAQ] Match trouvé → "${key}" (${lang})`);
+                return langFaq[key];
+            }
+        }
     }
+
     return null;
 }
+
+
+//gpt classifies project
+
+async function gptClassifyProject(message, language = "fr") {
+    const prompt = language === "fr"
+        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre\nNe commente pas, réponds seulement par un chiffre.`
+        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:\n1 → buy\n2 → sell\n3 → rent\n4 → other\nReply with a single number only.`;
+
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 10,
+            temperature: 0
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+
+        const raw = response.data.choices?.[0]?.message?.content?.trim();
+        const classification = raw?.match(/^[1-4]/)?.[0] || "5"; // défaut: 5 → autre → ?
+
+        const map = getProjectTypeFromNumber();
+        return map[classification];
+
+    } catch (err) {
+        console.warn(`[classifyProject] GPT error: ${err.message}`);
+        return "?";
+    }
+}
+
+async function chatOnly(senderId, message, lang = "fr") {
+    const faqReply = getFAQResponse(message, lang);
+    if (faqReply) {
+        console.log(`[CHAT] Réponse FAQ détectée → envoi direct`);
+        await sendMessage(senderId, faqReply);
+        return;
+    }
+
+    // 💬 Sinon, prompt GPT
+    const prompt = lang === "fr"
+        ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données: "${message}"`
+        : `You are a real estate professional always polite. React to this phrase without trying to interpret data: "${message}"`;
+
+    console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
+
+    try {
+        const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 200,
+            temperature: 0.6
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
+            }
+        });
+
+        const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+        const fallback = gptReply || (lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.");
+        await sendMessage(senderId, fallback);
+
+    } catch (err) {
+        console.error(`[chatOnly] Erreur GPT : ${err.message}`);
+        const fallback = lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.";
+        await sendMessage(senderId, fallback);
+    }
+}
+
+
+
+function detectLanguageFromText(text) {
+    if (typeof text !== "string" || text.trim() === "") return 'fr';
+
+    console.log("[LANG DETECT] Texte analysé :", text);
+
+    const isFrench =
+        /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||
+        /\b(le|la|est|une|bonjour|je|j’|ça|tu|vous|avec|maison|acheter|vendre|salut|allo|propriété)\b/i.test(text);
+
+    const detected = isFrench ? 'fr' : 'en';
+    console.log(`[LANG DETECT] Langue détectée : ${detected}`);
+
+    return detected;
+}
+
+
+
+
+
+
 function traceCaller(label) {
     const stack = new Error().stack;
     const line = stack.split('\n')[3] || 'inconnu';
@@ -230,94 +350,6 @@ function setSpecValue(session, key, value, caller = "unspecified") {
         .join(', ');
 
     console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
-}
-//gpt classifies project
-
-async function gptClassifyProject(message, language = "fr") {
-    const prompt = language === "fr"
-        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre\nNe commente pas, réponds seulement par un chiffre.`
-        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:\n1 → buy\n2 → sell\n3 → rent\n4 → other\nReply with a single number only.`;
-
-    try {
-        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 10,
-            temperature: 0
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-            }
-        });
-
-        const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const classification = raw?.match(/^[1-4]/)?.[0] || "5"; // défaut: 5 → autre → ?
-
-        const map = getProjectTypeFromNumber();
-        return map[classification];
-
-    } catch (err) {
-        console.warn(`[classifyProject] GPT error: ${err.message}`);
-        return "?";
-    }
-}
-
-
-async function chatOnly(senderId, message, lang = "fr") {
-    // 🧠 1. Tester d'abord les FAQ
-    const faqReply = getFAQResponse(message, lang);
-    if (faqReply) {
-        console.log(`[CHAT] Réponse FAQ détectée (${lang})`);
-        await sendMessage(senderId, faqReply);
-        return;
-    }
-
-    // 💬 2. Sinon traitement GPT
-    const prompt = lang === "fr"
-        ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données: "${message}"`
-        : `You are a real estate professional always polite. React to this phrase without trying to interpret data: "${message}"`;
-
-    console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
-
-    try {
-        const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 200,
-            temperature: 0.6
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
-            }
-        });
-
-        const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
-        const fallback = gptReply || (lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn’t understand.");
-        await sendMessage(senderId, fallback);
-
-    } catch (err) {
-        console.error(`[chatOnly] Erreur GPT : ${err.message}`);
-        const fallback = lang === "fr" ? "Désolé, je n'ai pas compris." : "Sorry, I didn’t understand.";
-        await sendMessage(senderId, fallback);
-    }
-}
-
-
-function detectLanguageFromText(text) {
-    if (typeof text !== "string" || text.trim() === "") return 'fr';
-
-    console.log("[LANG DETECT] Texte analysé :", text);
-
-    const isFrench =
-        /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||
-        /\b(le|la|est|une|bonjour|je|j’|ça|tu|vous|avec|maison|acheter|vendre|salut|allo|propriété)\b/i.test(text);
-
-    const detected = isFrench ? 'fr' : 'en';
-    console.log(`[LANG DETECT] Langue détectée : ${detected}`);
-
-    return detected;
 }
 
 function setAskedSpec(session, specKey, source = "manual") {
