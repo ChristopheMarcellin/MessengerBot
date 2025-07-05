@@ -102,6 +102,47 @@ const faqMap = {
 
 };
 
+async function classifyUserIntent(message, lang = 'fr') {
+    const prompt = lang === 'fr'
+        ? `L'utilisateur a posé la question suivante :\n"${message}"\n\n` +
+        `Tu dois classer cette question dans l'une des catégories suivantes :\n` +
+        `1 → faq (question simple à laquelle une réponse préécrite peut suffire)\n` +
+        `2 → technique (question immobilière nécessitant une réponse personnalisée ou une expertise)\n` +
+        `3 → autre (salutation, message sans importance, ou sujet hors contexte)\n\n` +
+        `Réponds uniquement par le chiffre correspondant. Ne donne aucune explication.`
+        : `The user asked the following question:\n"${message}"\n\n` +
+        `You must classify this question into one of the following categories:\n` +
+        `1 → faq (simple question with a fixed predefined answer)\n` +
+        `2 → technical (real estate question requiring reasoning or expertise)\n` +
+        `3 → other (greeting, irrelevant, or off-topic message)\n\n` +
+        `Reply only with the corresponding number. Do not explain.`
+
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4o',
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 5,
+            temperature: 0
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+
+        const raw = response.data.choices?.[0]?.message?.content?.trim();
+        const match = raw?.match(/^[1-3]/)?.[0];
+
+        console.log(`[INTENT] "${message}" classé → ${match}`);
+        return match || '3';
+
+    } catch (err) {
+        console.error(`[INTENT] Erreur GPT : ${err.message}`);
+        return '3'; // Fallback
+    }
+}
+
+
 
 function normalize(text) {
     return text
@@ -161,43 +202,58 @@ async function gptClassifyProject(message, language = "fr") {
 }
 
 async function chatOnly(senderId, message, lang = "fr") {
-    const faqReply = matchFAQ(message, lang);
-    if (faqReply) {
-        console.log(`[CHAT] Réponse FAQ détectée → envoi direct`);
-        await sendMessage(senderId, faqReply);
+    const intent = await classifyUserIntent(message, lang);
+
+    if (intent === '1') {
+        const faqReply = matchFAQ(message, lang);
+        if (faqReply) {
+            console.log(`[CHAT] FAQ confirmée par GPT → réponse prédéfinie`);
+            await sendMessage(senderId, faqReply);
+            return;
+        } else {
+            console.warn(`[CHAT] GPT pensait à une FAQ, mais aucune réponse n’a matché.`);
+        }
+    }
+
+    if (intent === '2') {
+        const prompt = lang === "fr"
+            ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données: "${message}"`
+            : `You are a real estate professional always polite. React to this phrase without trying to interpret data: "${message}"`;
+
+        console.log(`[GPT] Réponse libre → ${prompt}`);
+
+        try {
+            const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+                model: "gpt-4o",
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 200,
+                temperature: 0.6
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                }
+            });
+
+            const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+            const fallback = gptReply || (lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.");
+            await sendMessage(senderId, fallback);
+
+        } catch (err) {
+            console.error(`[chatOnly] GPT Error: ${err.message}`);
+            const fallback = lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.";
+            await sendMessage(senderId, fallback);
+        }
+
         return;
     }
 
-    // 💬 Sinon, prompt GPT
-    const prompt = lang === "fr"
-        ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données: "${message}"`
-        : `You are a real estate professional always polite. React to this phrase without trying to interpret data: "${message}"`;
-
-    console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
-
-    try {
-        const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 200,
-            temperature: 0.6
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
-            }
-        });
-
-        const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
-        const fallback = gptReply || (lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.");
-        await sendMessage(senderId, fallback);
-
-    } catch (err) {
-        console.error(`[chatOnly] Erreur GPT : ${err.message}`);
-        const fallback = lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.";
-        await sendMessage(senderId, fallback);
-    }
+    // Si la catégorie est "autre"
+    await sendMessage(senderId, lang === "fr"
+        ? "Je n’ai pas bien saisi, pouvez-vous préciser votre question ?"
+        : "I didn’t quite catch that. Could you please clarify?");
 }
+
 
 
 
