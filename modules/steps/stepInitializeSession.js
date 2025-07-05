@@ -1,4 +1,4 @@
-const { setProjectType, initializeSpecFields, detectLanguageFromText } = require('../utils');
+const { setProjectType, initializeSpecFields, detectLanguageFromText, getNextSpec } = require('../utils');
 const { getSession, saveSession, resetSession, logSessionState } = require('../sessionStore');
 
 async function stepInitializeSession(context) {
@@ -15,7 +15,7 @@ async function stepInitializeSession(context) {
 
     if (isEndSession) {
         session = resetSession(context);
-        session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+      //  session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         context.session = session;
 
         // DEBUG VERROU
