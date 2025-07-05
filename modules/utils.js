@@ -120,7 +120,7 @@ async function gptClassifyProject(message, language = "fr") {
 }
 
 async function chatOnly(senderId, message, lang = "fr") {
-    const faqReply = getFAQResponse(message, lang);
+    const faqReply = matchFAQ(message, lang);
     if (faqReply) {
         console.log(`[CHAT] Réponse FAQ détectée → envoi direct`);
         await sendMessage(senderId, faqReply);

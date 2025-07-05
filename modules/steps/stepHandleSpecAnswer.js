@@ -6,7 +6,13 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
     const { session, message } = context;
 
     if (!spec || spec === "null") {
-        console.warn(`[BLOCKED] Réception d'une spec invalide: "${spec}" — message ignoré.`);
+        // 🔁 Laisser passer si on est en mode libre (chat)
+        if (session?.mode === "chat") {
+            console.log(`[INFO] Spec "null" ignorée car en mode chat.`);
+            return true;  // autoriser le traitement libre
+        }
+
+        console.warn(`[sHSA BLOCKED] Réception d'une spec invalide: "${spec}" — message ignoré.`);
         return false;
     }
 
