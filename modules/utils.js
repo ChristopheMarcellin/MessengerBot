@@ -6,122 +6,69 @@ const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
 
 
-const faqMap = {
-    fr: [
-        {
-            keywords: ["heures d'ouverture", "heures d'affaires", "horaire", "ouvert"],
-            response: "Si vous désirez connaître nos heures de travail, sachez que nous sommes flexibles." +
-                      "N'hésitez pas à nous contacter pour en savoir davantage."
-        },
-        {
-            keywords: ["numero", "telephone", "courriel", "contact", "email", "contacter", "no", "adresse","situe", "site"],
-            response: "Pour nous joindre rapidement ou consulter nos offres, contacter le 514-231-6370 (Christophe Marcellin) ou le (514) 912-5343 (Carole Baillargeon), " +
-                      "par courriel christophe.marcellin@century21 carole.baillargeon@century21.ca, pour nos offres en ligne et notre site: www.carolebaillargeon.com" +
-                      "ou www.christophe-marcellin.c21.ca"
-             },
-        {
-            keywords: ["consultation", "consultations", "gratuit", "gratuite", "gratis", "estime", "evaluation", "estimation"],
-            response: "Nous pouvons vous aider à estimer votre bien sur une base de comparables." +
-                "La consultation est gratuite, et inclut l'estimation de votre bien."
-        },
-        {
-            keywords: ["location", "louer", "loyer"],
-            response: "Dans le domaine de la location, nous pouvons vous aider à promouvoir votre offre de location et trouver votre prochain locataire."
-        },
-        {
-            keywords: ["commercial"],
-            response: "Nous sommes accrédités pour vous aider tant côté commercial que résidentiel."
-        },
-        {
-            keywords: ["territoire", "secteur d'activité", "secteur", "territoires", "ville"],
-            response: "Nous sommes très actifs dans les secteurs du Vieux Montréal, l'Ile des Soeurs, Griffintown et Saint-Lambert."
-        },
-        {
-            keywords: ["carole", "baillargeon", "carole baillargeon"],
-            response: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix" +
-                "désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2024 et Prix Centurion 2003 à 2013, (2010 exclus) et membre du temple de la Renommée Canada 2007 "
-        },
-        {
-            keywords: ["christophe", "marcellin", "christophe marcellin"],
-            response: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre" +
-            "rapidement.  Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service."
-        },
-
-        {
-            keywords: ["equipe"],
-            response: "Carole et Christophe font équipe pour mieux vous servir, Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix" +
-            "Christophe met à votre service son expérience de courtier et 25 ans d'expérience dans les secteurs de la technologie pour vous aider à vendre rapidement ou acheter"
-        }
-    ],
-    en: [
-        {
-            keywords: ["opening hours", "business hours", "schedule", "open"],
-            response: "If you would like to know our working hours, please note that we are flexible. " +
-                "Feel free to contact us for more details."
-        },
-        {
-            keywords: ["number", "phone", "email", "contact", "reach", "no", "address", "located", "site"],
-            response: "To contact us quickly or browse our listings, call 514-231-6370 (Christophe Marcellin) or (514) 912-5343 (Carole Baillargeon), " +
-                "or email christophe.marcellin@century21 and carole.baillargeon@century21.ca. For our online offers and websites: www.carolebaillargeon.com " +
-                "or www.christophe-marcellin.c21.ca"
-        },
-        {
-            keywords: ["consultation", "free consultation", "gratis", "estimate", "evaluation", "pricing"],
-            response: "We can help you estimate your property based on comparable listings. " +
-                "The consultation is free and includes the full property evaluation."
-        },
-        {
-            keywords: ["rental", "rent", "tenant"],
-            response: "In rental services, we can help you market your property and find your next tenant."
-        },
-        {
-            keywords: ["commercial"],
-            response: "We are accredited to assist with both commercial and residential real estate."
-        },
-        {
-            keywords: ["territory", "sector", "coverage", "cities", "areas"],
-            response: "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
-        },
-        {
-            keywords: ["carole", "baillargeon", "carole baillargeon"],
-            response: "Carole has been a real estate broker for over 25 years and has won numerous awards. " +
-                "She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2024 and received the Centurion Award from 2003 to 2013 (except 2010), " +
-                "and is a member of the Century 21 Canada Hall of Fame since 2007."
-        },
-        {
-            keywords: ["christophe", "marcellin", "christophe marcellin"],
-            response: "Christophe has been a broker for 2 years and brings 25 years of technology experience to help his clients sell efficiently. " +
-                "This virtual assistant is a great example of technology working for you."
-        },
-        {
-            keywords: ["team", "duo", "partnership"],
-            response: "Carole and Christophe work together to better serve you. Carole brings over 25 years of brokerage experience and many awards, " +
-                "while Christophe offers his brokerage expertise combined with 25 years in tech to help you sell or buy quickly."
-        }
-    ]
-
+// ✅ Nouveau format centralisé de FAQ, indexé par catégorie
+const faqMapByKey = {
+    hours: {
+        fr: "Si vous désirez connaître nos heures de travail, sachez que nous sommes flexibles. N'hésitez pas à nous contacter pour en savoir davantage.",
+        en: "If you would like to know our working hours, please note that we are flexible. Feel free to contact us for more details."
+    },
+    contact: {
+        fr: "Pour nous joindre rapidement ou consulter nos offres, contacter le 514-231-6370 (Christophe Marcellin) ou le (514) 912-5343 (Carole Baillargeon), par courriel christophe.marcellin@century21 carole.baillargeon@century21.ca, pour nos offres en ligne et notre site: www.carolebaillargeon.com ou www.christophe-marcellin.c21.ca",
+        en: "To contact us quickly or browse our listings, call 514-231-6370 (Christophe Marcellin) or (514) 912-5343 (Carole Baillargeon), or email christophe.marcellin@century21 and carole.baillargeon@century21.ca. For our online offers and websites: www.carolebaillargeon.com or www.christophe-marcellin.c21.ca"
+    },
+    consultation: {
+        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.",
+        en: "We can help you estimate your property based on comparable listings. The consultation is free and includes the full property evaluation."
+    },
+    rental: {
+        fr: "Dans le domaine de la location, nous pouvons vous aider à promouvoir votre offre de location et trouver votre prochain locataire.",
+        en: "In rental services, we can help you market your property and find your next tenant."
+    },
+    commercial: {
+        fr: "Nous sommes accrédités pour vous aider tant côté commercial que résidentiel.",
+        en: "We are accredited to assist with both commercial and residential real estate."
+    },
+    territory: {
+        fr: "Nous sommes très actifs dans les secteurs du Vieux Montréal, l'Ile des Soeurs, Griffintown et Saint-Lambert.",
+        en: "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
+    },
+    carole: {
+        fr: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix. Désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2024 et Prix Centurion 2003 à 2013 (2010 exclus) et membre du temple de la Renommée Canada 2007.",
+        en: "Carole has been a real estate broker for over 25 years and has won numerous awards. She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2024 and received the Centurion Award from 2003 to 2013 (except 2010), and is a member of the Century 21 Canada Hall of Fame since 2007."
+    },
+    christophe: {
+        fr: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre rapidement. Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service.",
+        en: "Christophe has been a broker for 2 years and brings 25 years of technology experience to help his clients sell efficiently. This virtual assistant is a great example of technology working for you."
+    },
+    team: {
+        fr: "Carole et Christophe font équipe pour mieux vous servir. Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix. Christophe met à votre service son expérience de courtier et 25 ans d'expérience en technologie pour vous aider à vendre rapidement ou acheter.",
+        en: "Carole and Christophe work together to better serve you. Carole brings over 25 years of brokerage experience and many awards, while Christophe offers his brokerage expertise combined with 25 years in tech to help you sell or buy quickly."
+    }
 };
 
-async function classifyUserIntent(message, lang = 'fr') {
+async function classifyFAQCategory(message, lang = 'fr') {
+    const categories = [
+        'hours', 'contact', 'consultation', 'rental',
+        'commercial', 'territory', 'carole', 'christophe', 'team'
+    ];
+
     const prompt = lang === 'fr'
-        ? `L'utilisateur a posé la question suivante :\n"${message}"\n\n` +
-        `Tu dois classer cette question dans l'une des catégories suivantes :\n` +
-        `1 → faq (question simple à laquelle une réponse préécrite peut suffire)\n` +
-        `2 → technique (question immobilière nécessitant une réponse personnalisée ou une expertise)\n` +
-        `3 → autre (salutation, message sans importance, ou sujet hors contexte)\n\n` +
-        `Réponds uniquement par le chiffre correspondant. Ne donne aucune explication.`
-        : `The user asked the following question:\n"${message}"\n\n` +
-        `You must classify this question into one of the following categories:\n` +
-        `1 → faq (simple question with a fixed predefined answer)\n` +
-        `2 → technical (real estate question requiring reasoning or expertise)\n` +
-        `3 → other (greeting, irrelevant, or off-topic message)\n\n` +
-        `Reply only with the corresponding number. Do not explain.`
+        ? `L'utilisateur pose cette question :\n"${message}"\n\n` +
+        `Voici les catégories disponibles :\n- ${categories.join('\n- ')}\n\n` +
+        `Si cette question correspond clairement à l'une de ces catégories, réponds par : faq:<catégorie>\n` +
+        `Sinon, réponds par : technique ou autre\n\n` +
+        `Réponds uniquement par un mot : faq:carole ou technique ou autre.`
+        : `The user asked:\n"${message}"\n\n` +
+        `Here are the available categories:\n- ${categories.join('\n- ')}\n\n` +
+        `If this question clearly fits one of these, reply with: faq:<category>\n` +
+        `Otherwise, reply with: technical or other\n\n` +
+        `Respond with a single word like: faq:contact or technical or other.`
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-4o',
             messages: [{ role: 'user', content: prompt }],
-            max_tokens: 5,
+            max_tokens: 10,
             temperature: 0
         }, {
             headers: {
@@ -131,43 +78,18 @@ async function classifyUserIntent(message, lang = 'fr') {
         });
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const match = raw?.match(/^[1-3]/)?.[0];
+        const result = raw?.toLowerCase();
 
-        console.log(`[INTENT] "${message}" classé → ${match}`);
-        return match || '3';
+        console.log(`[FAQ CLASSIFIER] Question : "${message}" → Résultat GPT : ${result}`);
+        return result || 'other';
 
     } catch (err) {
-        console.error(`[INTENT] Erreur GPT : ${err.message}`);
-        return '3'; // Fallback
+        console.error(`[FAQ CLASSIFIER] Erreur GPT : ${err.message}`);
+        return 'other';
     }
 }
 
 
-
-function normalize(text) {
-    return text
-        .toLowerCase()
-        .normalize('NFD')                      // Décompose les caractères accentués
-        .replace(/[\u0300-\u036f]/g, '')       // Supprime les accents
-        .replace(/[’']/g, "'")                 // Standardise les apostrophes droites et typographiques
-        .trim();                               // Supprime les espaces superflus en début/fin
-}
-
-function matchFAQ(message, lang) {
-    const cleaned = normalize(message);
-    const faqList = faqMap[lang] || [];
-
-    for (const entry of faqList) {
-        for (const keyword of entry.keywords) {
-            if (cleaned.includes(normalize(keyword))) {
-                console.log(`[FAQ] Match trouvé → "${keyword}" (${lang})`);
-                return entry.response;
-            }
-        }
-    }
-
-    return null;
-}
 
 //gpt classifies project
 
@@ -201,29 +123,39 @@ async function gptClassifyProject(message, language = "fr") {
     }
 }
 
-async function chatOnly(senderId, message, lang = "fr") {
-    const intent = await classifyUserIntent(message, lang);
 
-    if (intent === '1') {
-        const faqReply = matchFAQ(message, lang);
-        if (faqReply) {
-            console.log(`[CHAT] FAQ confirmée par GPT → réponse prédéfinie`);
-            await sendMessage(senderId, faqReply);
-            return;
+
+async function chatOnly(senderId, message, lang = 'fr') {
+    const classification = await classifyFAQCategory(message, lang);
+
+    // 🎯 Cas 1 : GPT a détecté une FAQ
+    if (classification.startsWith('faq:')) {
+        const key = classification.split(':')[1];
+        const response = faqMapByKey?.[key]?.[lang];
+
+        if (response) {
+            console.log(`[CHAT] FAQ détectée par GPT → catégorie "${key}"`);
+            await sendMessage(senderId, response);
         } else {
-            console.warn(`[CHAT] GPT pensait à une FAQ, mais aucune réponse n’a matché.`);
+            console.warn(`[CHAT] Clé FAQ "${key}" inconnue ou réponse manquante.`);
+            await sendMessage(senderId, lang === 'fr'
+                ? "Je n’ai pas trouvé de réponse à cette question pour le moment."
+                : "I couldn't find an answer to that at the moment.");
         }
+
+        return;
     }
 
-    if (intent === '2') {
+    // 🎯 Cas 2 : question technique → GPT répond
+    if (classification === 'technical') {
         const prompt = lang === "fr"
-            ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données: "${message}"`
-            : `You are a real estate professional always polite. React to this phrase without trying to interpret data: "${message}"`;
+            ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données : "${message}"`
+            : `You are a real estate professional, always polite. React to this phrase without interpreting the data: "${message}"`;
 
-        console.log(`[GPT] Réponse libre → ${prompt}`);
+        console.log(`[GPT] Réponse libre technique → ${prompt}`);
 
         try {
-            const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            const response = await axios.post('https://api.openai.com/v1/chat/completions', {
                 model: "gpt-4o",
                 messages: [{ role: "user", content: prompt }],
                 max_tokens: 200,
@@ -235,12 +167,12 @@ async function chatOnly(senderId, message, lang = "fr") {
                 }
             });
 
-            const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+            const gptReply = response.data.choices?.[0]?.message?.content?.trim();
             const fallback = gptReply || (lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.");
             await sendMessage(senderId, fallback);
 
         } catch (err) {
-            console.error(`[chatOnly] GPT Error: ${err.message}`);
+            console.error(`[chatOnly] Erreur GPT : ${err.message}`);
             const fallback = lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.";
             await sendMessage(senderId, fallback);
         }
@@ -248,12 +180,15 @@ async function chatOnly(senderId, message, lang = "fr") {
         return;
     }
 
-    // Si la catégorie est "autre"
-    await sendMessage(senderId, lang === "fr"
+    // 🎯 Cas 3 : message hors sujet
+    console.log(`[CHAT] Message classé comme "autre" → message de relance`);
+    await sendMessage(senderId, lang === 'fr'
         ? "Je n’ai pas bien saisi, pouvez-vous préciser votre question ?"
         : "I didn’t quite catch that. Could you please clarify?");
-}
 
+    // 🔁 Ensuite on bascule en mode structuré comme avant
+    context.session.mode = "spec";
+}
 
 
 
