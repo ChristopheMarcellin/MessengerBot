@@ -10,18 +10,18 @@ const faqMap = {
     fr: [
         {
             keywords: ["heures d'ouverture", "heures d'affaires", "horaire", "ouvert"],
-            response: "Si vous désirez connaître nos heures de travail, sachez que nous sommes flexibles." &&
+            response: "Si vous désirez connaître nos heures de travail, sachez que nous sommes flexibles." +
                       "N'hésitez pas à nous contacter pour en savoir davantage."
         },
         {
             keywords: ["numero", "telephone", "courriel", "contact", "email", "contacter", "no", "adresse","situe", "site"],
-            response: "Pour nous joindre rapidement ou consulter nos offres, contacter le 514-231-6370 (Christophe Marcellin) ou le (514) 912-5343 (Carole Baillargeon), " &&
-                      "par courriel christophe.marcellin@century21 carole.baillargeon@century21.ca, pour nos offres en ligne et notre site: www.carolebaillargeon.com" &&
+            response: "Pour nous joindre rapidement ou consulter nos offres, contacter le 514-231-6370 (Christophe Marcellin) ou le (514) 912-5343 (Carole Baillargeon), " +
+                      "par courriel christophe.marcellin@century21 carole.baillargeon@century21.ca, pour nos offres en ligne et notre site: www.carolebaillargeon.com" +
                       "ou www.christophe-marcellin.c21.ca"
              },
         {
             keywords: ["consultation", "consultations", "gratuit", "gratuite", "gratis", "estime", "evaluation", "estimation"],
-            response: "Nous pouvons vous aider à estimer votre bien sur une base de comparables." &&
+            response: "Nous pouvons vous aider à estimer votre bien sur une base de comparables." +
                 "La consultation est gratuite, et inclut l'estimation de votre bien."
         },
         {
@@ -38,47 +38,68 @@ const faqMap = {
         },
         {
             keywords: ["carole", "baillargeon", "carole baillargeon"],
-            response: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix" &&
+            response: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix" +
                 "désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2024 et Prix Centurion 2003 à 2013, (2010 exclus) et membre du temple de la Renommée Canada 2007 "
         },
         {
             keywords: ["christophe", "marcellin", "christophe marcellin"],
-            response: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre" &&
+            response: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre" +
             "rapidement.  Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service."
         },
 
         {
             keywords: ["equipe"],
-            response: "Carole et Christophe font équipe pour mieux vous servir, Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix" &&
+            response: "Carole et Christophe font équipe pour mieux vous servir, Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix" +
             "Christophe met à votre service son expérience de courtier et 25 ans d'expérience dans les secteurs de la technologie pour vous aider à vendre rapidement ou acheter"
         }
     ],
     en: [
         {
             keywords: ["opening hours", "business hours", "schedule", "open"],
-            response: "We are open Monday to Friday, from 9am to 5pm."
+            response: "If you would like to know our working hours, please note that we are flexible. " +
+                "Feel free to contact us for more details."
         },
         {
-            keywords: ["free consultation", "free consultations"],
-            response: "Yes, the first consultation is free, including the property evaluation."
+            keywords: ["number", "phone", "email", "contact", "reach", "no", "address", "located", "site"],
+            response: "To contact us quickly or browse our listings, call 514-231-6370 (Christophe Marcellin) or (514) 912-5343 (Carole Baillargeon), " +
+                "or email christophe.marcellin@century21 and carole.baillargeon@century21.ca. For our online offers and websites: www.carolebaillargeon.com " +
+                "or www.christophe-marcellin.c21.ca"
         },
         {
-            keywords: ["rental", "rent"],
-            response: "Yes, we can assist you in finding a tenant."
+            keywords: ["consultation", "free consultation", "gratis", "estimate", "evaluation", "pricing"],
+            response: "We can help you estimate your property based on comparable listings. " +
+                "The consultation is free and includes the full property evaluation."
+        },
+        {
+            keywords: ["rental", "rent", "tenant"],
+            response: "In rental services, we can help you market your property and find your next tenant."
         },
         {
             keywords: ["commercial"],
-            response: "Yes, we are accredited for both commercial and residential real estate."
+            response: "We are accredited to assist with both commercial and residential real estate."
         },
         {
-            keywords: ["evaluation", "estimate", "how does pricing work"],
-            response: "We use extensive statistics to help you establish a price based on comparable properties."
-        },
-        {
-            keywords: ["territory", "service area", "coverage", "sector"],
+            keywords: ["territory", "sector", "coverage", "cities", "areas"],
             response: "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
+        },
+        {
+            keywords: ["carole", "baillargeon", "carole baillargeon"],
+            response: "Carole has been a real estate broker for over 25 years and has won numerous awards. " +
+                "She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2024 and received the Centurion Award from 2003 to 2013 (except 2010), " +
+                "and is a member of the Century 21 Canada Hall of Fame since 2007."
+        },
+        {
+            keywords: ["christophe", "marcellin", "christophe marcellin"],
+            response: "Christophe has been a broker for 2 years and brings 25 years of technology experience to help his clients sell efficiently. " +
+                "This virtual assistant is a great example of technology working for you."
+        },
+        {
+            keywords: ["team", "duo", "partnership"],
+            response: "Carole and Christophe work together to better serve you. Carole brings over 25 years of brokerage experience and many awards, " +
+                "while Christophe offers his brokerage expertise combined with 25 years in tech to help you sell or buy quickly."
         }
     ]
+
 };
 
 
