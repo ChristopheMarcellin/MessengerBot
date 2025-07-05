@@ -53,16 +53,20 @@ async function classifyFAQCategory(message, lang = 'fr') {
     ];
 
     const prompt = lang === 'fr'
-        ? `L'utilisateur pose cette question :\n"${message}"\n\n` +
+        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial. ` +
+        `Tu dois uniquement traiter des questions liées à l'immobilier ou aux services offerts par notre équipe. ` +
+        `Voici la question de l'utilisateur :\n"${message}"\n\n` +
         `Voici les catégories disponibles :\n- ${categories.join('\n- ')}\n\n` +
         `Si cette question correspond clairement à l'une de ces catégories, réponds par : faq:<catégorie>\n` +
         `Sinon, réponds par : technique ou autre\n\n` +
         `Réponds uniquement par un mot : faq:carole ou technique ou autre.`
-        : `The user asked:\n"${message}"\n\n` +
+        : `You are a virtual assistant specialized in residential and commercial real estate. ` +
+        `You should only handle questions related to real estate or services offered by our team. ` +
+        `Here is the user’s question:\n"${message}"\n\n` +
         `Here are the available categories:\n- ${categories.join('\n- ')}\n\n` +
-        `If this question clearly fits one of these, reply with: faq:<category>\n` +
+        `If the question clearly fits one of these, reply with: faq:<category>\n` +
         `Otherwise, reply with: technical or other\n\n` +
-        `Respond with a single word like: faq:contact or technical or other.`
+        `Respond with a single word like: faq:contact or technical or other.`;
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -124,38 +128,30 @@ async function gptClassifyProject(message, language = "fr") {
 }
 
 
+async function chatOnly(senderId, message, lang = "fr") {
+    const intent = await classifyFAQCategory(message, lang);
 
-async function chatOnly(senderId, message, lang = 'fr') {
-    const classification = await classifyFAQCategory(message, lang);
-
-    // 🎯 Cas 1 : GPT a détecté une FAQ
-    if (classification.startsWith('faq:')) {
-        const key = classification.split(':')[1];
-        const response = faqMapByKey?.[key]?.[lang];
-
-        if (response) {
-            console.log(`[CHAT] FAQ détectée par GPT → catégorie "${key}"`);
-            await sendMessage(senderId, response);
-        } else {
-            console.warn(`[CHAT] Clé FAQ "${key}" inconnue ou réponse manquante.`);
-            await sendMessage(senderId, lang === 'fr'
-                ? "Je n’ai pas trouvé de réponse à cette question pour le moment."
-                : "I couldn't find an answer to that at the moment.");
+    // 🔎 Si GPT identifie une FAQ → on répond avec la réponse statique
+    if (intent?.startsWith("faq:")) {
+        const key = intent.split(":")[1];
+        const faqText = faqMapByKey[key]?.[lang];
+        if (faqText) {
+            console.log(`[CHAT] Réponse FAQ détectée via GPT → cat: ${key}`);
+            await sendMessage(senderId, faqText);
+            return;
         }
-
-        return;
     }
 
-    // 🎯 Cas 2 : question technique → GPT répond
-    if (classification === 'technical') {
+    // 🤖 Si GPT juge que c'est technique → on laisse GPT répondre
+    if (intent === "technique") {
         const prompt = lang === "fr"
-            ? `Vous êtes un professionnel en immobilier, toujours poli. Vous réagissez à cette phrase en utilisant toujours le vouvoiement sans interpréter les données : "${message}"`
-            : `You are a real estate professional, always polite. React to this phrase without interpreting the data: "${message}"`;
+            ? `Vous êtes un professionnel de l'immobilier. Répondez poliment à ce message d’un client potentiel, sans interpréter de données chiffrées : "${message}"`
+            : `You are a professional real estate agent. Reply politely to this potential client’s message, without interpreting numeric data: "${message}"`;
 
-        console.log(`[GPT] Réponse libre technique → ${prompt}`);
+        console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
 
         try {
-            const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
                 model: "gpt-4o",
                 messages: [{ role: "user", content: prompt }],
                 max_tokens: 200,
@@ -163,11 +159,11 @@ async function chatOnly(senderId, message, lang = 'fr') {
             }, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
                 }
             });
 
-            const gptReply = response.data.choices?.[0]?.message?.content?.trim();
+            const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
             const fallback = gptReply || (lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.");
             await sendMessage(senderId, fallback);
 
@@ -180,15 +176,13 @@ async function chatOnly(senderId, message, lang = 'fr') {
         return;
     }
 
-    // 🎯 Cas 3 : message hors sujet
-    console.log(`[CHAT] Message classé comme "autre" → message de relance`);
-    await sendMessage(senderId, lang === 'fr'
-        ? "Je n’ai pas bien saisi, pouvez-vous préciser votre question ?"
-        : "I didn’t quite catch that. Could you please clarify?");
-
-    // 🔁 Ensuite on bascule en mode structuré comme avant
-    context.session.mode = "spec";
+    // 🙃 Cas "autre" → politesse mais pas de relance inutile
+    const fallback = lang === "fr"
+        ? "Merci pour votre message. Souhaitez-vous que nous vous rappelions pour discuter de votre projet ?"
+        : "Thanks for your message. Would you like us to call you back to discuss your project?";
+    await sendMessage(senderId, fallback);
 }
+
 
 
 
