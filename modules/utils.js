@@ -10,27 +10,47 @@ const faqMap = {
     fr: [
         {
             keywords: ["heures d'ouverture", "heures d'affaires", "horaire", "ouvert"],
-            response: "Nous sommes ouverts du lundi au vendredi, de 9h à 17h."
+            response: "Si vous désirez connaître nos heures de travail, sachez que nous sommes flexibles." &&
+                      "N'hésitez pas à nous contacter pour en savoir davantage."
         },
         {
-            keywords: ["consultation gratuite", "consultations gratuites"],
-            response: "Oui, la première consultation est gratuite, incluant l'estimation."
+            keywords: ["numero", "telephone", "courriel", "contact", "email", "contacter", "no", "adresse","situe", "site"],
+            response: "Pour nous joindre rapidement ou consulter nos offres, contacter le 514-231-6370 (Christophe Marcellin) ou le (514) 912-5343 (Carole Baillargeon), " &&
+                      "par courriel christophe.marcellin@century21 carole.baillargeon@century21.ca, pour nos offres en ligne et notre site: www.carolebaillargeon.com" &&
+                      "ou www.christophe-marcellin.c21.ca"
+             },
+        {
+            keywords: ["consultation", "consultations", "gratuit", "gratuite", "gratis", "estime", "evaluation", "estimation"],
+            response: "Nous pouvons vous aider à estimer votre bien sur une base de comparables." &&
+                "La consultation est gratuite, et inclut l'estimation de votre bien."
         },
         {
-            keywords: ["location", "louer"],
-            response: "Oui, nous pouvons vous accompagner pour trouver un locataire."
+            keywords: ["location", "louer", "loyer"],
+            response: "Dans le domaine de la location, nous pouvons vous aider à promouvoir votre offre de location et trouver votre prochain locataire."
         },
         {
             keywords: ["commercial"],
-            response: "Oui, nous sommes accrédités tant côté, commercial que résidentiel."
+            response: "Nous sommes accrédités pour vous aider tant côté commercial que résidentiel."
         },
         {
-            keywords: ["estimation", "comment estimer", "évaluation", "prix comparable"],
-            response: "Nous possédons de nombreuses statistiques pour vous aider à établir un prix sur une base de comparables."
-        },
-        {
-            keywords: ["territoire", "secteur d'activité", "secteur", "zone de service"],
+            keywords: ["territoire", "secteur d'activité", "secteur", "territoires", "ville"],
             response: "Nous sommes très actifs dans les secteurs du Vieux Montréal, l'Ile des Soeurs, Griffintown et Saint-Lambert."
+        },
+        {
+            keywords: ["carole", "baillargeon", "carole baillargeon"],
+            response: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix" &&
+                "désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2024 et Prix Centurion 2003 à 2013, (2010 exclus) et membre du temple de la Renommée Canada 2007 "
+        },
+        {
+            keywords: ["christophe", "marcellin", "christophe marcellin"],
+            response: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre" &&
+            "rapidement.  Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service."
+        },
+
+        {
+            keywords: ["equipe"],
+            response: "Carole et Christophe font équipe pour mieux vous servir, Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix" &&
+            "Christophe met à votre service son expérience de courtier et 25 ans d'expérience dans les secteurs de la technologie pour vous aider à vendre rapidement ou acheter"
         }
     ],
     en: [
