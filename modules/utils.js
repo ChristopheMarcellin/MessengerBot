@@ -47,6 +47,11 @@ const faqMapByKey = {
         fr: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre rapidement. Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service.",
         en: "Christophe has been a broker for 2 years and brings 25 years of technology experience to help his clients sell efficiently. This virtual assistant is a great example of technology working for you."
     },
+    office:
+    {
+        fr: "Notre bureau Century 21 est situé au 1980 Rue Notre-Dame Ouest. Montréal, QC H3J1M8. Contact. Principal: (514) 933-1221",
+        en: "Our Century 21 office is located at 1980 Rue Notre-Dame Ouest. Montréal, QC H3J1M8. Contact. Principal: (514) 933-1221"
+    },
     team: {
         fr: "Carole et Christophe font équipe pour mieux vous servir. Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix. Christophe met à votre service son expérience de courtier et 25 ans d'expérience en technologie pour vous aider à vendre rapidement ou acheter.",
         en: "Carole and Christophe work together to better serve you. Carole brings over 25 years of brokerage experience and many awards, while Christophe offers his brokerage expertise combined with 25 years in tech to help you sell or buy quickly."
@@ -190,7 +195,7 @@ async function chatOnly(senderId, message, lang = "fr") {
 
             const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
             const cleaned = gptReply ? stripGptSignature(gptReply) : null;
-            const fallback = cleaned || (lang === "fr" ? "Désolé, je n’ai pas compris, pouvez-vous reformuler différemment." : "Sorry, I didn’t understand, can you rephrase differently perhaps.");
+            const fallback = cleaned || (lang === "fr" ? "Désolé, je n’ai pas compris, SVP pourriez-vous reformuler différemment peut-être ? " : "Sorry, I didn’t understand, please can you rephrase differently perhaps ?");
             await sendMessage(senderId, fallback);
 
         } catch (err) {
@@ -204,8 +209,8 @@ async function chatOnly(senderId, message, lang = "fr") {
 
     // 🙃 Cas "autre" → politesse mais pas de relance inutile
     const fallback = lang === "fr"
-        ? "Malheuresement, je ne suis pas certain de bien comprendre, svp peut-être pourriez-vous reformuler différemment :-) !"
-        : "Unfortunately, I am not sure I understand, please can you rephrase differently perhaps :-) !";
+        ? "Merci pour ce message, malheureusement j'aimerais poursuivre cet échange mais mon assistance se limite à fournir des réponses dans le domaine de l'immobilier et des services que nous offrons :-( !"
+        : "Thank you for this message. Unfortunately, I’d love to continue this exchange, but my assistance is limited to providing answers related to real estate and the services we offer :-(";
     await sendMessage(senderId, fallback);
 }
 
@@ -226,9 +231,6 @@ function detectLanguageFromText(text) {
 
     return detected;
 }
-
-
-
 
 
 
