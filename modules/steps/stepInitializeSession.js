@@ -19,9 +19,9 @@ async function stepInitializeSession(context) {
         context.session = session;
 
         // DEBUG VERROU
-        console.log("[DEBUG POST RESET] Session = ", JSON.stringify(session, null, 2));
-        console.log("[DEBUG NEXT SPEC] getNextSpec = ", getNextSpec(session));
-        console.log('[INIT] Session réinitialisée par (end session)');
+        console.log("[INIT end Session in progress] Session = ", JSON.stringify(session, null, 2));
+        console.log("[INIT end Session in progress] getNextSpec = ", getNextSpec(session));
+        console.log('[INIT end Session in protress] Session réinitialisée par (end session)');
         return false;
 
     } else if (!session) {
@@ -46,7 +46,7 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-    logSessionState("Vérification APRÈS une initialisation propre", session);
+    logSessionState("[INIT processus complété]", session);
     return true;
 }
 

@@ -40,7 +40,6 @@ function resetSession(context) {
         maxQuestions: 40,
         ProjectDate: new Date().toISOString(),
         mode: "spec"
-
     };
 
 
@@ -67,10 +66,11 @@ function logSessionState(label, session) {
         askedSpecs: session.askedSpecs,
         specValues: session.specValues,
         projectType: session.projectType,
+        propertyUsage: session.propertyUsage,
         currentSpec: session.currentSpec
     };
 
-    // console.log(`[SESSION] ${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
+     console.log(`${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
 
     // 🔍 Ajout des lignes déplacées ici, pour interprétation de l’état
     const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);
