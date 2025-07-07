@@ -14,9 +14,9 @@ async function stepInitializeSession(context) {
     let session = getSession(senderId);
 
     if (isEndSession) {
-        session = resetSession(context);
+      //  session = resetSession(context);
       //  session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
-        context.session = session;
+        context.session = null;
 
         // DEBUG VERROU
         console.log("[INIT end Session in progress] Session = ", JSON.stringify(session, null, 2));

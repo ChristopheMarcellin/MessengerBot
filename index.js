@@ -100,6 +100,6 @@ app.post('/webhook', async (req, res) => {
 
 // === Start Server ===
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[INIT] Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`[Index] Server running on port ${PORT}`));
 
 
