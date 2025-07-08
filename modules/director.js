@@ -14,6 +14,7 @@ async function runDirector(context) {
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
     const session = context.session;
+
     if (message.trim().toLowerCase() === 'end session')
     {
         session.mode = 'end session'
@@ -51,7 +52,7 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] NextSpec recalculée = _${next}_`);
 
     //summarize
-    if (next === null && ["B", "S", "R"].includes(projectType)) {
+    if (next === null && ["B", "S", "R"].includes(session.projectType)) {
         logSessionState("***[DIRECTOR summarize]", session);
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");

@@ -23,9 +23,10 @@ async function stepInitializeSession(context) {
     // 🧠 Récupération uniquement si ce n'est pas un end session
     let session = getSession(senderId);
 
+
     if (!session) {
         session = resetSession(context);
-        // session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         context.session = session;
         console.log('[INIT] Session créée car absente');
         return true;
@@ -33,11 +34,10 @@ async function stepInitializeSession(context) {
 
     // 🧠 Affectation obligatoire avant traitement
     context.session = session;
+    context.session.language = detectLanguageFromText(message);
 
-    // 🌍 Détection de langue forcée pour la suite des choses
-    if (!context.session.language) {
-        context.session.language = detectLanguageFromText(message);
-    }
+
+
 
     // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {

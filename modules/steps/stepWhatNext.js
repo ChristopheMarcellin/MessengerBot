@@ -34,7 +34,7 @@ async function stepWhatNext(context, spec) {
         }
         else {
 
-            context.session.mode === 'spec'
+            context.session.mode = 'spec'
         }
 
         console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
