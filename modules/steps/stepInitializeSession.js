@@ -17,7 +17,7 @@ async function stepInitializeSession(context) {
         context.session = resetSession(context);
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
-        return true;
+        return false;
     }
 
     // 🧠 Récupération uniquement si ce n'est pas un end session
