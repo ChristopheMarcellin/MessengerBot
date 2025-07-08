@@ -26,7 +26,7 @@ async function stepInitializeSession(context) {
 
     } else if (!session) {
         session = resetSession(context);
-        session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+       // session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         context.session = session;
         console.log('[INIT] Session créée car absente');
         return true;
@@ -35,7 +35,7 @@ async function stepInitializeSession(context) {
     // 🧠 Affectation obligatoire avant traitement
     context.session = session;
 
-    // 🌍 Détection de langue forcée pour la suite de choses
+    // 🌍 Détection de langue forcée pour la suite des choses
     if (!context.session.language) {
         context.session.language = detectLanguageFromText(message);
     }

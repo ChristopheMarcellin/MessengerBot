@@ -321,7 +321,7 @@ function getCurrentSpec(session) {
 }
 
 function initializeSpecFields(session, projectType) {
-    traceCaller('initializeSpecFields');
+   // traceCaller('initializeSpecFields');
     const fields = {
         B: ['price', 'bedrooms', 'bathrooms', 'garage', 'location'],
         S: ['price', 'bedrooms', 'bathrooms', 'garage', 'location'],
@@ -345,18 +345,18 @@ function initializeSpecFields(session, projectType) {
 }
 
 function setProjectType(session, value, caller = 'unknown') {
-    traceCaller('setProjectType');
+    //traceCaller('setProjectType');
 
     const old = session.projectType;
 
     // 🚫 Règle fusionnée : aucune modification si écrasement par "?" ou si redondant
     if (["B", "S", "R", "E"].includes(old)) {
         if (value === "?") {
-            console.warn(`[UTILS setProjectType] Tentative d'écrasement de projectType "${old}" par "?" — bloqué, caller = "${caller}"`);
+            console.warn(`[UTILS setProjectType] Caller = "${caller}" Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
             return;
         }
         if (old === value) {
-            console.log(`[UTILS setProjectType] projectType déjà égal à "${value}" — aucune modification, caller ="${caller}"`);
+            console.log(`[UTILS setProjectType] Caller = "${caller}", projectType déjà égal à "${value}" — aucune modification`);
             return;
         }
     }
@@ -366,7 +366,7 @@ function setProjectType(session, value, caller = 'unknown') {
     if (!session.askedSpecs) session.askedSpecs = {};
 
     // ✅ Mise à jour
-    console.log(`[UTILS setProjectType] la valeur qui sera affectée à session.projectType = "${value}", caller ="${caller}"`);
+    console.log(`[UTILS setProjectType] Caller ="${caller}",  la valeur qui sera affectée à session.projectType = "${value}"`);
     session.projectType = value;
 
     // ✅ Initialisation des specs uniquement si changement de ? → B/S/R
