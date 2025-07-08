@@ -15,11 +15,6 @@ async function runDirector(context) {
     const isReady = await stepInitializeSession(context);
     const session = context.session;
 
-    if (message.trim().toLowerCase() === 'end session')
-    {
-        session.mode = 'end session'
-    }
-
     if (!isReady) {
         console.log('[DIRECTOR] is not ready to continue')
         logSessionState("[***DIRECTOR !isReady]", session);
@@ -35,7 +30,6 @@ async function runDirector(context) {
     // 🧠 Cas unique : stepHandleProjectType de projectType uniquement via GPT
     if (nextSpec === "projectType") {
         logSessionState("***[DIRECTOR stepHandleProjectType]", session);
-
         const handled = await stepHandleProjectType(context);
         return handled;
     }

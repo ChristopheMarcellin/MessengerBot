@@ -1,4 +1,4 @@
-const { setProjectType, initializeSpecFields, detectLanguageFromText, getNextSpec } = require('../utils');
+const { setProjectType, initializeSpecFields, detectLanguageFromText, getNextSpec, isText } = require('../utils');
 const { getSession, saveSession, resetSession, logSessionState } = require('../sessionStore');
 
 async function stepInitializeSession(context) {
@@ -14,7 +14,14 @@ async function stepInitializeSession(context) {
 
     if (isEndSession) {
 
-        context.session = resetSession(context);
+        let session = resetSession(context);
+        if (isText(message) && typeof session.language !== 'string') {
+            session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        }
+        context.session = session;   
+ // ✅ détecte immédiatement
+        context.session.mode = 'end session'
+        context.session = session;
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
         return false;
@@ -26,19 +33,24 @@ async function stepInitializeSession(context) {
 
     if (!session) {
         session = resetSession(context);
-        session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
-        context.session = session;
-        console.log('[INIT] Session créée car absente');
+        if (isText(message) && typeof session.language !== 'string') {
+            session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        }
+        context.session = session;   
+
+        console.log('[INIT] Session créée car manquante');
         return true;
     }
 
     // 🧠 Affectation obligatoire avant traitement
-    context.session = session;
-   
+    if (isText(message) && typeof session.language !== 'string') {
+    session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+    }
+    context.session = session;   
 
     // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {
-        session.language = detectLanguageFromText(message); 
+
         logSessionState("***[INIT session déjà initialisée]", session);
     //    console.log('[INIT] Session déjà initialisée → aucune action requise');
         return true;
