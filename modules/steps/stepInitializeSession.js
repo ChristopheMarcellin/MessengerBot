@@ -11,22 +11,21 @@ async function stepInitializeSession(context) {
     }
 
     const isEndSession = message.trim().toLowerCase() === 'end session';
-    let session = getSession(senderId);
 
     if (isEndSession) {
-      //  session = resetSession(context);
-      //  session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         context.session = null;
 
         // DEBUG VERROU
-        console.log("[INIT end Session in progress] Session = ", JSON.stringify(session, null, 2));
-        console.log("[INIT end Session in progress] getNextSpec = ", getNextSpec(session));
-        console.log('[INIT end Session in protress] Session réinitialisée par (end session)');
+        console.log('[INIT end session] Session explicitement remise à null.');
         return false;
+    }
 
-    } else if (!session) {
+    // 🧠 Récupération uniquement si ce n'est pas un end session
+    let session = getSession(senderId);
+
+    if (!session) {
         session = resetSession(context);
-       // session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        // session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         context.session = session;
         console.log('[INIT] Session créée car absente');
         return true;
@@ -48,5 +47,6 @@ async function stepInitializeSession(context) {
 
     return true;
 }
+
 
 module.exports = { stepInitializeSession };

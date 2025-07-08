@@ -26,9 +26,9 @@ async function runDirector(context) {
     console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
     console.log(`[DIRECTOR] Current projectType status = _${session.projectType}_`);
 
-    // 🧠 Cas unique : traitement de projectType uniquement via GPT
+    // 🧠 Cas unique : stepHandleProjectType de projectType uniquement via GPT
     if (nextSpec === "projectType") {
-        logSessionState("***[DIRECTOR Project Type]", session);
+        logSessionState("***[DIRECTOR stepHandleProjectType]", session);
         const handled = await stepHandleProjectType(context);
         return handled;
     }
