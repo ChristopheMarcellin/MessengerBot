@@ -28,7 +28,15 @@ async function stepWhatNext(context, spec) {
     // === Étape 1 : projectType ===
     if (nextSpec === "projectType") {
         const questionText = getPromptForProjectType(lang);
-        setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
+
+        if (context.session.mode != 'end session') {
+            setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
+        }
+        else {
+
+            context.session.mode === 'spec'
+        }
+
         console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
         await sendMessage(senderId, questionText);
         return true;

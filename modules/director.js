@@ -11,17 +11,13 @@ const { projectType } = require('./displayMap');
 async function runDirector(context) {
     const { message, senderId } = context;
 
-
-
-    // 🛑 Bloquer tout traitement pour ce message spécifique
-    if (message.trim().toLowerCase() === "end session") {
-        console.log('[DIRECTOR] Ignoré : message "end session" traité uniquement comme reset.');
-        return false;
-    }
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
     const session = context.session;
-
+    if (message.trim().toLowerCase() === 'end session')
+    {
+        session.mode = 'end session'
+    }
 
     if (!isReady) {
         console.log('[DIRECTOR] is not ready to continue')
@@ -30,6 +26,7 @@ async function runDirector(context) {
     }
 
     // 🧭 Détermination de la prochaine spec à traiter
+    
     const nextSpec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
     console.log(`[DIRECTOR] Current projectType status = _${session.projectType}_`);
@@ -37,6 +34,7 @@ async function runDirector(context) {
     // 🧠 Cas unique : stepHandleProjectType de projectType uniquement via GPT
     if (nextSpec === "projectType") {
         logSessionState("***[DIRECTOR stepHandleProjectType]", session);
+
         const handled = await stepHandleProjectType(context);
         return handled;
     }

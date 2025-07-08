@@ -13,8 +13,8 @@ async function stepInitializeSession(context) {
     const isEndSession = message.trim().toLowerCase() === 'end session';
 
     if (isEndSession) {
-        context.session = null;
 
+        context.session = resetSession(context);
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
         return true;
