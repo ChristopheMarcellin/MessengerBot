@@ -27,7 +27,7 @@ function getAllSessions() {
 // ✅ Fusion : reset enrichi sans effet de bord
 function resetSession(context) {
     const freshSession = {
-        senderId: (typeof context.senderId === 'string' && context.senderId.trim() !== '') ? context.senderId : 'unknown_sender',
+        senderId : context.senderId,
         language: null,
         projectType: "?",
         specValues: {},
@@ -52,6 +52,8 @@ function resetSession(context) {
 // ✅ Log centralisé, appelé depuis stepInitializeSession ou autre
 
 function logSessionState(label, session) {
+
+    senderId: (typeof session.senderId === 'string' && context.senderId.trim() !== '') ? context.senderId : 'unknown_sender';
 
     if (!session) {
         console.warn(`[SESSION State] Session absente pour ${senderId} → rien à afficher.`);
