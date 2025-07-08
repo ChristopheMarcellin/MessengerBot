@@ -11,19 +11,21 @@ const { projectType } = require('./displayMap');
 async function runDirector(context) {
     const { message, senderId } = context;
 
-    // 🔄 Initialisation ou récupération de session valide
-    const isReady = await stepInitializeSession(context);
-    const session = context.session;
 
-    if (!isReady) {
-        console.log('[DIRECTOR] is not ready to continue')
-        logSessionState("[***DIRECTOR !isReady]", session);
-        return false;
-    }
 
     // 🛑 Bloquer tout traitement pour ce message spécifique
     if (message.trim().toLowerCase() === "end session") {
         console.log('[DIRECTOR] Ignoré : message "end session" traité uniquement comme reset.');
+        return false;
+    }
+    // 🔄 Initialisation ou récupération de session valide
+    const isReady = await stepInitializeSession(context);
+    const session = context.session;
+
+
+    if (!isReady) {
+        console.log('[DIRECTOR] is not ready to continue')
+        logSessionState("[***DIRECTOR !isReady]", session);
         return false;
     }
 
