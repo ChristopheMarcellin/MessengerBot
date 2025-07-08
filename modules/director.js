@@ -21,6 +21,12 @@ async function runDirector(context) {
         return false;
     }
 
+    // 🛑 Bloquer tout traitement pour ce message spécifique
+    if (message.trim().toLowerCase() === "end session") {
+        console.log('[DIRECTOR] Ignoré : message "end session" traité uniquement comme reset.');
+        return false;
+    }
+
     // 🧭 Détermination de la prochaine spec à traiter
     const nextSpec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
