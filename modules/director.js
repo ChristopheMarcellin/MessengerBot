@@ -3,6 +3,7 @@ const { getSession, resetSession, saveSession } = require('./sessionStore');
 const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject, chatOnly, getNextSpec, setAskedSpec} = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepWhatNext, stepHandleProjectType, stepHandleSpecAnswer, stepSummarizeAndConfirm } = require('./steps');
+const { projectType } = require('./displayMap');
 
 
 //const { propertyUsage, projectType } = require('./displayMap');
@@ -41,7 +42,8 @@ async function runDirector(context) {
     const next = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec recalculée = _${next}_`);
 
-    if (next === null) {
+    //summarize
+    if (next === null && ["B", "S", "R"].includes(projectType)) {
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
             await stepSummarizeAndConfirm(context);
