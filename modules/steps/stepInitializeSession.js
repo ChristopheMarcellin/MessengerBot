@@ -41,7 +41,8 @@ async function stepInitializeSession(context) {
 
     // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {
-        console.log('[INIT] Session déjà initialisée → aucune action requise');
+        logSessionState("***[INIT session déjà initilisée]", session);
+    //    console.log('[INIT] Session déjà initialisée → aucune action requise');
         return true;
     }
 
