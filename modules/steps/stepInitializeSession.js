@@ -13,9 +13,8 @@ async function stepInitializeSession(context) {
     const isEndSession = message.trim().toLowerCase() === 'end session';
 
     if (isEndSession) {
-        session = resetSession(context);
-        // session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
-        context.session = session;
+        context.session = null;
+
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
         return true;
