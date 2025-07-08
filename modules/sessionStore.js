@@ -27,7 +27,7 @@ function getAllSessions() {
 // ✅ Fusion : reset enrichi sans effet de bord
 function resetSession(context) {
     const freshSession = {
-        senderId : context.senderId,
+        senderId: (typeof context.senderId === 'string' && context.senderId.trim() !== '') ? context.senderId : 'unknown_sender',
         language: null,
         projectType: "?",
         specValues: {},
