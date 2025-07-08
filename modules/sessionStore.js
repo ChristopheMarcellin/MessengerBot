@@ -53,7 +53,7 @@ function resetSession(context) {
 
 function logSessionState(label, session) {
 
-    senderId: (typeof session.senderId === 'string' && context.senderId.trim() !== '') ? context.senderId : 'unknown_sender';
+    senderId: (typeof session.senderId === 'string' && session.senderId.trim() !== '') ? session.senderId : 'unknown_sender';
 
     if (!session) {
         console.warn(`[SESSION State] Session absente pour ${senderId} → rien à afficher.`);
