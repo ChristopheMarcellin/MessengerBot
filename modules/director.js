@@ -17,6 +17,7 @@ async function runDirector(context) {
 
     if (!isReady) {
         console.log('[DIRECTOR] is not ready to continue')
+        logSessionState("[***DIRECTOR !isReady]", session);
         return false;
     }
 
@@ -27,6 +28,7 @@ async function runDirector(context) {
 
     // 🧠 Cas unique : traitement de projectType uniquement via GPT
     if (nextSpec === "projectType") {
+        logSessionState("***[DIRECTOR Project Type]", session);
         const handled = await stepHandleProjectType(context);
         return handled;
     }
@@ -44,6 +46,7 @@ async function runDirector(context) {
 
     //summarize
     if (next === null && ["B", "S", "R"].includes(projectType)) {
+        logSessionState("***[DIRECTOR summarize]", session);
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
             await stepSummarizeAndConfirm(context);
@@ -52,6 +55,7 @@ async function runDirector(context) {
 
         console.log("[DIRECTOR] ℹ️ Session déjà en mode chat → passage à GPT");
         context.gptAllowed = true;
+        logSessionState("***[DIRECTOR no summary]", session);
         await chatOnly(senderId, message, session.language || "fr");
         return true;
     }

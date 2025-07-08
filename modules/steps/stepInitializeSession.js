@@ -46,7 +46,6 @@ async function stepInitializeSession(context) {
         return true;
     }
 
-    logSessionState("[INIT processus complété]", session);
     return true;
 }
 
