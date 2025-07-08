@@ -1,5 +1,5 @@
 const { isValidAnswer, getProjectTypeFromNumber, buildSpecSummary } = require('./specEngine');
-const { getSession, resetSession, saveSession } = require('./sessionStore');
+const { getSession, resetSession, saveSession, logSessionState } = require('./sessionStore');
 const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject, chatOnly, getNextSpec, setAskedSpec} = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepWhatNext, stepHandleProjectType, stepHandleSpecAnswer, stepSummarizeAndConfirm } = require('./steps');
