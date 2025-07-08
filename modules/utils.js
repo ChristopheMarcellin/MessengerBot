@@ -214,6 +214,17 @@ async function chatOnly(senderId, message, lang = "fr") {
     await sendMessage(senderId, fallback);
 }
 
+function isText(input) {
+    if (typeof input !== 'string') return false;
+
+    const trimmed = input.trim();
+
+    // Empty or purely numeric (e.g., "123", " 456 ")
+    if (/^\d+$/.test(trimmed)) return false;
+
+    // Contains any letter (even accented), assume it's text
+    return /[a-zA-Zàâçéèêëîïôûùüÿœæ]/i.test(trimmed);
+}
 
 
 
@@ -450,5 +461,6 @@ module.exports = {
     setAskedSpec,
     gptClassifyProject,
     chatOnly,
-    detectLanguageFromText
+    detectLanguageFromText,
+    isText
 };
