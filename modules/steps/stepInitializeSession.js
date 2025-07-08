@@ -34,10 +34,7 @@ async function stepInitializeSession(context) {
 
     // 🧠 Affectation obligatoire avant traitement
     context.session = session;
-    context.session.language = detectLanguageFromText(message);
-
-
-
+   
 
     // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {
