@@ -38,6 +38,7 @@ async function stepInitializeSession(context) {
 
     // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {
+        session.language = detectLanguageFromText(message); 
         logSessionState("***[INIT session déjà initialisée]", session);
     //    console.log('[INIT] Session déjà initialisée → aucune action requise');
         return true;
