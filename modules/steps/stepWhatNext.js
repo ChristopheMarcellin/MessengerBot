@@ -9,17 +9,17 @@ const { buildSpecSummary } = require('../specEngine');
 async function stepWhatNext(context, spec) {
     const { senderId } = context;
     const lang = context.session.language || 'fr';
-    console.log(`[WHATNEXT] Langue dans session = ${lang}`);
+ //   console.log(`[WHATNEXT] Langue dans session = ${lang}`);
     const nextSpec = getNextSpec(context.session);
     //Toutes les specs sont complétées
     if (!nextSpec) {
-        console.log('[WHATNEXT] ✅ Toutes les specs sont complètes → aucune question à poser.');
+        console.log('[WHATNEXT !nextSpec] ✅ Toutes les specs sont complètes → aucune question à poser.');
         return false;
     }
 
     // 💬 Étape spéciale : détection de relance (même spec que précédente)
     if (nextSpec === spec) {
-        // construire un prefixe pour questionText indiquant qu'on revient une fois de plus sur la question
+        console.log('[WHATNEXT nextSpec === spec] *** situation suspecte');
     }
 
     // === Initialisation obligatoire ===
@@ -54,7 +54,7 @@ async function stepWhatNext(context, spec) {
                 }
             });
         } else if (usage === "income") {
-            console.log("[WHATNEXT] propertyUsage = income → aucune exclusion de specs");
+          //  console.log("[WHATNEXT] propertyUsage = income → aucune exclusion de specs");
         }
     }
 

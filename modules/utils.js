@@ -118,7 +118,7 @@ async function classifyFAQCategory(message, lang = 'fr') {
         return result || 'other';
 
     } catch (err) {
-        console.error(`[FAQ CLASSIFIER] Erreur GPT : ${err.message}`);
+        console.error(`[FAQ CLASSIFIER] *** ERREUR GPT : ${err.message}`);
         return 'other';
     }
 }
@@ -152,7 +152,7 @@ async function gptClassifyProject(message, language = "fr") {
         return map[classification];
 
     } catch (err) {
-        console.warn(`[classifyProject] GPT error: ${err.message}`);
+        console.warn(`[gptClassifyProject] GPT ERROR: ${err.message}`);
         return "?";
     }
 }
@@ -199,7 +199,7 @@ async function chatOnly(senderId, message, lang = "fr") {
             await sendMessage(senderId, fallback);
 
         } catch (err) {
-            console.error(`[chatOnly] Erreur GPT : ${err.message}`);
+            console.error(`[chatOnly] *** ERREUR GPT : ${err.message}`);
             const fallback = lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.";
             await sendMessage(senderId, fallback);
         }
@@ -229,16 +229,19 @@ function isText(input) {
 
 
 function detectLanguageFromText(text) {
-    if (typeof text !== "string" || text.trim() === "") return 'fr';
 
-    console.log("[LANG DETECT] Texte analysé :", text);
 
+    if (typeof text !== "string" || text.trim() === "") {
+
+        console.log(`[LANG DETECT] Texte ${text} fr désigné`);
+        return 'fr';
+    }
     const isFrench =
         /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||
         /\b(le|la|est|une|bonjour|je|j’|ça|tu|vous|avec|maison|acheter|vendre|salut|allo|propriété)\b/i.test(text);
 
     const detected = isFrench ? 'fr' : 'en';
-    console.log(`[LANG DETECT] Langue détectée : ${detected}`);
+    console.log(`[LANG DETECT] Langue détectée pour ${text}: ${detected}`);
 
     return detected;
 }
@@ -248,7 +251,7 @@ function detectLanguageFromText(text) {
 function traceCaller(label) {
     const stack = new Error().stack;
     const line = stack.split('\n')[3] || 'inconnu';
-    console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
+   // console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
  }
 
 
@@ -256,10 +259,6 @@ function getNextSpec(session) {
     const { projectType, specValues = {}, askedSpecs = {} } = session;
     const propertyUsage = specValues.propertyUsage;
 
-    // 🧩 LOGS DIAGNOSTIQUES
-    console.log(`[getNextSpec] État initial → projectType="${projectType}", propertyUsage="${propertyUsage}"`);
-    console.log(`[getNextSpec] specValues =`, JSON.stringify(specValues));
-    console.log(`[getNextSpec] askedSpecs =`, JSON.stringify(askedSpecs));
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
@@ -272,14 +271,12 @@ function getNextSpec(session) {
     // Bloc 2 : specs spécifiques
     const typeBlock = questions[projectType];
     if (!typeBlock || typeof typeBlock !== 'object') {
-        console.warn(`[getNextSpec] ❌ Aucune spec définie pour projectType="${projectType}"`);
         return 'none';
     }
     console.log(`[getNextSpec] ✅ Champs spécifiques pour ${projectType} =`, Object.keys(typeBlock));
 
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
     for (const field of Object.keys(typeBlock)) {
-        console.log(`[getNextSpec DEBUG] Spéc = ${field} → ${specValues[field]}`);
         if (propertyUsage === 'income' && skipIfIncome.includes(field)) continue;
         if (specValues[field] === '?' || specValues[field] === undefined || specValues[field] === null) {
             return field;
@@ -367,7 +364,7 @@ function setProjectType(session, value, caller = 'unknown') {
             return;
         }
         if (old === value) {
-            console.log(`[UTILS setProjectType] Caller = "${caller}", projectType déjà égal à "${value}" — aucune modification`);
+           // console.log(`[UTILS setProjectType] Caller = "${caller}", projectType déjà égal à "${value}" — aucune modification`);
             return;
         }
     }
@@ -377,7 +374,7 @@ function setProjectType(session, value, caller = 'unknown') {
     if (!session.askedSpecs) session.askedSpecs = {};
 
     // ✅ Mise à jour
-    console.log(`[UTILS setProjectType] Caller ="${caller}",  la valeur qui sera affectée à session.projectType = "${value}"`);
+    //console.log(`[UTILS setProjectType] Caller ="${caller}",  la valeur qui sera affectée à session.projectType = "${value}"`);
     session.projectType = value;
 
     // ✅ Initialisation des specs uniquement si changement de ? → B/S/R
@@ -386,7 +383,7 @@ function setProjectType(session, value, caller = 'unknown') {
         initializeSpecFields(session, value);
     }
 
-    console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
+ //   console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
 function setSpecValue(session, key, value, caller = "unspecified") {
     if (!session.specValues) session.specValues = {};
@@ -401,7 +398,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
-        console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture, caller ="${caller}"`);
+        //console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture, caller ="${caller}"`);
         return;
     }
 
@@ -445,10 +442,10 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 function setAskedSpec(session, specKey, source = "manual") {
     if (!session.askedSpecs) {
         session.askedSpecs = {};
-        console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
+       // console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
     }
     session.askedSpecs[specKey] = true;
-    console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
+   // console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
 }
 
 

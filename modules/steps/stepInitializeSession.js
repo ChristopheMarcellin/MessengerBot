@@ -36,7 +36,7 @@ async function stepInitializeSession(context) {
             session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         }
         context.session = session;
-        console.log('[INIT] Session créée car manquante');
+        console.log('[INIT] *** Session créée car manquante');
         return true;
     }
 

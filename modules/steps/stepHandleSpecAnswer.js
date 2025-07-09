@@ -8,7 +8,7 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
     if (!spec || spec === "null") {
         // 🔁 Laisser passer si on est en mode libre (chat)
         if (session?.mode === "chat") {
-            console.log(`[INFO] Spec "null" ignorée car en mode chat.`);
+            console.log(`[Handle Answer] Spec "null" ignorée car en mode chat.`);
             return true;  // autoriser le traitement libre
         }
 

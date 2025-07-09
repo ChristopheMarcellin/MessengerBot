@@ -85,11 +85,11 @@ function logSessionState(label, session) {
     const hasAskedSpecs = session.askedSpecs && Object.values(session.askedSpecs).some(v => v === true);
 
     if (hasProject && hasAskedSpecs) {
-        console.log(`[SESSION State] ${label} : Session en cours prête à poursuivre une conversation`);
+    //    console.log(`[SESSION State] ${label} : Session en cours prête à poursuivre une conversation`);
     } else if (hasProject && !hasAskedSpecs) {
-        console.log(`[SESSION State] ${label} : ProjectType connu mais les specs sont à initialiser`);
+    //    console.log(`[SESSION State] ${label} : ProjectType connu mais les specs sont à initialiser`);
     } else {
-        console.log(`[SESSION State] ${label} : ProjectType non défini — classification déléguée au directeur`);
+       console.log(`[SESSION State] ${label} : ProjectType non défini — classification déléguée au directeur`);
     }
 }
 
@@ -98,13 +98,13 @@ function wrapSessionWithLogger(session) {
     return new Proxy(session, {
         get(target, prop) {
             if (prop === 'projectType') {
-                console.log(`[WATCH-GET] projectType = ${target[prop]} | stack: ${new Error().stack.split('\n')[2].trim()}`);
+            //    console.log(`[WATCH-GET] projectType = ${target[prop]} | stack: ${new Error().stack.split('\n')[2].trim()}`);
             }
             return target[prop];
         },
         set(target, prop, value) {
             if (prop === 'projectType') {
-                console.log(`[WATCH-SET] projectType = ${value} | old=${target[prop]} | stack: ${new Error().stack.split('\n')[2].trim()}`);
+             //   console.log(`[WATCH-SET] projectType = ${value} | old=${target[prop]} | stack: ${new Error().stack.split('\n')[2].trim()}`);
             }
             target[prop] = value;
             return true;
