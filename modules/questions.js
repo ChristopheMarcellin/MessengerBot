@@ -88,6 +88,11 @@ const questions = {
         },
 
         phone: {
+            fr: "Quel âge avez-vous SVP ?",
+            en: "What is your age please?",
+        },
+
+        phone: {
             fr: "À quel numéro de téléphone pouvons nous vous joindre ?",
             en: "What is your phone number?",
         },
