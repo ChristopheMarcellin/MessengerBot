@@ -17,9 +17,9 @@ async function stepInitializeSession(context) {
 
         session = resetSession(context);
 
-        if (isText(message) && typeof session.language !== 'string') {
-            session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
-        }
+        //if (isText(message) && typeof session.language !== 'string') {
+        //    session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        //}
         context.session = session;
         context.session.mode = 'end session';
         // DEBUG VERROU
