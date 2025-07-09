@@ -26,10 +26,13 @@ function getAllSessions() {
 
 // ✅ Fusion : reset enrichi sans effet de bord
 function resetSession(context) {
-    const freshSession = {
-        senderId : context.senderId,
+    const session = {};  // 🔥 purge complète
+
+    Object.assign(session, {
+        senderId: context.senderId,
         language: null,
         projectType: "?",
+        propertyUsage: "?",
         specValues: {},
         askedSpecs: {},
         currentSpec: null,
@@ -40,13 +43,14 @@ function resetSession(context) {
         maxQuestions: 40,
         ProjectDate: new Date().toISOString(),
         mode: "spec"
-    };
+    });
 
-    setProjectType(freshSession, "?", "resetSession");
+    setSession(context.senderId, session);
+    context.session = session;
 
-//    console.log(`[RESET] Nouvelle session propre créée pour ${context.senderId}`);
-    return freshSession;
+    return session;
 }
+
 
 // ✅ Log centralisé, appelé depuis stepInitializeSession ou autre
 
