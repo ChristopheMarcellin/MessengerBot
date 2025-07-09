@@ -72,21 +72,21 @@ const questions = {
             fr: "Laisser connaître vos attentes :-). Vous pouvez préciser par exemple: piscine creusée (incontournable), foyer (souhaitable)? ",
             en: "Let us know about any other expectations you may have :-),  for example you may say: inground pool (must), fireplace(nice to have).",
         },
-        wantsContact: {
-            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte ? (1-oui, 2-non)",
-            en: "Would you like someone from our team to contact you? (1-yes, 2-no)",
-        },
-        firstName: {
-            fr: "Nous offrons grâcieusement aux chercheurs de propriétés un site web qui présente les propriétés qui rencontrent vos exigences \n\n" +
-                "Votre information est totalement confidentielle et ne sera utilisée que s'il est nécessaire de vous joindre"+
-                "Afin de vous contacter au besoin ou simplement pour nos dossiers libre à vous de nous fournir les informations qui suivent. \n \n" ,
 
-            en: "For our records, What is your first name please ?",
+        firstName: {
+            fr: "Afin de répondre à vos questions, nous sollicitons quelques informations qui nous servent à des fins de statistiques ou de suivi. " +
+                "Vos infos demeureront confidentielles (aucune pub de notre part ou d’un tiers).\n\n" +
+                "Pour débuter, votre prénom SVP ?",
+            en: "To answer your questions, we kindly ask for a few details used strictly for follow-up or statistical purposes. " +
+                "Your information will remain confidential (no advertising from us or any third party).\n\n" +
+                "To begin, your first name please?"
         },
+
         lastName: {
             fr: "Nom de famille ?",
             en: "Your last name?",
         },
+
         phone: {
             fr: "À quel numéro de téléphone pouvons nous vous joindre ?",
             en: "What is your phone number?",
@@ -95,6 +95,12 @@ const questions = {
             fr: "Quelle est votre adresse courriel ?",
             en: "What is your email address?",
         },
+
+        wantsContact: {
+            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte ? (1-oui, 2-non)",
+            en: "Would you like someone from our team to contact you? (1-yes, 2-no)",
+        },
+
         propertyUsage: {
             fr: "S'agit-il d'une propriété à revenus ayant plus d'un logement ? (1-oui, 2-non)",
             en: "Is this an income property with more than one apartment? (1-yes, 2-no)",
@@ -112,8 +118,18 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
     return lang === 'en'
-        ? "Hello, thank you for contacting us, before going any further, help us understand the context of your inquiry. Are you planning to: 1-buy, 2-sell, 3-rent, 4-other? Please provide the option number."
-        : "Bonjour, merci de nous contacter, afin de bien vous aider permettez-nous de comrprendre le contexte de votre démarche. Prévoyez-vous: 1-acheter, 2-vendre, 3-offrir en location, 4-autre raison ?\n(SVP, répondre avec le chiffre correspondant.)";
+        ? "Hello, I'm CasaNova, a virtual assistant powered by artificial intelligence.\n" +
+        "You may ask questions about our services or anything related to real estate.\n" +
+        "My responses are for informational purposes only and may contain errors.\n" +
+        "They should never replace the advice of a qualified professional.\n\n" +
+        "If you are currently searching, we can also provide a free website that displays properties matching your criteria.\n\n" +
+        "To help me assist you better, which number best describes your intent: 1 - buy, 2 - sell, 3 - rent out, 4 - other?\n(Please reply with the corresponding number.)"
+        : "Bonjour, je suis CasaNova, un assistant virtuel propulsé par l’intelligence artificielle.\n" +
+        "Vous pouvez me poser des questions sur nos services ou tout ce qui concerne le domaine de l'immobilier.\n" +
+        "Mes réponses sont fournies à titre informatif seulement et peuvent contenir des erreurs.\n" +
+        "Elles ne remplacent en aucun cas les conseils d’un professionnel qualifié.\n\n" +
+        "Si vous êtes à la recherche, nous pouvons également créer gratuitement un site web affichant des propriétés selon vos critères.\n\n" +
+        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : 1 - acheter, 2 - vendre, 3 - offrir en location, 4 - autre raison ?\n(SVP, répondez avec le chiffre correspondant.)";
 }
 
 module.exports = {

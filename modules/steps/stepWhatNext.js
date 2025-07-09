@@ -19,7 +19,7 @@ async function stepWhatNext(context, spec) {
 
     // 💬 Étape spéciale : détection de relance (même spec que précédente)
     if (nextSpec === spec) {
-        console.log('[WHATNEXT nextSpec === spec] *** situation suspecte');
+        console.log('[WHATNEXT nextSpec === spec] *** revisite de la même spec');
     }
 
     // === Initialisation obligatoire ===

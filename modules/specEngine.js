@@ -81,6 +81,12 @@ function getDisplayValue(field, value, lang = "fr") {
     if (field === "lastName") {
         return lang === "fr" ? `Nom : ${value}` : `Last name: ${value}`;
     }
+
+    if (field === "age") {
+        return lang === "fr"
+            ? `Âge : ${value} ans`
+            : `Age: ${value} years old`;
+    }
     if (field === "phone") {
         return lang === "fr" ? `Téléphone : ${value}` : `Phone: ${value}`;
     }
@@ -97,8 +103,8 @@ function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
     console.log("CM on entre dans specSummary")
     const summaryHeader = lang === "fr"
-        ? "Voici un petit résumé des informations que vous nous avez transmises:  \n"
-        : "Here is a short summary of the information you provided:   \n";
+        ? "Voici un petit résumé des informations que vous nous avez transmises, vous pouvez adresser vos questions par la suite:  \n"
+        : "Here is a short summary of the information you provided, you may ask your questions next:   \n";
 
     const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
     const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);
@@ -157,7 +163,7 @@ function isValidAnswer(message, projectType, field) {
     }
 
     // 🎯 3. Champs numériques purs
-    const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking"];
+    const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking", "age"];
     if (numericFields.includes(field)) {
         const isValid = /^\d+$/.test(input);
         console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | valid=_${isValid}_`);

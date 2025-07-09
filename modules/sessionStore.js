@@ -77,8 +77,8 @@ function logSessionState(label, session) {
         propertyUsage: session.propertyUsage,
         currentSpec: session.currentSpec
     };
-
-     console.log(`${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
+    // prochaine ligne utile pour déboguer et comprendre le contenu des variables
+  //   console.log(`${label} [${senderId}] :`, JSON.stringify(snapshot, null, 2));
 
     // 🔍 Ajout des lignes déplacées ici, pour interprétation de l’état
     const hasProject = typeof session.projectType === 'string' && ['B', 'S', 'R'].includes(session.projectType);

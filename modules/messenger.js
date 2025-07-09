@@ -5,8 +5,8 @@ async function sendMessage(senderId, text, session) {
     console.log(`[SEND] To: ${senderId} | Message: ${text}`);
 
     if (typeof text === 'string' && text.trim() === '4') {
-        console.warn(`[ALERTE TRACE] >>> Le bot s’apprête à ENVOYER "4" vers ${senderId}`);
-        console.trace('[TRACE ORIGINE] Envoi de "4" déclenché ici :');
+    //    console.warn(`[ALERTE TRACE] >>> Le bot s’apprête à ENVOYER "4" vers ${senderId}`);
+     //   console.trace('[TRACE ORIGINE] Envoi de "4" déclenché ici :');
     }
 
     if (session) {
@@ -25,7 +25,7 @@ async function sendMessage(senderId, text, session) {
     );
 }
 async function sendMarkSeen(senderId) {
-    console.log(`[ACK] mark_seen → ${senderId}`);
+  //  console.log(`[ACK] mark_seen → ${senderId}`);
     await axios.post(
         `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
         {
@@ -39,7 +39,7 @@ async function sendMarkSeen(senderId) {
 }
 
 async function sendTypingOn(senderId) {
-    console.log(`[TYPING] typing_on → ${senderId}`);
+   // console.log(`[TYPING] typing_on → ${senderId}`);
     await axios.post(
         `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
         {
@@ -53,7 +53,7 @@ async function sendTypingOn(senderId) {
 }
 
 async function acknowledgeAndRespond(senderId, text, session, delayMs = 1200) {
-    console.log(`[RESPOND] ACK + typing + reply → ${senderId}`);
+ //   console.log(`[RESPOND] ACK + typing + reply → ${senderId}`);
     await sendMarkSeen(senderId);
     await sendTypingOn(senderId);
     await wait(delayMs);
@@ -61,7 +61,7 @@ async function acknowledgeAndRespond(senderId, text, session, delayMs = 1200) {
 }
 
 async function acknowledgeOnly(senderId) {
-    console.log(`[ACK-ONLY] mark_seen → ${senderId}`);
+   // console.log(`[ACK-ONLY] mark_seen → ${senderId}`);
     await sendMarkSeen(senderId);
 }
 
@@ -70,7 +70,7 @@ function wait(ms) {
 }
 
 async function sendGif(senderId, gifUrl) {
-    console.log(`[SEND] To: ${senderId} | GIF: ${gifUrl}`);
+ //   console.log(`[SEND] To: ${senderId} | GIF: ${gifUrl}`);
 
     await axios.post(
         `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
