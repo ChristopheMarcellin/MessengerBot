@@ -45,11 +45,12 @@ function resetSession(context) {
         mode: "spec"
     });
 
-    setSession(context.senderId, session);
-    context.session = session;
+    context.session = session;         // 🧠 mise à jour immédiate
+    saveSession(context);              // ✅ version correcte pour ton projet
 
     return session;
 }
+
 
 
 // ✅ Log centralisé, appelé depuis stepInitializeSession ou autre
