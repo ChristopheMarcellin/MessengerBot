@@ -8,7 +8,7 @@ async function stepSummarizeAndConfirm(context) {
     const recap = buildSpecSummary(session, lang);
     console.log("cm on sort de build summary")
     await sendMessage(senderId, recap);
-
+    session.lastUserMessage = null;
     session.mode = "chat";
     console.log('[STEP] Résumé envoyé — passage en mode chat');
 

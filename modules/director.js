@@ -35,12 +35,14 @@ async function runDirector(context) {
     }
 
     // 🎯 Validation de la réponse utilisateur pour la spec attendue
+    if (nextSpec !== null) {
+
     const isValid = isValidAnswer(message, session.projectType, nextSpec);
     console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${nextSpec}"_ = _"${message}"_`);
 
     // 🔄 Traitement simple (sans appel de stepWhatNext ici)
     await stepHandleSpecAnswer(context, nextSpec, isValid);
-
+    }
     // 🔁 Nouvelle évaluation de la prochaine spec après traitement
     const next = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec recalculée = _${next}_`);
