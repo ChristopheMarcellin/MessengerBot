@@ -225,6 +225,53 @@ function allSpecsCollected(session) {
     return !getNextUnansweredSpec(session);
 }
 
+function buildExportRecord(session) {
+    const flatRecord = {
+        senderId: session.senderId || "",
+        language: session.language || "",
+        projectType: session.projectType || "",
+        propertyUsage: session.propertyUsage || "",
+        mode: session.mode || "",
+        ProjectDate: session.ProjectDate || "",
+        questionCount: session.questionCount || 0,
+        maxQuestions: session.maxQuestions || 40,
+        timestamp: new Date().toISOString()
+    };
+
+    // Log des champs fixes
+    Object.entries(flatRecord).forEach(([key, value]) => {
+        console.log(`[EXPORT] Champ: ${key} → Valeur: ${value}`);
+    });
+
+    // Ajoute toutes les specs enregistrées
+    if (session.specValues && typeof session.specValues === 'object') {
+        Object.entries(session.specValues).forEach(([key, value]) => {
+            flatRecord[key] = value;
+            console.log(`[EXPORT] Champ: ${key} (spec) → Valeur: ${value}`);
+        });
+    }
+
+    return flatRecord;
+}
+
+
+async function exportToGoogleSheets(rowData) {
+    const webhookUrl = 'https://script.google.com/macros/s/AKfycbxguRpiWDJHmqP153umdsXbZ_JlWLenlRXnH-vst12885H-Adse98OTm-A4NN-PFIZY/exec' // ← colle ton URL ici
+
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(rowData)
+        });
+
+        const text = await response.text();
+        console.log("[EXPORT] Réponse Sheets :", text);
+    } catch (err) {
+        console.error("[EXPORT] Erreur export Sheets :", err);
+    }
+}
+
 module.exports = {
     getPromptForSpec,
     getNextUnansweredSpec,
@@ -236,5 +283,7 @@ module.exports = {
     isValidAnswer,
     getSpecFieldsForProjectType,
     allSpecsCollected,
-    getProjectTypeFromNumber
+    getProjectTypeFromNumber,
+    buildExportRecord,
+    exportToGoogleSheets
 };

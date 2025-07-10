@@ -1,4 +1,4 @@
-const { buildSpecSummary } = require('../specEngine');
+const { buildSpecSummary, buildExportRecord, exportToGoogleSheets } = require('../specEngine');
 const { sendMessage } = require('../messenger');
 
 async function stepSummarizeAndConfirm(context) {
@@ -9,6 +9,8 @@ async function stepSummarizeAndConfirm(context) {
  //   console.log("on sort de build summary")
     await sendMessage(senderId, recap);
     session.lastUserMessage = null;
+    const rowData = buildExportRecord(context.session);
+    await exportToGoogleSheets(rowData);
     session.mode = "chat";
   //  console.log('[STEP] Résumé envoyé — passage en mode chat');
 
