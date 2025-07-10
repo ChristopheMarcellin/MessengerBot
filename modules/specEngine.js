@@ -229,10 +229,7 @@ function buildExportRecord(session) {
     const flatRecord = {
         senderId: session.senderId || "",
         language: session.language || "",
-        projectType: session.projectType || "",
-        propertyUsage: session.propertyUsage || "",
         mode: session.mode || "",
-        ProjectDate: session.ProjectDate || "",
         questionCount: session.questionCount || 0,
         maxQuestions: session.maxQuestions || 40,
         timestamp: new Date().toISOString()

@@ -9,10 +9,10 @@ async function stepSummarizeAndConfirm(context) {
  //   console.log("on sort de build summary")
     await sendMessage(senderId, recap);
     session.lastUserMessage = null;
+
+    session.mode = "chat";
     const rowData = buildExportRecord(context.session);
     await exportToGoogleSheets(rowData);
-    session.mode = "chat";
-  //  console.log('[STEP] Résumé envoyé — passage en mode chat');
 
     return true;
 }
