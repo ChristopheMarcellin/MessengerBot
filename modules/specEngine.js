@@ -144,7 +144,6 @@ const resetInvalidSpecs = (session) => {
 
 // ✅ Validation spécifique pour projectType
 
-const { gptClassifyNumericSpecAnswer } = require('./utilsGPT');
 
 async function isValidAnswer(message, projectType, field, lang = "fr") {
     console.log(`[spec Engine] validating message or interpretation text value: __${message}_ and projecttype: _${projectType} for: field=_${field}`);
