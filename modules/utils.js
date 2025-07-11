@@ -146,16 +146,16 @@ async function gptClassifyProject(message, language = "fr") {
         });
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const classification = raw?.match(/^[1-4]/)?.[0] || "5"; // défaut: 5 → autre → ?
+        const classification = raw?.match(/^[1-4]/)?.[0] || "5";
 
-        const map = getProjectTypeFromNumber();
-        return map[classification];
+        return getProjectTypeFromNumber(classification); 
 
     } catch (err) {
         console.warn(`[gptClassifyProject] GPT ERROR: ${err.message}`);
         return "?";
     }
 }
+
 
 
 async function chatOnly(senderId, message, lang = "fr") {
@@ -273,7 +273,7 @@ function getNextSpec(session) {
     if (!typeBlock || typeof typeBlock !== 'object') {
         return 'none';
     }
-    console.log(`[getNextSpec] ✅ Champs spécifiques pour ${projectType} =`, Object.keys(typeBlock));
+ //   console.log(`[getNextSpec] ✅ Champs spécifiques pour ${projectType} =`, Object.keys(typeBlock));
 
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
     for (const field of Object.keys(typeBlock)) {
