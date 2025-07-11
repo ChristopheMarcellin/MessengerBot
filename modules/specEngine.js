@@ -143,7 +143,7 @@ const resetInvalidSpecs = (session) => {
 };
 
 // ✅ Validation spécifique pour projectType
-const { isNumeric } = require('./utils');
+
 const { gptClassifyNumericSpecAnswer } = require('./utilsGPT');
 
 async function isValidAnswer(message, projectType, field, lang = "fr") {
