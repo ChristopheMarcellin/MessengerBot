@@ -156,8 +156,6 @@ async function gptClassifyProject(message, language = "fr") {
     }
 }
 
-const axios = require('axios');
-const axios = require('axios');
 
 async function gptClassifyNumericSpecAnswer(input, lang = "fr") {
     if (typeof input !== 'string' || input.trim() === "") return "?";
