@@ -257,6 +257,12 @@ function isText(input) {
     return /[a-zA-Zàâçéèêëîïôûùüÿœæ]/i.test(trimmed);
 }
 
+function isNumeric(input) {
+    if (typeof input === 'number') return true;
+    if (typeof input !== 'string') return false;
+    const trimmed = input.trim();
+    return trimmed !== '' && !isNaN(trimmed);
+}
 
 
 function detectLanguageFromText(text) {
