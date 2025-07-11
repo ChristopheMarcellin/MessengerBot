@@ -1,5 +1,8 @@
 const questions = require('./questions');
 const displayMap = require('./displayMap');
+const isNumeric = require('./utils');
+const gptClassifyNumericSpecAnswer = require('./utils');
+
 
 function getPromptForSpec(projectType, specKey, lang = "en") {
     const questionSet = questions?.[projectType];
@@ -94,6 +97,12 @@ function getDisplayValue(field, value, lang = "fr") {
         return lang === "fr" ? `Courriel : ${value}` : `Email: ${value}`;
     }
 
+    if (field === "wantsContact") {
+        const map = displayMap?.wantsContact?.[lang];
+        const key = value in map ? value : String(value);
+        return map?.[key] ?? value;
+    }
+
     const map = displayMap[field]?.[lang];
     return map?.[value] ?? value;
 }
@@ -134,8 +143,10 @@ const resetInvalidSpecs = (session) => {
 };
 
 // ✅ Validation spécifique pour projectType
-function isValidAnswer(message, projectType, field) {
-    //cm
+const { isNumeric } = require('./utils');
+const { gptClassifyNumericSpecAnswer } = require('./utilsGPT');
+
+async function isValidAnswer(message, projectType, field, lang = "fr") {
     console.log(`[spec Engine] validating message or interpretation text value: __${message}_ and projecttype: _${projectType} for: field=_${field}`);
     if (!message) return false;
 
@@ -147,71 +158,71 @@ function isValidAnswer(message, projectType, field) {
         return true;
     }
 
-    // 🎯 1. valide le texte de location
+    // 🎯 1. location (texte libre court)
     if (field === "location") {
-        const isValid = typeof message === "string" && input.length > 0 && input.length <= 25;
+        const isValid = typeof input === "string" && input.length > 0 && input.length <= 25;
         console.log(`[spec Engine] validating field=location | input=__${input}_ | valid=_${isValid}_`);
         return isValid;
     }
 
-    // 🎯 2. projectType : choix numéroté 1 à 4
+    // 🎯 2. projectType : réponse numérique directe
     if (field === "projectType") {
         const isValid = ["1", "2", "3", "4"].includes(input);
         console.log(`[spec Engine] validating field=projectType | input=__${input}_ | valid=_${isValid}_`);
         return isValid;
     }
 
-    // 🎯 3. Champs numériques purs
-    const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking", "age"];
-    if (numericFields.includes(field)) {
-        const isValid = /^\d+$/.test(input);
-        console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | valid=_${isValid}_`);
-        return isValid;
-    }
-
-    // 🎯 4. Réponse à "Souhaitez-vous être contacté ?"
+    // 🎯 3. wantsContact : réponse 1 ou 2
     if (field === "wantsContact") {
-        const isValid = ["1", "2"].includes(input);
-        console.log(`[spec Engine] validating field=wantsContact | input=__${input}_ | valid=_${isValid}_`);
+        const validValues = ["1", "2"];
+        if (validValues.includes(input)) return true;
+
+        const decoded = await gptClassifyNumericSpecAnswer(input, lang);
+        const isValid = validValues.includes(decoded);
+        console.log(`[spec Engine] validating field=wantsContact | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
         return isValid;
     }
 
-    // 🎯 5. Détermine si c'est une propriété à revenus
-    if (field === "propertyUsage") {
-        const isValid = ["1", "2"].includes(input);
-        console.log(`[spec Engine] validating field=propertyUsage | input="${input}" | valid=_${isValid}_`);
+    // 🎯 4. Champs numériques purs (price, bedrooms, etc.)
+    const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking", "age", "propertyUsage"];
+    if (numericFields.includes(field)) {
+        if (isNumeric(input)) return true;
+
+        const decoded = await gptClassifyNumericSpecAnswer(input, lang);
+        const isValid = isNumeric(decoded);
+        console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
         return isValid;
     }
 
-    // 🎯 6. Téléphone
+    // 🎯 5. phone
     if (field === "phone") {
         const isValid = /^[\d\s\-\+\(\)]{7,25}$/.test(input);
         console.log(`[spec Engine] validating field=phone | input="${input}" | valid=_${isValid}_`);
         return isValid;
     }
 
-    // 🎯 7. Email
+    // 🎯 6. email
     if (field === "email") {
         const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
         console.log(`[spec Engine] validating field=email | input="${input}" | valid=_${isValid}_`);
         return isValid;
     }
 
-    // 🎯 8. Nom et prénom
+    // 🎯 7. firstName / lastName
     if (["firstName", "lastName"].includes(field)) {
         const isValid = /^[a-zA-ZÀ-ÿ' -]{2,}$/.test(input);
         console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_`);
         return isValid;
     }
-    // 🎯 10. Expectations
+
+    // 🎯 8. expectations (aucune validation)
     if (field === "expectations") {
-        const isValid = true;
-        return isValid; // tout est accepté sans validation
+        return true;
     }
 
-    // 🎯 11. Fallback sur displayMap
-    const lang = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
-    const map = displayMap?.[field]?.[lang];
+    // 🎯 9. fallback via displayMap
+    const language = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
+    const map = displayMap?.[field]?.[language];
     const isValid = map ? Object.keys(map).includes(input) : true;
     console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_ (via displayMap fallback)`);
     return isValid;

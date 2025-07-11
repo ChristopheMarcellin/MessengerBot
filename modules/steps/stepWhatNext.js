@@ -18,8 +18,12 @@ async function stepWhatNext(context, spec) {
     }
 
     // 💬 Étape spéciale : détection de relance (même spec que précédente)
+    let prefix = "";
     if (nextSpec === spec) {
         console.log('[WHATNEXT nextSpec === spec] *** revisite de la même spec');
+        prefix = lang === 'fr'
+            ? "Désolé, nous n'avons pas compris votre réponse précédente. Voici la question à nouveau :\n\n"
+            : "Sorry, we didn't understand your previous answer. Here's the question again:\n\n";
     }
 
     // === Initialisation obligatoire ===
@@ -39,7 +43,7 @@ async function stepWhatNext(context, spec) {
         }
 
         console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
-        await sendMessage(senderId, questionText);
+        await sendMessage(senderId, prefix + questionText);
         return true;
     }
 
@@ -63,7 +67,7 @@ async function stepWhatNext(context, spec) {
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
         
-    await sendMessage(senderId, questionText);
+    await sendMessage(senderId, prefix + questionText);
 
     return true;
 }

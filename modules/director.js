@@ -39,10 +39,6 @@ async function runDirector(context) {
 
     }
 
-
-
-
-
     // NEXT SPEC PROJECT TYPE
     if (nextSpec === "projectType") {
    //     logSessionState("***[DIRECTOR stepHandleProjectType]", session);
@@ -53,7 +49,7 @@ async function runDirector(context) {
     // 🎯 Validation de la réponse utilisateur pour la spec attendue
     if (nextSpec !== null) {
 
-    const isValid = isValidAnswer(message, session.projectType, nextSpec);
+    const isValid = await isValidAnswer(message, session.projectType, nextSpec, session.language || "fr");
     console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${nextSpec}"_ = _"${message}"_`);
 
     // 🔄 Traitement simple (sans appel de stepWhatNext ici)
@@ -61,6 +57,7 @@ async function runDirector(context) {
     }
     // 🔁 Nouvelle évaluation de la prochaine spec après traitement
     const next = getNextSpec(session);
+
     console.log(`[DIRECTOR] NextSpec recalculée = _${next}_`);
 
     //TOUTES LES SPECS ONT ÉTÉ TRAITÉES
@@ -74,7 +71,6 @@ async function runDirector(context) {
         return true;
 
     }
-
 
 
     //summarize
