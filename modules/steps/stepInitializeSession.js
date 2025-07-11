@@ -6,20 +6,16 @@ async function stepInitializeSession(context) {
     const isEndSession = message.trim().toLowerCase() === 'end session';
     let session;
 
-    // 🔐 STOP PROBLÈME EN VUE
+    // Validate sender Id
     if (typeof senderId !== 'string' || senderId.trim() === '') {
         console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return false;
     }
 
-
+    // Manage end session call
     if (isEndSession) {
 
         session = resetSession(context);
-
-        //if (isText(message) && typeof session.language !== 'string') {
-        //    session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
-        //}
         context.session = session;
         context.session.mode = 'end session';
         // DEBUG VERROU
@@ -27,7 +23,7 @@ async function stepInitializeSession(context) {
         return false;
     }
 
-    // 🧠 Récupération uniquement si ce n'est pas un end session
+    // Initialisation normale
     session = getSession(senderId);
 
     if (!session) {
@@ -36,21 +32,24 @@ async function stepInitializeSession(context) {
             session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         }
         context.session = session;
-        console.log('[INIT] *** Session créée car manquante');
+        session.language = detectLanguageFromText(message); 
+        console.log(`[INIT] *** Session re-créée car manquante langue détectée:'${session.language }' pour '${ message}'`);
         return true;
     }
 
     // 🧠 Affectation obligatoire avant traitement
     if (isText(message) && typeof session.language !== 'string') {
         session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        console.log(`[INIT] Langue détectée:'${session.language}' pour '${message}'`);
     }
 
     context.session = session;
 
     // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {
-        logSessionState("***[INIT session déjà initialisée]", session);
+     //   logSessionState("***[INIT session déjà initialisée]", session);
         //    console.log('[INIT] Session déjà initialisée → aucune action requise');
+        console.log(`[INIT] *** Session re-créée car manquante langue détectée:'${session.language}' pour '${message}'`);
         return true;
     }
 

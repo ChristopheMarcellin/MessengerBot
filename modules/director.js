@@ -15,6 +15,7 @@ async function runDirector(context) {
     const isReady = await stepInitializeSession(context);
     const session = context.session;
 
+    //pas prêt pour enclencher les prochaines étapes
     if (!isReady) {
         console.log('[DIRECTOR] is not ready to continue')
         logSessionState("[***DIRECTOR !isReady]", session);
@@ -26,10 +27,25 @@ async function runDirector(context) {
     const nextSpec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${nextSpec}_`);
 
+    //TOUTES LES SPECS ONT ÉTÉ TRAITÉES
+    if (nextSpec === 'none') {
+        console.log("toutes les specs ont été traitées");
+   //     context.gptAllowed = true;
+        context.session.mode = 'chat'
+     //   context.gptAllowed = true;
+       // logSessionState("***[DIRECTOR no summary]", session);
+        await chatOnly(senderId, message, session.language || "fr");
+        return true;
 
-    // 🧠 Cas unique : stepHandleProjectType de projectType uniquement via GPT
+    }
+
+
+
+
+
+    // NEXT SPEC PROJECT TYPE
     if (nextSpec === "projectType") {
-        logSessionState("***[DIRECTOR stepHandleProjectType]", session);
+   //     logSessionState("***[DIRECTOR stepHandleProjectType]", session);
         const handled = await stepHandleProjectType(context);
         return handled;
     }
@@ -47,9 +63,23 @@ async function runDirector(context) {
     const next = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec recalculée = _${next}_`);
 
+    //TOUTES LES SPECS ONT ÉTÉ TRAITÉES
+    if (next === 'none') {
+        console.log("toutes les specs ont été traitées");
+      //  context.gptAllowed = true;
+        context.session.mode = 'chat'
+    //    context.gptAllowed = true;
+   //     logSessionState("***[DIRECTOR no summary]", session);
+        await chatOnly(senderId, message, session.language || "fr");
+        return true;
+
+    }
+
+
+
     //summarize
     if (next === null && ["B", "S", "R"].includes(session.projectType)) {
-        logSessionState("***[DIRECTOR summarize]", session);
+     //   logSessionState("***[DIRECTOR summarize]", session);
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
             await stepSummarizeAndConfirm(context);
@@ -57,8 +87,8 @@ async function runDirector(context) {
         }
 
         console.log("[DIRECTOR] ℹ️ Session déjà en mode chat → passage à GPT");
-        context.gptAllowed = true;
-        logSessionState("***[DIRECTOR no summary]", session);
+    //    context.gptAllowed = true;
+    //    logSessionState("***[DIRECTOR no summary]", session);
         await chatOnly(senderId, message, session.language || "fr");
         return true;
     }

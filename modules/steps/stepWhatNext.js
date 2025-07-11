@@ -58,15 +58,6 @@ async function stepWhatNext(context, spec) {
         }
     }
 
-
-    //// === Étape 3
-    //if (nextSpec === "summary") {
-    //    console.log('[WHATNEXT ÉTAPE4] nextSpec = "summary"');
-    //    const recap = buildSpecSummary(context.session, context.session.language);
-    //    await sendMessage(senderId, recap);
-    //    return false;
-    //}
-
     setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
 
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);

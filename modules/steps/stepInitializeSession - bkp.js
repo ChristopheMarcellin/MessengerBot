@@ -57,7 +57,7 @@ async function stepInitializeSession(context) {
 
  //   saveSession(context);
     // 🔍 Log APRÈS réparation/normalisation
-    logSessionState("Vérification APRÈS une initialisation propre", context.session);
+ //   logSessionState("Vérification APRÈS une initialisation propre", context.session);
     return true;
 }
 
