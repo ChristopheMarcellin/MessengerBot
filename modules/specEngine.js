@@ -176,8 +176,6 @@ async function isValidAnswer(message, projectType, field, lang = "fr") {
     if (field === "wantsContact") {
         const validValues = ["1", "2"];
         if (validValues.includes(input)) return true;
-
-        const decoded = await gptClassifyNumericSpecAnswer(input, lang);
         const isValid = validValues.includes(decoded);
         console.log(`[spec Engine] validating field=wantsContact | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
         return isValid;
