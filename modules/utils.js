@@ -5,6 +5,8 @@ const { getProjectTypeFromNumber } = require('./specEngine');
 const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
 
+console.log("🧩 [utils.js] **************************** Chargé — typeof isNumeric =", typeof isNumeric);
+
 function stripGptSignature(text) {
     return text
         .replace(/\[.*?\]/g, '')        // Supprime les blocs comme [Votre Nom], [Coordonnées], etc.
