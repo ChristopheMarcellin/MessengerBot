@@ -1,7 +1,6 @@
 const questions = require('./questions');
 const displayMap = require('./displayMap');
-const isNumeric = require('./utils');
-const gptClassifyNumericSpecAnswer = require('./utils');
+const { isNumeric, gptClassifyNumericSpecAnswer } = require('./utils');
 
 
 function getPromptForSpec(projectType, specKey, lang = "en") {
