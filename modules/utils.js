@@ -457,7 +457,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
                 : "E";
 
         session.specValues[key] = usage;
-        console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}, caller ="${caller}"`);
+   //     console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}, caller ="${caller}"`);
         return;
     }
 
@@ -473,7 +473,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
         .map(([k, v]) => `${k}=${v}`)
         .join(', ');
 
-    console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
+   // console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
 
 function setAskedSpec(session, specKey, source = "manual") {
