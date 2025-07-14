@@ -1,6 +1,6 @@
 const questions = require('./questions');
 const displayMap = require('./displayMap');
-const { isNumeric, gptClassifyNumericSpecAnswer } = require('./utils');
+const { isNumeric } = require('./utils');
 
 
 function getPromptForSpec(projectType, specKey, lang = "en") {
@@ -27,6 +27,36 @@ const projectTypeMap = {
 
 function getProjectTypeFromNumber(input) {
     return projectTypeMap[input?.trim()] || "?";
+}
+
+async function gptClassifyNumericSpecAnswer(input, lang = "fr") {
+    if (typeof input !== 'string' || input.trim() === "") return "?";
+
+    const prompt = lang === "fr"
+        ? `L'utilisateur a répondu : "${input}". Que voulait-il dire par un chiffre ? Donne seulement un chiffre en réponse, comme 1, 2, 3 ou 4. Ne commente pas.`
+        : `The user replied: "${input}". What number did they mean? Respond with a single number only, like 1, 2, 3 or 4. Do not comment.`;
+
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 10,
+            temperature: 0
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+
+        const raw = response.data.choices?.[0]?.message?.content?.trim() || "?";
+        const match = raw.match(/^\d+$/);
+        return match ? match[0] : "?";
+
+    } catch (err) {
+        console.warn(`[gptClassifyNumericSpecAnswer] GPT ERROR: ${err.message}`);
+        return "?";
+    }
 }
 
 const getNextUnansweredSpec = (session) => {
