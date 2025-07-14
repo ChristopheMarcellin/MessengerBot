@@ -3,7 +3,7 @@ const axios = require('axios');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
-const { getProjectTypeFromNumber } = require('./specEngine');
+
 
 
 console.log("🧩 [utils.js] **************************** Chargé — typeof isNumeric =", typeof isNumeric);
@@ -151,7 +151,7 @@ async function gptClassifyProject(message, language = "fr") {
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const classification = raw?.match(/^[1-4]/)?.[0] || "5";
 
-        return getProjectTypeFromNumber(classification); 
+        return classification; 
 
     } catch (err) {
         console.warn(`[gptClassifyProject] GPT ERROR: ${err.message}`);

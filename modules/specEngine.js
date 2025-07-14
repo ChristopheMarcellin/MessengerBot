@@ -26,7 +26,7 @@ const projectTypeMap = {
 };
 
 function getProjectTypeFromNumber(input) {
-    return projectTypeMap[input?.trim()] || "?";
+    return input === "?" ? "?" : (projectTypeMap[input?.trim()] || "?");
 }
 
 async function gptClassifyNumericSpecAnswer(input, lang = "fr") {
