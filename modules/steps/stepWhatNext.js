@@ -6,7 +6,7 @@ const { buildSpecSummary } = require('../specEngine');
 
 // Pose la question associée à la spec fournie.
 // Retourne true si une question a été posée, false sinon (par sécurité, mais en pratique jamais appelé avec nextSpec null).
-async function stepWhatNext(context, spec) {
+async function stepWhatNext(context, spec, previousSpec) {
     const { senderId } = context;
     const lang = context.session.language || 'fr';
  //   console.log(`[WHATNEXT] Langue dans session = ${lang}`);
@@ -19,8 +19,8 @@ async function stepWhatNext(context, spec) {
 
     // 💬 Étape spéciale : détection de relance (même spec que précédente)
     let prefix = "";
-    if (nextSpec === spec) {
-        console.log('[WHATNEXT nextSpec === spec] *** revisite de la même spec');
+    if (previousSpec === spec) {
+        console.log(`[WHATNEXT] Question posée de nouveau pcq ancienne spec était :"${previousSpec}" et la nouvelle est ${spec}`);
         prefix = lang === 'fr'
             ? "Désolé, nous n'avons pas compris votre réponse précédente. Voici la question à nouveau :\n\n"
             : "Sorry, we didn't understand your previous answer. Here's the question again:\n\n";
