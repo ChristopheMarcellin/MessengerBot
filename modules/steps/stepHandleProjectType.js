@@ -5,8 +5,9 @@ const { saveSession } = require('../sessionStore');
 
 async function stepHandleProjectType(context) {
 
+
+    const isValid = await isValidAnswer(context, "projectType", "projectType");
     const { message, session } = context;
-    const isValid = isValidAnswer(message, "projectType", "projectType");
 
     if (isValid) {
         const interpreted = getProjectTypeFromNumber(message);
