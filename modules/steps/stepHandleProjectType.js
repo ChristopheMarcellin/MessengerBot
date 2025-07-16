@@ -27,6 +27,7 @@ async function stepHandleProjectType(context) {
 
     if (isValidGPT) {
         setProjectType(session, interpreted, "interprétation par gpt");
+        console.log(`[stepHandleProjectType isValidGpt]  = "${ interpreted }"`)
     } else {
         if (alreadyAsked && current === "?") {
             setProjectType(session, "E", "GPT → refus après 2 échecs");

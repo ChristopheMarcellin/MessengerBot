@@ -207,12 +207,10 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
 
         }
         else {
-
             const decoded = await gptClassifyNumericSpecAnswer(input, lang);
             const isValid = ["1", "2", "3", "4"].includes(decoded);
             console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
             return isValid;
-
         }
     }
 

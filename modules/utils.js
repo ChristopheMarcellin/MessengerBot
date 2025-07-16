@@ -150,7 +150,7 @@ async function gptClassifyProject(message, language = "fr") {
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const classification = raw?.match(/^[1-4]/)?.[0] || "5";
-
+        console.log(`[gptClassifyProject] a déterminé que le message  = "${classification}"`)
         return classification; 
 
     } catch (err) {
