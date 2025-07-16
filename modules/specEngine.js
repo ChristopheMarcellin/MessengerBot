@@ -1,7 +1,7 @@
+const axios = require('axios');
 const questions = require('./questions');
 const displayMap = require('./displayMap');
 const { isNumeric } = require('./utils');
-const axios = require('axios');
 
 
 function getPromptForSpec(projectType, specKey, lang = "en") {
@@ -34,8 +34,8 @@ async function gptClassifyNumericSpecAnswer(input, lang = "fr") {
     if (typeof input !== 'string' || input.trim() === "") return "?";
 
     const prompt = lang === "fr"
-        ? `L'utilisateur a répondu : "${input}". Que voulait-il dire par un chiffre ? Donne seulement un chiffre en réponse, comme 1, 2, 3 ou 4. Ne commente pas.`
-        : `The user replied: "${input}". What number did they mean? Respond with a single number only, like 1, 2, 3 or 4. Do not comment.`;
+        ? `Si la phrase qui suit réfère à une valeur numérique, me retourner cette valeur, autrement me retourner un "?". Ne retourner qu'un seul chiffre (comme 1, 2, 3, etc.) ou la valeur "?" lorsque la phrase ne réfère à aucun chiffre. Ne retourner aucun texte. Maintenant voici la phrase à analyser : "${input}".`
+        : `If the following sentence refers to a numeric value, return that value. Otherwise, return "?". Return only a single digit (like 1, 2, 3, etc.) or "?" if the sentence does not refer to any number. Do not return any text. Now here is the sentence to analyze: "${input}".`;
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -196,9 +196,22 @@ async function isValidAnswer(message, projectType, field, lang = "fr") {
 
     // 🎯 2. projectType : réponse numérique directe
     if (field === "projectType") {
-        const isValid = ["1", "2", "3", "4"].includes(input);
-        console.log(`[spec Engine] validating field=projectType | input=__${input}_ | valid=_${isValid}_`);
-        return isValid;
+
+        if (isNumeric(input)) {
+            const isValid = ["1", "2", "3", "4"].includes(input);
+            console.log(`[spec Engine] validating field=projectType | input=__${input}_ | valid=_${isValid}_`);
+            return isValid;
+
+        }
+        else {
+
+            const decoded = await gptClassifyNumericSpecAnswer(input, lang);
+            const isValid = ["1", "2", "3", "4"].includes(decoded);
+            console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
+            return isValid;
+
+        }
+
     }
 
     // 🎯 3. wantsContact : réponse 1 ou 2
