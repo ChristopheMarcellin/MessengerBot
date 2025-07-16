@@ -35,7 +35,7 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
      //   if (alreadyAsked && current === "?") {
         if (current === "?") {
             setSpecValue(session, spec, "E", "passé à E après une 2e tentatives");
-            setAskedSpec(context.session, nextSpec, `[stepHandleSpecAnswer] setAskedSpec = true for the 2nd time but answer is inValid`);
+            setAskedSpec(context.session, spec, `[stepHandleSpecAnswer] setAskedSpec = true for the 2nd time but answer is inValid`);
             console.log(`[stepHandleSpecAnswer current: "${current}" passé à "E" après deux tentatives`);
         } else {
             setSpecValue(session, spec, "?", "runDirector/invalid");
