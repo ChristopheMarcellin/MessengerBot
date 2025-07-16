@@ -1,4 +1,4 @@
-const { setSpecValue } = require('../utils');
+const { setSpecValue, setAskedSpec } = require('../utils');
 const { saveSession } = require('../sessionStore');
 
 // Traite une réponse utilisateur pour une spec donnée, déjà jugée valide ou non
