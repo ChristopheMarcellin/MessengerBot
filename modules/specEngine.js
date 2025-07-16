@@ -175,7 +175,10 @@ const resetInvalidSpecs = (session) => {
 // ✅ Validation spécifique pour projectType
 
 
-async function isValidAnswer(message, projectType, field, lang = "fr") {
+async function isValidAnswer(context, projectType, field, lang = "fr") {
+
+    const message = context.message;
+    if (typeof message !== 'string') return false;
     console.log(`[spec Engine] validating message or interpretation text value: __${message}_ and projecttype: _${projectType} for: field=_${field}`);
     if (!message) return false;
 
@@ -211,15 +214,12 @@ async function isValidAnswer(message, projectType, field, lang = "fr") {
             return isValid;
 
         }
-
     }
 
     // 🎯 3. wantsContact : réponse 1 ou 2
     if (field === "wantsContact") {
         const validValues = ["1", "2"];
-        if (validValues.includes(input)) return true;
-        const isValid = validValues.includes(decoded);
-        console.log(`[spec Engine] validating field=wantsContact | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
+        const isValid = validValues.includes(input);
         return isValid;
     }
 

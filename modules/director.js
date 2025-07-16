@@ -48,8 +48,8 @@ async function runDirector(context) {
     // 🎯 Validation de la réponse utilisateur pour la spec attendue
     if (spec !== null) {
 
-        const isValid = await isValidAnswer(message, session.projectType, spec, session.language || "fr");
-        console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${spec}"_ = _"${message}"_`);
+        const isValid = await isValidAnswer(context, session.projectType, spec, session.language || "fr");
+        console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${spec}"_ = _"${context.message}"_`);
 
         // 🔄 Traitement simple (sans appel de stepWhatNext ici)
         await stepHandleSpecAnswer(context, spec, isValid);

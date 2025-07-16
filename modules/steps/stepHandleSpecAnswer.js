@@ -36,7 +36,7 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
     }
 
     context.deferSpec = true;
-   // context.gptAllowed = true;
+    context.gptAllowed = true;
     saveSession(context);
     return true;
 }
