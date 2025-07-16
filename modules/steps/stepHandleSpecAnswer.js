@@ -5,6 +5,7 @@ const { saveSession } = require('../sessionStore');
 async function stepHandleSpecAnswer(context, spec, isValid) {
     const { session, message } = context;
 
+    //passer au mode chat
     if (!spec || spec === "null") {
         // 🔁 Laisser passer si on est en mode libre (chat)
         if (session?.mode === "chat") {
@@ -16,6 +17,8 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
         return false;
     }
 
+    //enregistrer la valeur de la spec
+
     if (isValid) {
         setSpecValue(session, spec, message, "runDirector/valid");
         saveSession(context);
@@ -25,11 +28,13 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
     const alreadyAsked = session.askedSpecs[spec] === true;
     const current = session.specValues[spec];
     const protectedValues = ["E", 0];
-
+    console.log(`[DIRECTOR !isValid] nextSpec: "${spec}" alreadyAsked = "${alreadyAsked}"`);
+    //
     if (!protectedValues.includes(current)) {
-        if (alreadyAsked && current === "?") {
+     //   if (alreadyAsked && current === "?") {
+        if (current === "?") {
             setSpecValue(session, spec, "E", "passé à E après 2 tentatives");
-            console.log(`[DIRECTOR !isValid] nextSpec: "${spec}" passé à "E" après deux tentatives`);
+            console.log(`[stepHandleSpecAnswer current: "${current}" passé à "E" après deux tentatives`);
         } else {
             setSpecValue(session, spec, "?", "runDirector/invalid");
         }

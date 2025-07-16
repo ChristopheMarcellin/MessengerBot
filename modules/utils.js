@@ -126,8 +126,6 @@ async function classifyFAQCategory(message, lang = 'fr') {
     }
 }
 
-
-
 //gpt classifies project
 
 async function gptClassifyProject(message, language = "fr") {
