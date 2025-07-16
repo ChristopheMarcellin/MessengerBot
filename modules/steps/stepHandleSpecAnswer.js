@@ -26,24 +26,23 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
         return true;
     }
     //réponse invalide
-    const alreadyAsked = session.askedSpecs[spec] === true;
+    const alreadyAsked = session.askedSpecs[spec];
     const current = session.specValues[spec];
     const protectedValues = ["E", 0];
    // console.log(`[DIRECTOR !isValid] nextSpec: "${spec}" alreadyAsked = "${alreadyAsked}"`);
     //si la spec en cours ne vaut ni "E" ni 0
     if (!protectedValues.includes(current)) {
      //   if (alreadyAsked && current === "?") {
-        if (current === "?") {
+        if (current === "?"&& alreadyAsked===true) {
             setSpecValue(session, spec, "E", "passé à E après une 2e tentatives");
             setAskedSpec(context.session, spec, `[stepHandleSpecAnswer] setAskedSpec = true for the 2nd time but answer is inValid`);
             console.log(`[stepHandleSpecAnswer current: "${current}" passé à "E" après deux tentatives`);
         } else {
             setSpecValue(session, spec, "?", "runDirector/invalid");
-            setAskedSpec(context.session, spe, `[stepHandleSpecAnswer] setAskedSpec = true for the 1st time but answer is inValid`)
+            setAskedSpec(context.session, spec, `[stepHandleSpecAnswer] setAskedSpec = true for the 1st time but answer is inValid`)
         }
     }
-
-    context.deferSpec = true;
+     context.deferSpec = true;
     context.gptAllowed = true;
     saveSession(context);
     return true;
