@@ -62,7 +62,7 @@ async function stepWhatNext(context, spec, previousSpec) {
         }
     }
 
-    setAskedSpec(context.session, nextSpec, 'stepWhatNext for all and any reg. specs');
+  //  setAskedSpec(context.session, nextSpec, 'stepWhatNext for all and any reg. specs');
 
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
