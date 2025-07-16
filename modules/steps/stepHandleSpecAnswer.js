@@ -21,7 +21,7 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
 
     if (isValid) {
         setSpecValue(session, spec, message, "[stepHandleSpecAnswer] setSpecValue answer is valid" );
-        setAskedSpec(context.session, nextSpec, `[stepHandleSpecAnswer] setAskedSpec = true an the answer is valid`);
+        setAskedSpec(context.session, spec, `[stepHandleSpecAnswer] setAskedSpec = true an the answer is valid`);
         saveSession(context);
         return true;
     }
