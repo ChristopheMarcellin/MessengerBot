@@ -229,7 +229,9 @@ async function isValidAnswer(message, projectType, field, lang = "fr") {
         if (isNumeric(input)) return true;
 
         const decoded = await gptClassifyNumericSpecAnswer(input, lang);
+
         const isValid = isNumeric(decoded);
+        if (isValid) context.message = decoded;
         console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
         return isValid;
     }
