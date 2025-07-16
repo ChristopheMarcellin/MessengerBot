@@ -132,8 +132,8 @@ async function classifyFAQCategory(message, lang = 'fr') {
 
 async function gptClassifyProject(message, language = "fr") {
     const prompt = language === "fr"
-        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre\nNe commente pas, réponds seulement par un chiffre.`
-        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:\n1 → buy\n2 → sell\n3 → rent\n4 → other\nReply with a single number only.`;
+        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre (ex: question générale sur l'immobilier)\n5 → incompréhensible ou message sans intention (ex: "bonjour")\nRéponds uniquement par un chiffre.`
+        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:\n1 → buy\n2 → sell\n3 → rent\n4 → other (e.g. general real estate question)\n5 → unclear or no intent (e.g. "hi")\nReply with a single number only.`;
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -149,15 +149,18 @@ async function gptClassifyProject(message, language = "fr") {
         });
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const classification = raw?.match(/^[1-4]/)?.[0] || "5";
-        console.log(`[gptClassifyProject] a déterminé que le message  = "${classification}"`)
-        return classification; 
+        const classification = raw?.match(/^[1-5]/)?.[0] || "5"; // Sécurité si retour non numérique
+        const output = classification; // On garde tel quel maintenant que 5 est prévu
+
+        console.log(`[gptClassifyProject] GPT = "${classification}" → retour final: "${output}"`);
+        return output;
 
     } catch (err) {
         console.warn(`[gptClassifyProject] GPT ERROR: ${err.message}`);
         return "?";
     }
 }
+
 
 
 async function chatOnly(senderId, message, lang = "fr") {
