@@ -17,14 +17,14 @@ async function stepHandleSpecAnswer(context, spec, isValid) {
         return false;
     }
 
-    //enregistrer la valeur de la spec
+    //enregistrer la valeur de la spec si la réponse est valide
 
     if (isValid) {
         setSpecValue(session, spec, message, "runDirector/valid");
         saveSession(context);
         return true;
     }
-
+    //réponse invalide
     const alreadyAsked = session.askedSpecs[spec] === true;
     const current = session.specValues[spec];
     const protectedValues = ["E", 0];

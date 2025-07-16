@@ -34,7 +34,7 @@ async function stepWhatNext(context, spec, previousSpec) {
         const questionText = getPromptForProjectType(lang);
 
         if (context.session.mode === 'spec') {
-            setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
+            setAskedSpec(context.session, nextSpec, 'stepWhatNext for projectType');
         }
         else {
 
@@ -54,7 +54,7 @@ async function stepWhatNext(context, spec, previousSpec) {
         if (usage === "personal") {
             ["bedrooms", "bathrooms", "garage"].forEach(field => {
                 if (context.session.askedSpecs?.[field] !== true) {
-                    setAskedSpec(context.session, field, "auto → propertyUsage=personal");
+                    setAskedSpec(context.session, field, "stepWhatNext for propertyUsage");
                 }
             });
         } else if (usage === "income") {
@@ -62,7 +62,7 @@ async function stepWhatNext(context, spec, previousSpec) {
         }
     }
 
-    setAskedSpec(context.session, nextSpec, 'question posée via stepWhatNext');
+    setAskedSpec(context.session, nextSpec, 'stepWhatNext for all and any reg. specs');
 
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);

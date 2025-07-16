@@ -451,10 +451,10 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 function setAskedSpec(session, specKey, source = "manual") {
     if (!session.askedSpecs) {
         session.askedSpecs = {};
-       // console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
+      // console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
     }
     session.askedSpecs[specKey] = true;
-   // console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
+    console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
 }
 
 
