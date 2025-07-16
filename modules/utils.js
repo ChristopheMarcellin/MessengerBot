@@ -395,6 +395,7 @@ function setProjectType(session, value, caller = 'unknown') {
  //   console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
 function setSpecValue(session, key, value, caller = "unspecified") {
+    console.log(`[UTILS setSpecValue] spec = "${key}" valeur ="${value}" et le caller est "${caller}"`)
     if (!session.specValues) session.specValues = {};
 
     const old = session.specValues[key];
