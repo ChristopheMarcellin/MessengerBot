@@ -19,7 +19,7 @@ async function stepHandleProjectType(context) {
 
     const classification = await gptClassifyProject(message, session.language || "fr");
     const interpreted = getProjectTypeFromNumber(classification);
-
+    console.log(`[stepHandleProjectType]  classification = "${classification}" interpreted = "${interpreted}"`);
     const isValidGPT = ["B", "S", "R", "E"].includes(interpreted);
     console.log(`[Handle Spec Answer] gptClassifyProject = "${interpreted}"`);  
     const current = session.projectType;
