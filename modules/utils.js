@@ -178,8 +178,8 @@ async function chatOnly(senderId, message, lang = "fr") {
     // 🤖 Si GPT juge que c'est technique → on laisse GPT répondre
     if (intent === "technique") {
         const prompt = lang === "fr"
-            ? `Vous êtes un professionnel de l'immobilier oeuvrant pour Century 21 dans le cadre législatif de la province de québec. Répondez poliment sans signature à ce message d’un client potentiel, sans interpréter de données chiffrées : "${message}"`
-            : `You are a professional real estate agent with Century 21 working in the province of Quebec legal environment. Reply politely without a signature to this potential client’s message, without interpreting numeric data: "${message}"`;
+            ? `Je suis un client à la recherche d'une propriété au Québec. Je souhaite acheter, vendre ou louer une propriété. Toutes mes questions concernent l'immobilier et, si ce n'est pas le cas, veuillez ne pas répondre. Il se peut que je pose des questions relatives à mon profil psychologique, soyez sensible à cela. Parfois, je demanderai le prix d'une propriété dans un secteur ou à une adresse spécifique ; dans ce cas, répondez de manière concise en indiquant qu'il est nécessaire de valider ces informations avec Christophe Marcellin. SVP, répondez toujours poliment en utilisant le vouvoiement et sans signature. Mon identifiant est : "${senderId}".`
+            : `I am a client searching for a property in Quebec. I want to buy, sell, or rent a property. All my questions are related to real estate, and if they are not, please do not answer. I may ask questions about my psychological profile, please be sensitive to that. Sometimes, I will ask for the price of a property in a specific area or address; in that case, reply briefly and indicate that these details need to be validated with Christophe Marcellin. Please always respond politely with formal language and no signature. My ID is: "${senderId}".`;
 
         console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
 

@@ -125,16 +125,18 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
     return lang === 'en'
-        ? "Hello, I'm CasaNova, a virtual assistant powered by artificial intelligence.\n" +
-        "You may ask questions about our services or anything related to real estate.\n" +
-        "My responses are for informational purposes only and may contain errors.\n" +
+        ? "Hello, I'm CasaNova, a virtual assistant powered by artificial intelligence.\n\n" +
+        "You may ask questions about our services or anything related to real estate in Quebec.\n" +
+        "You may also ask about real estate approximate prices for neighborhoods or addesses in the greater Montreal.\n" +
+        "My responses are for informational purposes only and may contain errors.\n\n" +
         "They should never replace the advice of a qualified professional.\n\n" +
-        "To help me assist you better, which option best describes your intent: \n\n1 = buy \n2 = sell \n3 = rent out \n4 = other"
+        "Now to help me assist you better, which option best describes your intent: \n\n1 = buy \n2 = sell \n3 = rent out \n4 = other"
         : "Bonjour, je suis CasaNova, un assistant virtuel propulsé par l’intelligence artificielle.\n" +
-        "Vous pouvez me poser des questions sur nos services ou tout ce qui concerne le domaine de l'immobilier.\n" +
+        "Vous pouvez me poser des questions sur nos services ou tout ce qui concerne le domaine de l'immobilier au Québec.\n" +
+        "Vous pouvez aussi me questionner sur les prix approximatifs de l'immobilier pour un quartier ou adresse donnée du grand Montréal.\n" +
         "Mes réponses sont fournies à titre informatif seulement et peuvent contenir des erreurs.\n" +
         "Elles ne remplacent en aucun cas les conseils d’un professionnel qualifié.\n\n" +
-        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : \n\n1 = acheter 2 - vendre 3 - offrir en location 4 - autre raison";
+        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : \n\n1 = acheter \n2 = vendre \n3 = offrir en location \n4 - autre raison";
 }
 
 module.exports = {
