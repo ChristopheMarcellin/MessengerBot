@@ -24,7 +24,11 @@ async function stepInitializeSession(context) {
     }
 
     // Initialisation normale
-    session = getSession(senderId);
+    if (context.session && context.session.senderId) {
+        session = context.session;
+    } else {
+        session = getSession(senderId);
+    }
 
     if (!session) {
         session = resetSession(context);
@@ -32,7 +36,7 @@ async function stepInitializeSession(context) {
             session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
         }
         context.session = session;
-        session.language = detectLanguageFromText(message); 
+       // session.language = detectLanguageFromText(message); 
         console.log(`[INIT] *** Session re-créée car manquante langue détectée:'${session.language }' pour '${ message}'`);
         return true;
     }
