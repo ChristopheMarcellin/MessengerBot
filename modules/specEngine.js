@@ -139,7 +139,8 @@ function getDisplayValue(field, value, lang = "fr") {
 
 function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
-    console.log("CM on entre dans specSummary")
+    console.log("CM on entre dans specSummary");
+
     const summaryHeader = lang === "fr"
         ? "Voici un petit résumé des informations que vous nous avez transmises, vous pouvez adresser vos questions par la suite:  \n\n"
         : "Here is a short summary of the information you provided, you may ask your questions next:   \n\n";
@@ -157,12 +158,20 @@ function buildSpecSummary(session, lang = "fr") {
         if (key === "propertyUsage") continue;
         if (fields[key] !== "?") {
             const display = getDisplayValue(key, fields[key], lang);
-            summary += `${display}\n`;
+            summary += `${display}\n\n`;
         }
     }
 
+    // Ajouter le footer selon la langue
+    const footer = lang === "fr"
+        ? "Avec plaisir, je peux maintenant répondre à vos questions !"
+        : "With pleasure, I can now answer your questions!";
+
+    summary += `\n${footer}`;
+
     return summary;
 }
+
 
 const resetInvalidSpecs = (session) => {
     for (let key in session.specValues) {

@@ -77,6 +77,7 @@ const questions = {
             fr: "Nous aimerions répondre à vos question mais avant de débuter nous aimerions quelques informations qui nous servent à des fins de statistiques ou de suivi. " +
                 "Vos infos demeurent confidentielles (aucune pub de notre part ou d’un tiers).\n\n" +
                 "Si vous êtes à la recherche, nous vous fournirons un lien vers votre site web affichant des propriétés selon vos critères.\n\n" +
+                "Libre à vous de donner les bonnes informations et libre à nous de répondre à vos questions.\n\n" +
                 "Commençons par votre prénom SVP ?",
             en: "We now wish to answer your questions, before we begin, we kindly ask for a few details used strictly for follow-up or statistical purposes. " +
                 "Your information will remain confidential (no advertising from us or any third party).\n\n" +
