@@ -198,7 +198,7 @@ async function chatOnly(senderId, message, lang = "fr") {
 
             const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
             const cleaned = gptReply ? stripGptSignature(gptReply) : null;
-            const fallback = cleaned || (lang === "fr" ? "Désolé, je n’ai pas compris, SVP pourriez-vous reformuler différemment peut-être ? " : "Sorry, I didn’t understand, please can you rephrase differently perhaps ?");
+            const fallback = cleaned || (lang === "fr" ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !" : "Sorry, I didn’t understand your answer in relation to the question asked!");
             await sendMessage(senderId, fallback);
 
         } catch (err) {

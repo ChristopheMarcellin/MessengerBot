@@ -1,42 +1,42 @@
 const questions = {
     B: {
         price: {
-            en: "Do you have a budget in mind (for example answer 350 for 350 000, 600 for 600 000 or 1000 for 1 000 000)?",
-            fr: "Avez-vous un budget en tête (par exemple, dites 350 pour 350 000, 600 pour 600 000 ou 1000 pour 1 000 000) ?",
+            en: "Do you have a budget in mind ? Please say: \n350 for 350 000, \n600 for 600 000 or \n1200 for 1 200 000",
+            fr: "Avez-vous un budget en tête ? SVP dites: \n350 pour 350 000, \n600 pour 600 000 ou \n1200 pour 1 200 000)",
         },
         bedrooms: {
-            en: "How many bedrooms minimum would you be looking for (provide a number only please)?",
-            fr: "Combien de chambres au minimum souhaiteriez-vous (fournir un nombre seulement SVP) ?",
+            en: "How many bedrooms minimum? \n(provide a number only please)?",
+            fr: "Combien de chambres au minimum ? \n(fournir un nombre seulement SVP)",
         },
         bathrooms: {
-            en: "How many bathrooms minimum would you need (provide a number only please)?",
-            fr: "Combien de salles de bains souhaitez-vous (fournir un nombre seulement SVP) ?",
+            en: "How many bathrooms minimum? \n(provide a number only please)",
+            fr: "Combien de salles de bains minimum? \n(fournir un nombre seulement SVP)",
         },
         garage: {
-            en: "Do you need a garage - If so, how many minimum, if not enter 0 (provide a number only please) ?",
-            fr: "Avez-vous besoin d’un garage - Si oui, combien au minimum, si non indiquer 0 (fournir un nombre SVP) ?",
+            en: "Do you need a garage - If so, how many minimum? \n(provide a number only please, 0 for none) ?",
+            fr: "Avez-vous besoin d’un garage - Si oui, combien au minimum ? \n(fournir un nombre SVP, 0 pour aucun)",
         },
         location: {
-            en: "Which city or neighborhood(s) would be your ideal target?",
-            fr: "Dans quelle ville, quartier(s) serait votre cible idéale ?",
+            en: "Which region, city or neighborhood(s) would be your ideal target?",
+            fr: "Quelle région, ville ou quartier(s) serait votre cible idéale ?",
         },
     },
     S: {
         price: {
-            en: "Do you have an approximate selling price in mind, what is it (for example answer 350 for 350 000, 600 for 600 000 or 1000 for 1 000 000)?",
-            fr: "Avez-vous un prix de vente approximatif en tête, quel est-il (par exemple, dites 350 pour 350 000, 600 pour 600 000 ou 1000 pour 1 000 000? ",
+            en: "Do you have an approximate selling price in mind? \n(say 350 for 350 000, \n600 for 600 000 or \n1200 for 1 200 000)",
+            fr: "Avez-vous un prix de vente approximatif en tête ? \n(dites 350 pour 350 000, \n600 pour 600 000 ou \n1200 pour 1 200 000",
         },
         bedrooms: {
-            en: "How many bedrooms minimum would you be looking for (provide a number only please)?",
-            fr: "Combien de chambres au minimum souhaiteriez-vous (fournir un nombre seulement SVP) ?",
+            en: "How many bedrooms do you have? \n(provide a number only please)",
+            fr: "Combien de chambres avez-vous ? \n(fournir un nombre seulement SVP)",
         },
         bathrooms: {
-            en: "How many bathrooms minimum would you need (provide a number only please)?",
-            fr: "Combien de salles de bains souhaitez-vous (fournir un nombre seulement SVP) ?",
+            en: "How many bathrooms do you have? \n(provide a number only please)",
+            fr: "Combien de salles de bains avez-vous ? \n(fournir un nombre seulement SVP)",
         },
         garage: {
-            en: "How many garage spaces do you have (provide a number only please)?",
-            fr: "Combien d'espace garage avez-vous (fournir un nombre seulement SVP)) ?",
+            en: "How many garage spaces do you have? \n(provide a number only please)?",
+            fr: "Combien d'espace garage avez-vous ? \n(fournir un nombre seulement SVP)",
         },
         location: {
             en: "In which city/neighborhood your property is located ?",
@@ -45,20 +45,20 @@ const questions = {
     },
     R: {
         price: {
-            en: "What rental price target do you have in mind (monthly value, for example: for 2 thousands say 2000)?",
-            fr: "Quel prix de location (mensuel) avez-vous en tête (Entrer une valeur numérique SVP, pour 2 milles dites 2000) ?",
+            en: "What rental price target do you have in mind? \n(enter 2000 for 2000/month)?",
+            fr: "Quel montant avez vous en tête? \n(entrer 2000 pour 2000/mois) ?",
         },
         bedrooms: {
-            en: "How many bedrooms (provide a number only please)?",
-            fr: "Combien de chambres au minimum souhaiteriez-vous (fournir un nombre seulement SVP) ?",
+            en: "How many bedrooms ? \n(provide a number only please)",
+            fr: "Combien de chambres ? \n(fournir un nombre seulement SVP)",
         },
         bathrooms: {
-            en: "How many bathrooms (provide a number only please)?",
-            fr: "Combien de salles de bains souhaitez-vous (fournir un nombre seulement SVP) ?",
+            en: "How many bathrooms? \n(provide a number only please)",
+            fr: "Combien de salles de bains ?\n(fournir un nombre seulement SVP)",
         },
         parking: {
-            en: "Do you have private parking space available, how many space(s) (provide a number only please)?",
-            fr: "Avez-vous des places de stationnement privées, fournir un nombre seulement SVP) ?",
+            en: "Do you have private parking space(s)? \n(provide a number only please)?",
+            fr: "Avez-vous des places de stationnement privées ? \n(fournir un nombre seulement SVP)",
         },
         location: {
             en: "In which city/neighborhood are you located?",
@@ -69,17 +69,19 @@ const questions = {
 
     generic: {
         expectations: {
-            fr: "Laisser connaître vos attentes :-). Vous pouvez préciser par exemple: piscine creusée (incontournable), foyer (souhaitable)? ",
-            en: "Let us know about any other expectations you may have :-),  for example you may say: inground pool (must), fireplace(nice to have).",
+            fr: "Laisser connaître vos attentes. Précisez ce que vous voulez selon votre situation: \n\nPar exemple: \n-Je veux piscine creusée (incontournable), \n-J'aimerais un foyer (souhaitable), \n-Je veux vendre sans garantie légale, etc.",
+            en: "Let us know about any expectations you may have according to your situation: \n\nFor example you may say: \n-Inground pool (must), \n-Fireplace(nice to have). \n-I need home staging", 
         },
 
         firstName: {
-            fr: "Afin de répondre à vos questions, nous sollicitons quelques informations qui nous servent à des fins de statistiques ou de suivi. " +
-                "Vos infos demeureront confidentielles (aucune pub de notre part ou d’un tiers).\n\n" +
-                "Pour débuter, votre prénom SVP ?",
-            en: "To answer your questions, we kindly ask for a few details used strictly for follow-up or statistical purposes. " +
+            fr: "Nous aimerions répondre à vos question mais avant de débuter nous aimerions quelques informations qui nous servent à des fins de statistiques ou de suivi. " +
+                "Vos infos demeurent confidentielles (aucune pub de notre part ou d’un tiers).\n\n" +
+                "Si vous êtes à la recherche, nous vous fournirons un lien vers votre site web affichant des propriétés selon vos critères.\n\n" +
+                "Commençons par votre prénom SVP ?",
+            en: "We now wish to answer your questions, before we begin, we kindly ask for a few details used strictly for follow-up or statistical purposes. " +
                 "Your information will remain confidential (no advertising from us or any third party).\n\n" +
-                "To begin, your first name please?"
+                "If you are searching, we will provide you with a link to your website displaying properties according to your criteria.\n\n" +
+                "Let's start with your first name please?"
         },
 
         lastName: {
@@ -88,8 +90,8 @@ const questions = {
         },
 
         age: {
-            fr: "Quel âge avez-vous SVP ?",
-            en: "What is your age please?",
+            fr: "Quel âge avez-vous SVP ?\n(chiffre seulement SVP)",
+            en: "What is your age please? \nnumber only please)",
         },
 
         phone: {
@@ -102,13 +104,13 @@ const questions = {
         },
 
         wantsContact: {
-            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte ? (1-oui, 2-non)",
-            en: "Would you like someone from our team to contact you? (1-yes, 2-no)",
+            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte, choisir la bonne option: \n1 pour oui\n2 pour non",
+            en: "Would you like someone from our team to contact you, pick your option: \n1 for yes \n2 for no)",
         },
 
         propertyUsage: {
-            fr: "S'agit-il d'une propriété à revenus ayant plus d'un logement ? (1-oui, 2-non)",
-            en: "Is this an income property with more than one apartment? (1-yes, 2-no)",
+            fr: "S'agit-il d'une propriété à revenus ayant plus d'un logement ? Choisir la bonne option: \n1 pour oui\n2 pour non",
+            en: "Is this an income property with more than one apartment? Pick your option: \n1 for yes \n2 for no)",
         },
     },
 };
@@ -127,14 +129,12 @@ function getPromptForProjectType(lang = 'fr') {
         "You may ask questions about our services or anything related to real estate.\n" +
         "My responses are for informational purposes only and may contain errors.\n" +
         "They should never replace the advice of a qualified professional.\n\n" +
-        "If you are currently searching, we can also provide a free website that displays properties matching your criteria.\n\n" +
-        "To help me assist you better, which number best describes your intent: 1 - buy, 2 - sell, 3 - rent out, 4 - other?\n(Please reply with the corresponding number.)"
+        "To help me assist you better, which option best describes your intent: \n\n1 = buy \n2 = sell \n3 = rent out \n4 = other"
         : "Bonjour, je suis CasaNova, un assistant virtuel propulsé par l’intelligence artificielle.\n" +
         "Vous pouvez me poser des questions sur nos services ou tout ce qui concerne le domaine de l'immobilier.\n" +
         "Mes réponses sont fournies à titre informatif seulement et peuvent contenir des erreurs.\n" +
         "Elles ne remplacent en aucun cas les conseils d’un professionnel qualifié.\n\n" +
-        "Si vous êtes à la recherche, nous pouvons également créer gratuitement un site web affichant des propriétés selon vos critères.\n\n" +
-        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : 1 - acheter, 2 - vendre, 3 - offrir en location, 4 - autre raison ?\n(SVP, répondez avec le chiffre correspondant.)";
+        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : \n\n1 = acheter 2 - vendre 3 - offrir en location 4 - autre raison";
 }
 
 module.exports = {
