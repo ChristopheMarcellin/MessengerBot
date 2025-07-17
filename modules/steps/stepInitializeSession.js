@@ -16,7 +16,7 @@ async function stepInitializeSession(context) {
     if (isEndSession) {
 
         session = resetSession(context);
-        context.session = session;
+      //  context.session = session;
         context.session.mode = 'end session';
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
@@ -24,22 +24,24 @@ async function stepInitializeSession(context) {
     }
 
     // Initialisation normale
-    if (context.session && context.session.senderId) {
-        session = context.session;
-    } else {
+    if (!context.session || context.session.senderId !== senderId) {
+        // Créer une nouvelle session pour l'utilisateur courant
         session = getSession(senderId);
-    }
-
-    if (!session) {
-        session = resetSession(context);
-        if (isText(message) && typeof session.language !== 'string') {
-            session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+        if (!session) {
+            session = resetSession(context);  // Créer une nouvelle session si elle n'existe pas
+            if (isText(message) && typeof session.language !== 'string') {
+                session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
+            }
         }
         context.session = session;
-       // session.language = detectLanguageFromText(message); 
-        console.log(`[INIT] *** Session re-créée car manquante langue détectée:'${session.language }' pour '${ message}'`);
+        console.log(`[INIT] ***** Session re-créée car manquante langue détectée:'${session.language}' pour '${message}'`);
+        return true;
+    } else {
+        // Utiliser la session existante si elle correspond à l'utilisateur
+        session = context.session;
         return true;
     }
+
 
     // 🧠 Affectation obligatoire avant traitement
     if (isText(message) && typeof session.language !== 'string') {
