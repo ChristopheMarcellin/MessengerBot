@@ -1,4 +1,4 @@
-const { setProjectType, initializeSpecFields, detectLanguageFromText, getNextSpec, isText } = require('../utils');
+const { setProjectType, initializeSpecFields, detectLanguageFromText, getNextSpec, isText, isNumeric } = require('../utils');
 const { getSession, saveSession, resetSession, logSessionState } = require('../sessionStore');
 
 async function stepInitializeSession(context) {
@@ -29,12 +29,13 @@ async function stepInitializeSession(context) {
         session = getSession(senderId);
         if (!session) {
             session = resetSession(context);  // Créer une nouvelle session si elle n'existe pas
-            if (isText(message) && typeof session.language !== 'string') {
+            if (isText(message) && typeof session.language !== 'string' &&!isNumeric(message)) {
                 session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
             }
+            console.log(`[INIT] ***** Session re-créée car manquante langue détectée:'${session.language}' pour '${message}'`);
         }
         context.session = session;
-        console.log(`[INIT] ***** Session re-créée car manquante langue détectée:'${session.language}' pour '${message}'`);
+
         return true;
     } else {
         // Utiliser la session existante si elle correspond à l'utilisateur
