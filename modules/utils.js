@@ -61,7 +61,7 @@ const faqMapByKey = {
     }
 };
 
-async function classifyFAQCategory(message, lang = 'fr') {
+async function classifyIntent(message, lang = 'fr') {
     const categories = [
         'hours', 'contact', 'consultation', 'rental',
         'commercial', 'territory', 'carole', 'christophe', 'team'
@@ -70,36 +70,70 @@ async function classifyFAQCategory(message, lang = 'fr') {
     const examples = lang === 'fr'
         ? `Exemples :\n` +
         `"Quand êtes-vous ouverts ?" → faq:hours\n` +
-        `"Comment fonctionne une estimation ?" → faq:consultation\n` +
-        `"Dois-je faire inspecter ma maison avant de vendre ?" → technique\n` +
-        `"Ma mère est décédée, que faire avec sa maison ?" → technique\n` +
-        `"Est-ce que vous aidez pour la location ?" → faq:rental\n`
+        `"Quelles sont vos heures d'affaires ?" → faq:hours\n` +
+        `"Comment procédez-vous pour faire une estimation ?" → faq:consultation\n` +
+        `"Est-ce que vous aidez pour la location ?" → faq:rental\n` +
+        `"Puis-je vous appeler directement ?" → faq:contact\n` +
+        `"Où est situé votre bureau ?" → faq:contact\n` +
+        `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
+        `"Travaillez-vous sur la Rive-Sud ?" → faq:territory\n` +
+        `"Dois-je déclarer une infiltration d’eau lors de la vente ?" → technique\n` +
+        `"Est-ce obligatoire d’avoir un certificat de localisation à jour ?" → technique\n` +
+        `"Puis-je vendre sans passer par un notaire ?" → technique\n` +
+        `"Combien de temps dure une promesse d’achat ?" → technique\n` +
+        `"Vaut-il mieux vendre avant d’acheter ?" → pratique\n` +
+        `"Est-ce risqué de vendre sans courtier ?" → pratique\n` +
+        `"Est-ce que Proprio Direct est mieux qu’un courtier ?" → pratique\n` +
+        `"Faut-il toujours faire une inspection ?" → pratique\n` +
+        `"Combien vaut ma maison à Brossard ?" → prix\n` +
+        `"Quel est le prix du pied carré dans Griffintown ?" → prix\n` +
+        `"À quel prix avez-vous vendu ce condo ?" → prix\n` +
+        `"Quel est le marché actuel à Saint-Lambert ?" → prix\n`
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
         `"How does an evaluation work?" → faq:consultation\n` +
-        `"Should I have my home inspected before selling?" → technical\n` +
-        `"My mother passed away, what should I do with her property?" → technical\n` +
-        `"Do you help with rentals?" → faq:rental\n`;
+        `"Do you help with rentals?" → faq:rental\n` +
+        `"Can I call you directly?" → faq:contact\n` +
+        `"Where is your office located?" → faq:contact\n` +
+        `"Do you handle commercial properties?" → faq:commercial\n` +
+        `"Do you work on the South Shore?" → faq:territory\n` +
+        `"Do I have to disclose a water infiltration?" → technical\n` +
+        `"Is a recent certificate of location mandatory?" → technical\n` +
+        `"Can I sell without a notary?" → technical\n` +
+        `"How long is a purchase offer valid?" → technical\n` +
+        `"Is it better to sell before buying?" → practice\n` +
+        `"Is it risky to sell without an agent?" → practice\n` +
+        `"Is Proprio Direct better than a broker?" → practice\n` +
+        `"Should I always do an inspection?" → practice\n` +
+        `"How much is my home worth in Brossard?" → price\n` +
+        `"What’s the price per square foot in Griffintown?" → price\n` +
+        `"What did this condo sell for?" → price\n` +
+        `"What’s the market like in Saint-Lambert?" → price\n`;
 
     const prompt = lang === 'fr'
-        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial dans la province de Québec. ` +
-        `Tu dois uniquement traiter des questions liées à l'immobilier ou aux services offerts par notre équipe.\n\n` +
+        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
+        `L'utilisateur te pose une question.\n\n` +
         `${examples}\n` +
         `Voici la question de l'utilisateur :\n"${message}"\n\n` +
         `Voici les catégories disponibles :\n- ${categories.join('\n- ')}\n\n` +
-        `Si la question demande une opinion, une explication, un avis professionnel ou légal, réponds par : technique.\n` +
-        `Sinon, si elle correspond clairement à une de ces catégories et concerne nos services, réponds par : faq:<catégorie>.\n` +
-        `Sinon, réponds par : autre.\n\n` +
-        `Réponds uniquement par un mot : faq:carole ou technique ou autre.`
-        : `You are a virtual assistant specialized in residential and commercial real estate under the legal framework of Quebec. ` +
-        `You should only handle questions related to real estate or services offered by our team.\n\n` +
+        `Si la question demande une explication, un avis professionnel ou légal, réponds par : technical.\n` +
+        `Si elle correspond clairement à une de ces catégories de services que nous offrons, réponds par : faq:<category>.\n` +
+        `Sinon, si elle relève d’une opinion ou d'une stratégie à employer, réponds par : practice.\n` +
+        `Sinon, si elle vise à connaître la valeur d’un bien ou d’un secteur, réponds par : price.\n` +
+        `Si la question ne concerne pas l'immobilier ou les services que nous offrons, réponds par : other.\n\n` +
+        `Réponds uniquement par un mot : faq:<catégorie> ou technical ou practice ou price ou other.`
+        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
+        `The user is asking you a question.\n\n` +
         `${examples}\n` +
-        `Here is the user’s question:\n"${message}"\n\n` +
-        `Here are the available categories:\n- ${categories.join('\n- ')}\n\n` +
-        `If the question requires an opinion, a professional or a legal opinion (explanation), reply with: technical.\n` +
-        `Otherwise, if it clearly fits one of these categories and relates to our services, reply with: faq:<category>.\n` +
-        `Otherwise, reply with: other.\n\n` +
-        `Respond with a single word like: faq:contact or technical or other.`;
+        `Here is the user's question:\n"${message}"\n\n` +
+        `Available categories are:\n- ${categories.join('\n- ')}\n\n` +
+        `If the question requires an explanation or a professional/legal opinion, reply with: technical.\n` +
+        `If it clearly matches one of our service categories, reply with: faq:<category>.\n` +
+        `Otherwise, if it's a matter of personal strategy or opinion, reply with: practice.\n` +
+        `Otherwise, if it's asking about the value of a property or market, reply with: price.\n` +
+        `If the question is not related to real estate or the services we offer, reply with: other.\n\n` +
+        `Respond with a single word: faq:<category>, technical, practice, price, or other.`;
+
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -125,44 +159,8 @@ async function classifyFAQCategory(message, lang = 'fr') {
         return 'other';
     }
 }
-
-//gpt classifies project
-
-async function gptClassifyProject(message, language = "fr") {
-    const prompt = language === "fr"
-        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre (ex: question générale sur l'immobilier)\n5 → incompréhensible ou message sans intention (ex: "bonjour")\nRéponds uniquement par un chiffre.`
-        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:\n1 → buy\n2 → sell\n3 → rent\n4 → other (e.g. general real estate question)\n5 → unclear or no intent (e.g. "hi")\nReply with a single number only.`;
-
-    try {
-        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 10,
-            temperature: 0
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-            }
-        });
-
-        const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const classification = raw?.match(/^[1-5]/)?.[0] || "5"; // Sécurité si retour non numérique
-        const output = classification; // On garde tel quel maintenant que 5 est prévu
-
-        console.log(`[gptClassifyProject] GPT = "${classification}" → retour final: "${output}"`);
-        return output;
-
-    } catch (err) {
-        console.warn(`[gptClassifyProject] GPT ERROR: ${err.message}`);
-        return "?";
-    }
-}
-
-
-
 async function chatOnly(senderId, message, lang = "fr") {
-    const intent = await classifyFAQCategory(message, lang);
+    const intent = await classifyIntent(message, lang);
 
     // 🔎 Si GPT identifie une FAQ → on répond avec la réponse statique
     if (intent?.startsWith("faq:")) {
@@ -176,10 +174,19 @@ async function chatOnly(senderId, message, lang = "fr") {
     }
 
     // 🤖 Si GPT juge que c'est technique → on laisse GPT répondre
-    if (intent === "technique") {
+    if (!intent?.startsWith("faq:")) {
         const prompt = lang === "fr"
-            ? `Je suis un client à la recherche d'une propriété au Québec. Je souhaite acheter, vendre ou louer une propriété. Toutes mes questions concernent l'immobilier et, si ce n'est pas le cas, veuillez ne pas répondre. Il se peut que je pose des questions relatives à mon profil psychologique, soyez sensible à cela. Parfois, je demanderai le prix d'une propriété dans un secteur ou à une adresse spécifique ; dans ce cas, répondez de manière concise en indiquant qu'il est nécessaire de valider ces informations avec Christophe Marcellin. SVP, répondez toujours poliment en utilisant le vouvoiement et sans signature. Mon identifiant est : "${senderId}".`
-            : `I am a client searching for a property in Quebec. I want to buy, sell, or rent a property. All my questions are related to real estate, and if they are not, please do not answer. I may ask questions about my psychological profile, please be sensitive to that. Sometimes, I will ask for the price of a property in a specific area or address; in that case, reply briefly and indicate that these details need to be validated with Christophe Marcellin. Please always respond politely with formal language and no signature. My ID is: "${senderId}".`;
+            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial dans la province de Québec. ` +
+            `Vous devez répondre uniquement aux questions liées à l'immobilier ou aux services offerts par notre équipe. ` +
+            `Ignorez toute question hors sujet, même poliment. Vous pouvez être interrogé sur des thèmes juridiques, des pratiques immobilières, ` +
+            `ou des prix de propriétés à des adresses précises. Si une question concerne une valeur immobilière, mentionnez qu'une validation est requise avec Christophe Marcellin. ` +
+            `Répondez toujours poliment, avec le vouvoiement, sans signature ni formules inutiles. Mon identifiant est : "${senderId}".`
+            : `You are a virtual assistant specialized in residential and commercial real estate in the province of Quebec. ` +
+            `You must respond only to questions related to real estate or services offered by our team. Politely ignore any unrelated inquiries. ` +
+            `You may be asked about legal topics, real estate best practices, or the price of properties at specific addresses. ` +
+            `If a question involves property value, reply briefly and mention that validation is required with Christophe Marcellin. ` +
+            `Always answer politely, using formal language, without any signature or extra phrases. My ID is: "${senderId}".`;
+
 
         console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
 
@@ -216,6 +223,42 @@ async function chatOnly(senderId, message, lang = "fr") {
         : "Thank you for this message. Unfortunately, I’d love to continue this exchange, but my assistance is limited to providing answers related to real estate and the services we offer :-(";
     await sendMessage(senderId, fallback);
 }
+//gpt classifies project
+
+async function gptClassifyProject(message, language = "fr") {
+    const prompt = language === "fr"
+        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre (ex: question générale sur l'immobilier)\n5 → incompréhensible ou message sans intention (ex: "bonjour")\nRéponds uniquement par un chiffre.`
+        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:\n1 → buy\n2 → sell\n3 → rent\n4 → other (e.g. general real estate question)\n5 → unclear or no intent (e.g. "hi")\nReply with a single number only.`;
+
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 10,
+            temperature: 0
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+
+        const raw = response.data.choices?.[0]?.message?.content?.trim();
+        const classification = raw?.match(/^[1-5]/)?.[0] || "5"; // Sécurité si retour non numérique
+        const output = classification; // On garde tel quel maintenant que 5 est prévu
+
+        console.log(`[gptClassifyProject] GPT = "${classification}" → retour final: "${output}"`);
+        return output;
+
+    } catch (err) {
+        console.warn(`[gptClassifyProject] GPT ERROR: ${err.message}`);
+        return "?";
+    }
+}
+
+
+
+
 
 function isText(input) {
     if (typeof input !== 'string') return false;

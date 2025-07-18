@@ -1,8 +1,8 @@
 const questions = {
     B: {
         price: {
-            en: "Do you have a budget in mind ? Please say: \n350 for 350 000, \n600 for 600 000 or \n1200 for 1 200 000",
-            fr: "Avez-vous un budget en tête ? SVP dites: \n350 pour 350 000, \n600 pour 600 000 ou \n1200 pour 1 200 000)",
+            en: "Do you have a budget in mind ? Please say: \n\n350 for 350 000, \n600 for 600 000 or \n1200 for 1 200 000",
+            fr: "Avez-vous un budget en tête ? SVP dites: \n\n350 pour 350 000, \n600 pour 600 000 ou \n1200 pour 1 200 000)",
         },
         bedrooms: {
             en: "How many bedrooms minimum? \n(provide a number only please)?",
@@ -69,8 +69,8 @@ const questions = {
 
     generic: {
         expectations: {
-            fr: "Laisser connaître vos attentes. Précisez ce que vous voulez selon votre situation: \n\nPar exemple: \n-Je veux piscine creusée (incontournable), \n-J'aimerais un foyer (souhaitable), \n-Je veux vendre sans garantie légale, etc.",
-            en: "Let us know about any expectations you may have according to your situation: \n\nFor example you may say: \n-Inground pool (must), \n-Fireplace(nice to have). \n-I need home staging", 
+            fr: "Laisser connaître vos attentes. Précisez ce que vous voulez selon votre situation: \n\nPar exemple: \n\n-Je veux piscine creusée (incontournable), \n-J'aimerais un foyer (souhaitable), \n-Je veux vendre sans garantie légale, etc.",
+            en: "Let us know about any expectations you may have according to your situation: \n\nFor example you may say: \n\n-Inground pool (must), \n-Fireplace(nice to have). \n-I need home staging", 
         },
 
         firstName: {
@@ -106,12 +106,12 @@ const questions = {
 
         wantsContact: {
             fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte, choisir la bonne option: \n1 pour oui\n2 pour non",
-            en: "Would you like someone from our team to contact you, pick your option: \n1 for yes \n2 for no)",
+            en: "Would you like someone from our team to contact you, pick your option: \n\n1 for yes \n2 for no)",
         },
 
         propertyUsage: {
-            fr: "S'agit-il d'une propriété à revenus ayant plus d'un logement ? Choisir la bonne option: \n1 pour oui\n2 pour non",
-            en: "Is this an income property with more than one apartment? Pick your option: \n1 for yes \n2 for no)",
+            fr: "S'agit-il d'une propriété à revenus ayant plus d'un logement ? Choisir la bonne option: \n1 = propriété à revenus\n2 = personnel",
+            en: "Is this an income property with more than one apartment? Pick your option: \n\n1 for yes \n2 for no)",
         },
     },
 };
@@ -137,7 +137,7 @@ function getPromptForProjectType(lang = 'fr') {
         "Vous pouvez aussi me questionner sur les prix approximatifs de l'immobilier pour un quartier ou adresse donnée du grand Montréal.\n" +
         "Mes réponses sont fournies à titre informatif seulement et peuvent contenir des erreurs.\n" +
         "Elles ne remplacent en aucun cas les conseils d’un professionnel qualifié.\n\n" +
-        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : \n\n1 = acheter \n2 = vendre \n3 = offrir en location \n4 - autre raison";
+        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : \n\n1 = acheter \n2 = vendre \n3 = offrir en location \n4 = autre raison";
 }
 
 module.exports = {
