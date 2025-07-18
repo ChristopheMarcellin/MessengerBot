@@ -203,14 +203,14 @@ async function chatOnly(senderId, message, lang = "fr") {
             `Votre rôle est de répondre immédiatement, clairement et précisément à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `Si la question concerne une estimation de prix ou une valeur immobilière, donnez une fourchette approximative et précisez qu’une validation est requise avec le courtier Christophe Marcellin. ` +
+            `Si la question concerne une estimation de prix ou une valeur immobilière, donnez le haut de la fourchette approximative et précisez qu’une validation est requise avec le courtier Christophe Marcellin. ` +
             `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
             `Répondez simplement à la question suivante : "${message}"`
             : `You are an expert in residential and commercial real estate in Quebec. ` +
             `Your job is to immediately and clearly answer any question related to real estate. ` +
             `Give a direct, concise, and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `If the question relates to a property value or price estimate, provide an approximate range and state that confirmation is required with broker Christophe Marcellin. ` +
+            `If the question relates to a property value or price estimate, provide the approximate high range and state that confirmation is required with broker Christophe Marcellin. ` +
             `Never use phrases like "I'm here to help" or "feel free to ask." ` +
             `Just answer the following question: "${message}"`;
 
@@ -251,8 +251,8 @@ async function chatOnly(senderId, message, lang = "fr") {
 
     // 🙃 Cas 3 : autre
     const fallback = lang === "fr"
-        ? "Merci pour ce message, malheureusement j'aimerais poursuivre cet échange mais mon assistance se limite à fournir des réponses dans le domaine de l'immobilier et des services que nous offrons :-( !"
-        : "Thank you for this message. Unfortunately, I’d love to continue this exchange, but my assistance is limited to providing answers related to real estate and the services we offer :-(";
+        ? "Désolé, je ne suis pas certain de comprendre votre question mes connaissances se limitent à l'immobilier, peut-être une reformulation m'aiderait à mieux vous répondre !"
+        : "Sorry, I'm not sure I understand your question. My knowledge is limited to real estate, but perhaps rephrasing it could help me provide a better answer.";
 
     await sendMessage(senderId, fallback);
 }
