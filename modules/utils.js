@@ -184,7 +184,8 @@ async function classifyIntent(message, lang = 'fr') {
 async function chatOnly(senderId, message, lang = "fr") {
     const intent = await classifyIntent(message, lang);
     console.log(`Intent: ${intent}`);
-    // 🔎 Si GPT identifie une FAQ → on répond avec la réponse statique
+
+    // 🔎 Cas 1 : FAQ
     if (intent?.startsWith("faq:")) {
         const key = intent.split(":")[1];
         const faqText = faqMapByKey[key]?.[lang];
@@ -195,23 +196,22 @@ async function chatOnly(senderId, message, lang = "fr") {
         }
     }
 
-    // 🤖 Si GPT juge que c'est technique → on laisse GPT répondre
-    const prompt = lang === "fr"
-        ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
-        `Vous devez répondre de manière claire, directe et informative à toute question liée à l'immobilier ou aux services offerts par notre équipe. ` +
-        `Vous pouvez être interrogé sur des thèmes juridiques, des pratiques immobilières, des inspections, ou des prix de propriétés à des adresses précises. ` +
-        `Si une question concerne une valeur immobilière d'un bien, donnez une estimation prudente, et précisez qu'une validation est requise avec Christophe Marcellin. ` +
-        `Si vous êtes absolument certain qu'il n'y a aucun lien avec l'immobilier, alors ignorez la question poliment. ` +
-        `Mais sinon, répondez toujours de façon utile, sans détour, sans phrase d’introduction inutile, et en utilisant le vouvoiement. ` +
-        `Mon identifiant est : "${senderId}".`
-        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
-        `You must respond clearly, directly, and informatively to any question related to real estate or the services offered by our team. ` +
-        `You may be asked about legal topics, inspections, best practices, or the value of properties. ` +
-        `If a question involves a property value, provide a cautious estimate and mention validation is required with Christophe Marcellin. ` +
-        `Only if you are certain the question is unrelated to real estate, may you politely decline. ` +
-        `Otherwise, always respond helpfully and avoid introduction or closing phrases. My ID is: "${senderId}".`;
-
-
+    // 🤖 Cas 2 : GPT (libre)
+    if (intent === "gpt") {
+        const prompt = lang === "fr"
+            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
+            `Vous devez répondre de manière claire, directe et informative à toute question liée à l'immobilier ou aux services offerts par notre équipe. ` +
+            `Vous pouvez être interrogé sur des thèmes juridiques, des pratiques immobilières, des inspections, ou des prix de propriétés à des adresses précises. ` +
+            `Si une question concerne une valeur immobilière d'un bien, donnez une estimation prudente, et précisez qu'une validation est requise avec Christophe Marcellin. ` +
+            `Si vous êtes absolument certain qu'il n'y a aucun lien avec l'immobilier, alors ignorez la question poliment. ` +
+            `Mais sinon, répondez toujours de façon utile, sans détour, sans phrase d’introduction inutile, et en utilisant le vouvoiement. ` +
+            `Mon identifiant est : "${senderId}".`
+            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
+            `You must respond clearly, directly, and informatively to any question related to real estate or the services offered by our team. ` +
+            `You may be asked about legal topics, inspections, best practices, or the value of properties. ` +
+            `If a question involves a property value, provide a cautious estimate and mention validation is required with Christophe Marcellin. ` +
+            `Only if you are certain the question is unrelated to real estate, may you politely decline. ` +
+            `Otherwise, always respond helpfully and avoid introduction or closing phrases. My ID is: "${senderId}".`;
 
         console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
 
@@ -230,24 +230,31 @@ async function chatOnly(senderId, message, lang = "fr") {
 
             const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
             const cleaned = gptReply ? stripGptSignature(gptReply) : null;
-            const fallback = cleaned || (lang === "fr" ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !" : "Sorry, I didn’t understand your answer in relation to the question asked!");
+            const fallback = cleaned || (lang === "fr"
+                ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !"
+                : "Sorry, I didn’t understand your answer in relation to the question asked!");
+
             await sendMessage(senderId, fallback);
+            return;
 
         } catch (err) {
             console.error(`[chatOnly] *** ERREUR GPT : ${err.message}`);
-            const fallback = lang === "fr" ? "Désolé, je n’ai pas compris." : "Sorry, I didn’t understand.";
+            const fallback = lang === "fr"
+                ? "Désolé, je n’ai pas compris."
+                : "Sorry, I didn’t understand.";
             await sendMessage(senderId, fallback);
+            return;
         }
-
-        return;
     }
 
-    // 🙃 Cas "autre" → politesse mais pas de relance inutile
+    // 🙃 Cas 3 : autre
     const fallback = lang === "fr"
         ? "Merci pour ce message, malheureusement j'aimerais poursuivre cet échange mais mon assistance se limite à fournir des réponses dans le domaine de l'immobilier et des services que nous offrons :-( !"
         : "Thank you for this message. Unfortunately, I’d love to continue this exchange, but my assistance is limited to providing answers related to real estate and the services we offer :-(";
+
     await sendMessage(senderId, fallback);
 }
+
 //gpt classifies project
 
 async function gptClassifyProject(message, language = "fr") {
