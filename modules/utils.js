@@ -77,18 +77,19 @@ async function classifyIntent(message, lang = 'fr') {
         `"Où est situé votre bureau ?" → faq:contact\n` +
         `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
         `"Travaillez-vous sur la Rive-Sud ?" → faq:territory\n` +
-        `"Dois-je déclarer une infiltration d’eau lors de la vente ?" → technique\n` +
-        `"Est-ce obligatoire d’avoir un certificat de localisation à jour ?" → technique\n` +
-        `"Puis-je vendre sans passer par un notaire ?" → technique\n` +
-        `"Combien de temps dure une promesse d’achat ?" → technique\n` +
-        `"Vaut-il mieux vendre avant d’acheter ?" → pratique\n` +
-        `"Est-ce risqué de vendre sans courtier ?" → pratique\n` +
-        `"Est-ce que Proprio Direct est mieux qu’un courtier ?" → pratique\n` +
-        `"Faut-il toujours faire une inspection ?" → pratique\n` +
-        `"Combien vaut ma maison à Brossard ?" → prix\n` +
-        `"Quel est le prix du pied carré dans Griffintown ?" → prix\n` +
-        `"À quel prix avez-vous vendu ce condo ?" → prix\n` +
-        `"Quel est le marché actuel à Saint-Lambert ?" → prix\n`
+        `"Dois-je déclarer une infiltration d’eau lors de la vente ?" → technical\n` +
+        `"Est-ce obligatoire d’avoir un certificat de localisation à jour ?" → technical\n` +
+        `"Puis-je vendre sans passer par un notaire ?" → technical\n` +
+        `"Combien de temps dure une promesse d’achat ?" → technical\n` +
+        `"Quel est le rôle de chaque professionnel de l'immobilier?" → technical\n` +
+        `"Vaut-il mieux vendre avant d’acheter ?" → practice\n` +
+        `"Est-ce risqué de vendre sans courtier ?" → practice\n` +
+        `"Est-ce que Proprio Direct est mieux qu’un courtier ?" → practice\n` +
+        `"Faut-il toujours faire une inspection ou quand dois-je faire une inspection?" → practice\n` +
+        `"Combien vaut ma maison à Brossard ?" → price\n` +
+        `"Quel est le prix du pied carré dans Griffintown ?" → price\n` +
+        `"À quel prix avez-vous vendu ce condo ?" → price\n` +
+        `"Quel est le marché actuel à Saint-Lambert ?" → price\n`
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
         `"How does an evaluation work?" → faq:consultation\n` +
@@ -100,11 +101,12 @@ async function classifyIntent(message, lang = 'fr') {
         `"Do I have to disclose a water infiltration?" → technical\n` +
         `"Is a recent certificate of location mandatory?" → technical\n` +
         `"Can I sell without a notary?" → technical\n` +
+        `"What is the role of any real estate professional?" → technical\n` +
         `"How long is a purchase offer valid?" → technical\n` +
         `"Is it better to sell before buying?" → practice\n` +
         `"Is it risky to sell without an agent?" → practice\n` +
         `"Is Proprio Direct better than a broker?" → practice\n` +
-        `"Should I always do an inspection?" → practice\n` +
+        `"Should I always do an inspection or when should I do an inspection?" → practice\n` +
         `"How much is my home worth in Brossard?" → price\n` +
         `"What’s the price per square foot in Griffintown?" → price\n` +
         `"What did this condo sell for?" → price\n` +
@@ -161,7 +163,7 @@ async function classifyIntent(message, lang = 'fr') {
 }
 async function chatOnly(senderId, message, lang = "fr") {
     const intent = await classifyIntent(message, lang);
-
+    console.log(`Intent: ${intent}`);
     // 🔎 Si GPT identifie une FAQ → on répond avec la réponse statique
     if (intent?.startsWith("faq:")) {
         const key = intent.split(":")[1];
@@ -178,8 +180,8 @@ async function chatOnly(senderId, message, lang = "fr") {
         const prompt = lang === "fr"
             ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial dans la province de Québec. ` +
             `Vous devez répondre uniquement aux questions liées à l'immobilier ou aux services offerts par notre équipe. ` +
-            `Ignorez toute question hors sujet, même poliment. Vous pouvez être interrogé sur des thèmes juridiques, des pratiques immobilières, ` +
-            `ou des prix de propriétés à des adresses précises. Si une question concerne une valeur immobilière, mentionnez qu'une validation est requise avec Christophe Marcellin. ` +
+            `Si vous êtes certain qu'il n'y a aucun lien avec l'immobilier, vous pouvez ignorer la question poliment. Vous pouvez être interrogé sur des thèmes juridiques, des pratiques immobilières, ` +
+            `ou des prix de propriétés à des adresses précises. Si une question concerne une valeur immobilière d'un bien, il faut fouilles toutes les bases de données disponbles et répondre le plus approximativement possible sans explication mais en spécifiant qu'il s'agit d'une approximation et qu'une validation est requise avec Christophe Marcellin. ` +
             `Répondez toujours poliment, avec le vouvoiement, sans signature ni formules inutiles. Mon identifiant est : "${senderId}".`
             : `You are a virtual assistant specialized in residential and commercial real estate in the province of Quebec. ` +
             `You must respond only to questions related to real estate or services offered by our team. Politely ignore any unrelated inquiries. ` +

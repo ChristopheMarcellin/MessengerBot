@@ -164,8 +164,8 @@ function buildSpecSummary(session, lang = "fr") {
 
     // Ajouter le footer selon la langue
     const footer = lang === "fr"
-        ? "Avec plaisir, je peux maintenant répondre à vos questions !"
-        : "With pleasure, I can now answer your questions!";
+        ? "Meci, vous pouvez posez maintenant vos questions immobilières !"
+        : "Thank you, you may ask your real estate question!"
 
     summary += `\n${footer}`;
 

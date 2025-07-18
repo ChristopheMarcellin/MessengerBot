@@ -69,19 +69,19 @@ const questions = {
 
     generic: {
         expectations: {
-            fr: "Laisser connaître vos attentes. Précisez ce que vous voulez selon votre situation: \n\nPar exemple: \n\n-Je veux piscine creusée (incontournable), \n-J'aimerais un foyer (souhaitable), \n-Je veux vendre sans garantie légale, etc.",
+            fr: "Laissez connaître vos attentes. Précisez ce que vous voulez selon votre situation: \n\nPar exemple: \n\n-Je veux piscine creusée (incontournable), \n-J'aimerais un foyer (souhaitable), \n-Je veux vendre sans garantie légale, etc.",
             en: "Let us know about any expectations you may have according to your situation: \n\nFor example you may say: \n\n-Inground pool (must), \n-Fireplace(nice to have). \n-I need home staging", 
         },
 
         firstName: {
             fr: "Nous aimerions répondre à vos question mais avant de débuter nous aimerions quelques informations qui nous servent à des fins de statistiques ou de suivi. " +
                 "Vos infos demeurent confidentielles (aucune pub de notre part ou d’un tiers).\n\n" +
-                "Si vous êtes à la recherche, nous vous fournirons un lien vers votre site web affichant des propriétés selon vos critères.\n\n" +
+                "Si vous êtes à la recherche, nous vous fournirons un lien vers un site web personnalisé affichant des propriétés selon vos critères.\n\n" +
                 "Libre à vous de donner les bonnes informations et libre à nous de répondre à vos questions.\n\n" +
                 "Commençons par votre prénom SVP ?",
             en: "We now wish to answer your questions, before we begin, we kindly ask for a few details used strictly for follow-up or statistical purposes. " +
                 "Your information will remain confidential (no advertising from us or any third party).\n\n" +
-                "If you are searching, we will provide you with a link to your website displaying properties according to your criteria.\n\n" +
+                "If you are searching, we will provide you with a link to a customized website displaying properties according to your criteria.\n\n" +
                 "Let's start with your first name please?"
         },
 
@@ -105,8 +105,8 @@ const questions = {
         },
 
         wantsContact: {
-            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte, choisir la bonne option: \n1 pour oui\n2 pour non",
-            en: "Would you like someone from our team to contact you, pick your option: \n\n1 for yes \n2 for no)",
+            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte, choisir la bonne option: \n\n1 pour oui\n2 pour non",
+            en: "Would you like someone from our team to contact you, pick your option: \n\n1 for yes \n\n2 for no)",
         },
 
         propertyUsage: {
