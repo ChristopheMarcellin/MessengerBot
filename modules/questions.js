@@ -126,7 +126,7 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
     return lang === 'en'
-        ? "Hello, I'm CasaNova, a virtual assistant powered by artificial intelligence.\n\n" +
+        ? "Hello, I'm CasaNova, your virtual assistant powered by artificial intelligence.\n\n" +
         "You may ask questions about our services or anything related to real estate in Quebec.\n" +
         "You may also ask about real estate approximate prices for neighborhoods or addesses in the greater Montreal.\n" +
         "My responses are for informational purposes only and may contain errors.\n\n" +
