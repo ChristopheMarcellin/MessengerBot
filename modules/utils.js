@@ -27,8 +27,8 @@ const faqMapByKey = {
         en: "To contact us quickly or browse our listings, call 514-231-6370 (Christophe Marcellin) or (514) 912-5343 (Carole Baillargeon), or email christophe.marcellin@century21 and carole.baillargeon@century21.ca. For our online offers and websites: www.carolebaillargeon.com or www.christophe-marcellin.c21.ca"
     },
     consultation: {
-        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.",
-        en: "We can help you estimate your property based on comparable listings. The consultation is free and includes the full property evaluation."
+        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seuls Caroles ou Christophe peuvent vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
+        en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away for your your address. However, only Carole or Christophe can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
     },
     rental: {
         fr: "Dans le domaine de la location, nous pouvons vous aider à promouvoir votre offre de location et trouver votre prochain locataire.",
@@ -70,12 +70,17 @@ async function classifyIntent(message, lang = 'fr') {
         ? `Exemples :\n` +
         `"Quand êtes-vous ouverts ?" → faq:hours\n` +
         `"Quelles sont vos heures d'affaires ?" → faq:hours\n` +
-        `"Comment procédez-vous pour faire une estimation ?" → faq:consultation\n` +
+        `"Comment procédez-vous pour faire l'estimation d'une propriété" → faq:consultation\n` +
         `"Est-ce que vous aidez pour la location ?" → faq:rental\n` +
         `"Puis-je vous appeler directement ?" → faq:contact\n` +
         `"Où est situé votre bureau ?" → faq:contact\n` +
+        `"Qui est carole baillargeon, quelle est son expérience ?" → faq:carole \n` +
+	`"Qui est christophe marcellin, quelle est son expérience ?" → faq:christophe\n` +
+	`"Que pouvez-vous me dire de votre équipe ?" → faq:team \n` +
+	`"Faites vous de la location ou du locatif ?" → faq:rental \n` +
         `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
-        `"Travaillez-vous sur la Rive-Sud ?" → faq:territory\n` +
+	`"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
+        `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Quels documents faut-il fournir pour vendre une propriété ?" → gpt\n` +
         `"Combien coûte vendre une maison avec un courtier ?" → gpt\n` +
         `"Est-ce que les offres multiples sont encore fréquentes ?" → gpt\n` +
@@ -103,11 +108,17 @@ async function classifyIntent(message, lang = 'fr') {
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
         `"How does an evaluation work?" → faq:consultation\n` +
-        `"Do you help with rentals?" → faq:rental\n` +
+        `"Do you handle rentals?" → faq:rental\n` +
+        `"How do you proceed to estimate a property?" → faq:consultation\n` +
         `"Can I call you directly?" → faq:contact\n` +
         `"Where is your office located?" → faq:contact\n` +
+        `"Who is Carole Baillargeon, what is her experience?" → faq:carole\n` +
+        `"Who is Christophe Marcellin, what is his experience?" → faq:christophe\n` +
+        `"What can you tell me about your team?" → faq:team\n` +
+        `"Do you work with commercial properties?" → faq:commercial\n` +
+        `"What is your address, where are your offices located?" → faq:office\n` +
+        `"Do you work on the South Shore and or in Montreal?" → faq:territory\n` +
         `"Do you handle commercial properties?" → faq:commercial\n` +
-        `"Do you work on the South Shore?" → faq:territory\n` +
         `"What documents are required to sell a property?" → gpt\n` +
         `"How much does it cost to sell a home with a broker?" → gpt\n` +
         `"Are multiple offers still common?" → gpt\n` +
