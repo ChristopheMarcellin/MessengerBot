@@ -192,6 +192,19 @@ async function classifyIntent(message, lang = 'fr') {
         return 'other';
     }
 }
+
+
+// === 🆕 Historique des conversations par utilisateur ===
+const conversationHistory = {};
+function buildContextualPrompt(senderId, currentMessage, lang = 'fr') {
+    if (!conversationHistory[senderId]) conversationHistory[senderId] = [];
+    conversationHistory[senderId].push(currentMessage);
+    if (conversationHistory[senderId].length > 5) conversationHistory[senderId].shift(); // garde les 5 derniers
+    const context = conversationHistory[senderId].slice(0, -1).join('\n');
+    return (lang === 'fr'
+        ? `Voici le contexte des questions précédentes:\n${context}\n\nVoici la nouvelle question:\n${currentMessage}\n\nRéponds en tenant compte du contexte.`
+        : `Here is the context of previous questions:\n${context}\n\nHere is the new question:\n${currentMessage}\n\nAnswer considering the context.`);
+}
 async function chatOnly(senderId, message, lang = "fr") {
     const intent = await classifyIntent(message, lang);
     console.log(`Intent: ${intent}`);
@@ -207,25 +220,25 @@ async function chatOnly(senderId, message, lang = "fr") {
         }
     }
 
-    // 🤖 Cas 2 : GPT (libre)
+    // 🤖 Cas 2 : GPT (libre) avec contexte
     if (intent === "gpt") {
+        const contextualMessage = buildContextualPrompt(senderId, message, lang);
         const prompt = lang === "fr"
             ? `Vous êtes un expert en immobilier résidentiel et commercial au Québec. ` +
             `Votre rôle est de répondre immédiatement, clairement et précisément à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `Si la question concerne une estimation de prix ou une valeur immobilière, donnez la valeur élevée d'une fourchette approximative en date d'aujourd'hui (si la statistique la plus récente date de 2023, ajoutez 5% par année manquante, soit 10%), précisez que la valeur est estimative et qu’une validation est requise avec le courtier Christophe Marcellin car plusieurs facteurs comme la condition du bien peut influencer le prix.  Ne donner qu'une seule valeur, sans révéler qu'il s'agit d'une moyenne ou d'une fourchette.` +
+            `Si la question concerne une estimation de prix ou une valeur immobilière, donnez la valeur élevée d'une fourchette approximative en date d'aujourd'hui, si la dimension n'est pas fournie, basez l'estimé sur 1000 pieds carrés (si la statistique la plus récente date de 2023, ajoutez 2% par année manquante, soit 4%),` +
+            `précisez que la valeur est estimative et qu’une validation est requise avec le courtier Christophe Marcellin, précisez que plusieurs facteurs comme la condition du bien peut influencer le prix. Ne pas préciser la méthode de calcul.` +
             `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            `Répondez simplement à la question suivante : "${message}"`
+            contextualMessage
             : `You are an expert in residential and commercial real estate in Quebec. ` +
-            `Your job is to immediately and clearly answer any question related to real estate. ` +
+            `Your job is to immediately and clearly answer any real estate-related question. ` +
             `Give a direct, concise, and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `"If the question concerns a price estimate or a real estate value, provide the high end of an approximate range as of today (if the most recent statistic is from 2023, add 5% per missing year, i.e., 10%), specify that the value is an estimate and that validation is required with broker Christophe Marcellin, as several factors such as the property’s condition can influence the price. Provide only a single value, without revealing that it is an average or a range."
-.` +
+            `If the question concerns a price estimate or a real estate value, provide the high end of an approximate range as of today (if the most recent statistic is from 2023, add 2% per missing year, i.e., 4%), specify that the value is an estimate and that validation is required with broker Christophe Marcellin, as several factors such as the property’s condition can influence the price. Provide only a single value, without revealing that it is an average or a range. ` +
             `Never use phrases like "I'm here to help" or "feel free to ask." ` +
-            `Just answer the following question: "${message}"`;
-
+            contextualMessage;
 
         console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
 
@@ -268,6 +281,7 @@ async function chatOnly(senderId, message, lang = "fr") {
 
     await sendMessage(senderId, fallback);
 }
+
 
 //gpt classifies project
 
