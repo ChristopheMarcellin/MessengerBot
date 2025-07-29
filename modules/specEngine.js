@@ -164,8 +164,16 @@ function buildSpecSummary(session, lang = "fr") {
 
     // Ajouter le footer selon la langue
     const footer = lang === "fr"
-        ? "Meci, vous pouvez posez maintenant vos questions immobilières !"
-        : "Thank you, you may ask your real estate question!"
+        ? "Merci, vous pouvez poser des questions sur nos services ou sur tout ce qui concerne l'immobilier au Québec.\n" +
+        "Vous pouvez également demander des prix approximatifs de l'immobilier pour des quartiers ou des adresses.\n" +
+        "Sachez que les estimations de prix sont basées sur les données disponibles qui peuvent ou non refléter fidèlement la situation actuelle.\n\n" +
+        "Mes réponses sont à titre informatif seulement et peuvent contenir des erreurs.\n\n" +
+        "Elles ne doivent jamais remplacer les conseils d'un professionnel qualifié de notre équipe."
+        : "Thank you, you may ask questions about our services or anything related to real estate in Quebec.\n" +
+        "You may also ask about real estate approximate prices for neighborhoods or addesses.\n" +
+        "Be aware that price estimates are based on available data which may or may not reflect acurately the current situation.\n\n"
+        "My responses are for informational purposes only and may contain errors.\n\n" +
+        "They should never replace the advice of a qualified professional on our team." 
 
     summary += `\n${footer}`;
 

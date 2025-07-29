@@ -74,15 +74,22 @@ const questions = {
         },
 
         firstName: {
-            fr: "Nous aimerions répondre à vos question mais avant de débuter nous aimerions quelques informations qui nous servent à des fins de statistiques ou de suivi. " +
-                "Vos infos demeurent confidentielles (aucune pub de notre part ou d’un tiers).\n\n" +
-                "Si vous êtes à la recherche, nous vous fournirons un lien vers un site web personnalisé affichant des propriétés selon vos critères.\n\n" +
-                "Libre à vous de donner les bonnes informations et libre à nous de répondre à vos questions.\n\n" +
+            fr: "Afin de répondre à vos questions, nous aimerions mieux vous connaître.\n\n" +
+                "Vos infos sont confidentielles et servent à des fins statistiques (aucune pub de notre part ou d’un tiers).\n\n" +
+                "Une FAUSSE DÉCLARATION peut entraîner la SUSPENSION de votre accès à ce service vraiment unique et exceptionnel\n\n" +
+                "Voici quelques exemples de services que CasaNova peut vous rendre dans le domaine exclusif de l'immobilier au Québec: \n\n" + 
+                "1-Répondre à vos questions légales\n2-Vous donner une opinion\n3-Vous alerter en temps réel des propriétés en vente que vous recherchez via un site web personnalisé \n" +
+                "4-Vous informer sur nos services"+
+                "Voici quelques exemples de services offerts via CasaNova: \n\n1-Réponses à vos questions légales\n\n2-Questions à vos demandes d'opinion \n\n\n" +
                 "Commençons par votre prénom SVP ?",
-            en: "We now wish to answer your questions, before we begin, we kindly ask for a few details used strictly for follow-up or statistical purposes. " +
-                "Your information will remain confidential (no advertising from us or any third party).\n\n" +
-                "If you are searching, we will provide you with a link to a customized website displaying properties according to your criteria.\n\n" +
-                "Let's start with your first name please?"
+            en: "In order to answer your questions, we would like to know you better.\n\n" +
+                "Your information is confidential and used for statistical purposes only (no advertising from us or any third party).\n\n" +
+                "A FALSE STATEMENT may result in the SUSPENSION of your access to this truly unique and exceptional service.\n\n" +
+                "Here are some examples of services CasaNova can provide you in the exclusive field of Quebec Real Estate:\n\n" +
+                "1-Answering your legal questions\n2-Giving you an opinion\n3-Alerting you in real time about properties for sale that match your search via a personalized website\n" +
+                "4-Provide price estimates for an address\n5-Informing you about our services" +
+                "Here are some examples of services offered through CasaNova:\n\n1-Answers to your legal questions\n\n2-Responses to your opinion requests\n\n\n" +
+                "Let's start with your first name, please?"
         },
 
         lastName: {
@@ -126,18 +133,10 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
     return lang === 'en'
-        ? "Hello, I'm CasaNova, your virtual assistant powered by artificial intelligence.\n\n" +
-        "You may ask questions about our services or anything related to real estate in Quebec.\n" +
-        "You may also ask about real estate approximate prices for neighborhoods or addesses in the greater Montreal.\n" +
-        "My responses are for informational purposes only and may contain errors.\n\n" +
-        "They should never replace the advice of a qualified professional.\n\n" +
-        "Now to help me assist you better, which option best describes your intent: \n\n1 = buy \n2 = sell \n3 = rent out \n4 = other"
-        : "Bonjour, je suis CasaNova, un assistant virtuel propulsé par l’intelligence artificielle.\n" +
-        "Vous pouvez me poser des questions sur nos services ou tout ce qui concerne le domaine de l'immobilier au Québec.\n" +
-        "Vous pouvez aussi me questionner sur les prix approximatifs de l'immobilier pour un quartier ou adresse donnée du grand Montréal.\n" +
-        "Mes réponses sont fournies à titre informatif seulement et peuvent contenir des erreurs.\n" +
-        "Elles ne remplacent en aucun cas les conseils d’un professionnel qualifié.\n\n" +
-        "Afin de mieux vous assister, quelle option numérique vous décrit le mieux : \n\n1 = acheter \n2 = vendre \n3 = offrir en location \n4 = autre raison";
+        ? "Hello, I'm CasaNova, your virtual assistant powered by AI.\n\n" +
+        "To better help you, which option represents you best: \n\n1 (buy)\n2 (sell) \n3 (rent out) \n4 (I have questions)"
+        : "Bonjour, je suis CasaNova, votre assistant propulsé par l’IA.\n" +
+        "Afin de mieux vous assister, quelle intention vous décrit le mieux : \n\n1 (acheter) \n2 (vendre) \n3 (offrir en location)\n4 (J'ai des questions)";
 }
 
 module.exports = {
