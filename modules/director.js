@@ -72,7 +72,7 @@ async function runDirector(context) {
     }
 
     //summarize
-    if (nextSpec === null && ["B", "S", "R"].includes(session.projectType)) {
+    if (nextSpec === null && ["B", "S", "R","E"].includes(session.projectType)) {
         //   logSessionState("***[DIRECTOR summarize]", session);
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");

@@ -376,27 +376,18 @@ function traceCaller(label) {
    // console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
  }
 
-
 function getNextSpec(session) {
     const { projectType, specValues = {}, askedSpecs = {} } = session;
     const propertyUsage = specValues.propertyUsage;
 
-
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
-
-    // Bloc 0 : refus explicite
-    if (projectType === 'E' || propertyUsage === 'E') return null;
-
-    if (propertyUsage === '?' || propertyUsage === undefined) return 'propertyUsage';
 
     // Bloc 2 : specs spécifiques
     const typeBlock = questions[projectType];
     if (!typeBlock || typeof typeBlock !== 'object') {
         return 'none';
     }
- //   console.log(`[getNextSpec] ✅ Champs spécifiques pour ${projectType} =`, Object.keys(typeBlock));
-
     const skipIfIncome = ['bedrooms', 'bathrooms', 'garage', 'parking'];
     for (const field of Object.keys(typeBlock)) {
         if (propertyUsage === 'income' && skipIfIncome.includes(field)) continue;
@@ -412,6 +403,13 @@ function getNextSpec(session) {
     } else {
         console.log(`[getNextSpec] ✅ Champs génériques =`, Object.keys(genericBlock));
         for (const field of Object.keys(genericBlock)) {
+
+            // 🆕 Si projectType = E, on saute expectations et propertyUsage
+            if (projectType === 'E' && (field === 'expectations' || field === 'propertyUsage')) {
+                console.log(`[getNextSpec] projectType = E → question générique "${field}" ignorée.`);
+                continue;
+            }
+
             if (
                 specValues[field] === '?' ||
                 specValues[field] === undefined ||
@@ -440,7 +438,6 @@ function getNextSpec(session) {
 
     console.warn('[getNextSpec] ⚠️ Specs terminées mais certaines non posées → incohérence');
     return 'none';
-
 }
 
 function getCurrentSpec(session) {
