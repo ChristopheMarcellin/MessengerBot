@@ -27,7 +27,7 @@ const faqMapByKey = {
         en: "To contact us quickly or browse our listings, call 514-231-6370 (Christophe Marcellin) or (514) 912-5343 (Carole Baillargeon), or email christophe.marcellin@century21 and carole.baillargeon@century21.ca. For our online offers and websites: www.carolebaillargeon.com or www.christophe-marcellin.c21.ca"
     },
     consultation: {
-        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seuls Caroles ou Christophe peuvent vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
+        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seuls Carole ou Christophe peuvent vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
         en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away for your your address. However, only Carole or Christophe can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
     },
     rental: {
@@ -58,13 +58,20 @@ const faqMapByKey = {
     team: {
         fr: "Carole et Christophe font équipe pour mieux vous servir. Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix. Christophe met à votre service son expérience de courtier et 25 ans d'expérience en technologie pour vous aider à vendre rapidement ou acheter.",
         en: "Carole and Christophe work together to better serve you. Carole brings over 25 years of brokerage experience and many awards, while Christophe offers his brokerage expertise combined with 25 years in tech to help you sell or buy quickly."
+    },
+    homestaging: {
+        fr: "Bien entendu, nous vous aidons à montrer votre propriété sous son meilleur jour en vous fournissant les services conseils appropriés.",
+        en: "Of course, we help you homestage your property at its best by providing the appropriate advisory services."
     }
+
 };
 
 async function classifyIntent(message, lang = 'fr') {
+    if (/carole/i.test(message)) return "faq:carole";
+    if (/christophe|marcellin/i.test(message)) return "faq:christophe";
     const categories = [
         'hours', 'contact', 'consultation', 'rental',
-        'commercial', 'territory', 'carole', 'christophe', 'team'
+        'commercial', 'territory', 'carole', 'christophe', 'team', 'homestaging'
     ];
     const examples = lang === 'fr'
         ? `Exemples :\n` +
@@ -81,6 +88,7 @@ async function classifyIntent(message, lang = 'fr') {
         `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
 	`"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
+        `"Faites-vous de la valorisation immobilière ou du home staging ?" → faq:homestaging\n` +
         `"Quels documents faut-il fournir pour vendre une propriété ?" → gpt\n` +
         `"Combien coûte vendre une maison avec un courtier ?" → gpt\n` +
         `"Est-ce que les offres multiples sont encore fréquentes ?" → gpt\n` +
@@ -224,19 +232,21 @@ async function chatOnly(senderId, message, lang = "fr") {
     if (intent === "gpt") {
         const contextualMessage = buildContextualPrompt(senderId, message, lang);
         const prompt = lang === "fr"
-            ? `Vous êtes un expert en immobilier résidentiel et commercial au Québec. ` +
+            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
+            `Vous parlez au nom des courtiers Carole Baillargeon et Christophe Marcellin. ` +
             `Votre rôle est de répondre immédiatement, clairement et précisément à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `Si la question concerne une estimation de prix ou une valeur immobilière, donnez la valeur élevée d'une fourchette approximative en date d'aujourd'hui, si la dimension n'est pas fournie, basez l'estimé sur 1000 pieds carrés (si la statistique la plus récente date de 2023, ajoutez 2% par année manquante, soit 4%),` +
-            `précisez que la valeur est estimative et qu’une validation est requise avec le courtier Christophe Marcellin, précisez que plusieurs facteurs comme la condition du bien peut influencer le prix. Ne pas préciser la méthode de calcul.` +
+            `Si la question concerne une estimation de prix ou une valeur immobilière, donnez la valeur médiane haute en date d'aujourd'hui, si la dimension n'est pas fournie, basez l'estimé sur 1000 pieds carrés (si la statistique la plus récente date de 2023, ajoutez 2% par année manquante, soit 4%), ` +
+            `précisez que la valeur est estimative et qu’une validation est requise avec un professionnel de l'immobilier comme Christophe ou Carole, donnez un ou deux exemples de vartions qui peuvent influer sur l'estimation sans jamais référer à la méthodologie utilisée` +
             `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
             contextualMessage
-            : `You are an expert in residential and commercial real estate in Quebec. ` +
+            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
+            `You speak on behalf of brokers Carole Baillargeon and Christophe Marcellin. ` +
             `Your job is to immediately and clearly answer any real estate-related question. ` +
             `Give a direct, concise, and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `If the question concerns a price estimate or a real estate value, provide the high end of an approximate range as of today (if the most recent statistic is from 2023, add 2% per missing year, i.e., 4%), specify that the value is an estimate and that validation is required with broker Christophe Marcellin, as several factors such as the property’s condition can influence the price. Provide only a single value, without revealing that it is an average or a range. ` +
+            `If the question concerns a price estimate or a real estate value, provide the high median as of today, if the size is not provided, base the estimate on 1000 square feet (if the most recent statistic is from 2023, add 2% per missing year, i.e., 4%), specify that the value is an estimate and that validation is required by an experienced broker like Carole or Christophe, provide one or two examples as to why the estimate may be inacurate without referring to the methodology used to estimate. ` +
             `Never use phrases like "I'm here to help" or "feel free to ask." ` +
             contextualMessage;
 

@@ -69,8 +69,8 @@ const questions = {
 
     generic: {
         expectations: {
-            fr: "Laissez connaître vos attentes. Précisez ce que vous voulez selon votre situation: \n\nPar exemple: \n\n-Je veux piscine creusée (incontournable), \n-J'aimerais un foyer (souhaitable), \n-Je veux vendre sans garantie légale, etc.",
-            en: "Let us know about any expectations you may have according to your situation: \n\nFor example you may say: \n\n-Inground pool (must), \n-Fireplace(nice to have). \n-I need home staging", 
+            fr: "Dictez vos attentes: \n\nPar exemple: \n\n-Je veux une piscine creusée (incontournable), \n\n-Je veux un foyer (souhaitable), \n\n-Je veux vendre sans garantie légale, etc.",
+            en: "Dicate your expectations: \n\nFor example you may say: \n\n-Inground pool (a must), \n-I'd like a Fireplace(nice to have). \n-I need a home staging service", 
         },
 
         firstName: {
