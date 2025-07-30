@@ -561,6 +561,27 @@ function setSpecValue(session, key, value, caller = "unspecified") {
     // console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
 
+function getVoidedSpecs(spec, value = "E") {
+    // Liste des specs à invalider si projectType est "E"
+    const voidIfProjectTypeE = [
+        "bedrooms",
+        "bathrooms",
+        "garage",
+        "parking",
+        "price",
+        "location",
+        "expectations",
+        "propertyUsage"
+    ];
+
+    if (spec === "projectType" && value === "E") {
+        return voidIfProjectTypeE;
+    }
+
+    // Par défaut : aucune spec à void
+    return [];
+}
+
 
 function setAskedSpec(session, specKey, source = "manual") {
     if (!session.askedSpecs) {
