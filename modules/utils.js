@@ -432,7 +432,12 @@ function getNextSpec(session) {
         return null;
     }
 
-    console.warn('[getNextSpec] ⚠️ Specs terminées mais certaines non posées → incohérence');
+
+    console.warn("[getNextSpec] ⚠️ Specs terminées mais certaines non posées → incohérence");
+    for (const [k, v] of Object.entries(session.specValues)) {
+        console.log(`  - ${k}: value="${v}", asked=${session.askedSpecs[k] === true}`);
+    }
+
     return 'none';
 }
 
@@ -570,8 +575,8 @@ function getVoidedSpecs(spec, value = "E") {
         "parking",
         "price",
         "location",
-        "expectations"
-       // "propertyUsage"
+        "expectations",
+        "propertyUsage"
     ];
 
     if (spec === "projectType" && value === "E") {

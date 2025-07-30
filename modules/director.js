@@ -72,24 +72,17 @@ async function runDirector(context) {
     }
 
     //summarize
-    if (nextSpec === null && ["B", "S", "R","E"].includes(session.projectType)) {
-        //   logSessionState("***[DIRECTOR summarize]", session);
+    if ((nextSpec === null || nextSpec === "none") && ["B", "S", "R", "E"].includes(session.projectType)) {
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
             await stepSummarizeAndConfirm(context);
             return true;
         }
-
         console.log("[DIRECTOR] ℹ️ Session déjà en mode chat → passage à GPT");
-        //    context.gptAllowed = true;
-        //    logSessionState("***[DIRECTOR no summary]", session);
         await chatOnly(senderId, message, session.language || "fr");
         return true;
     }
 
-    // 👉 Sinon, poser la prochaine question
-    await stepWhatNext(context, nextSpec, spec);
-    return true;
 }
 
 module.exports = { runDirector };
