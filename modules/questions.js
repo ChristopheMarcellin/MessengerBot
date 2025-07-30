@@ -112,8 +112,8 @@ const questions = {
         },
 
         wantsContact: {
-            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte, choisir la bonne option: \n\n1 pour oui\n2 pour non",
-            en: "Would you like someone from our team to contact you, pick your option: \n\n1 for yes \n\n2 for no)",
+            fr: "Souhaitez-vous qu’un membre de notre équipe vous contacte, choisir la bonne option: \n\n1 (oui)\n2 (non),",
+            en: "Would you like someone from our team to contact you, pick your option: \n\n1 for yes \n\n2 (for no)",
         },
 
         propertyUsage: {

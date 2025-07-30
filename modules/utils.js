@@ -410,11 +410,7 @@ function getNextSpec(session) {
                 continue;
             }
 
-            if (
-                specValues[field] === '?' ||
-                specValues[field] === undefined ||
-                specValues[field] === null
-            ) {
+            if (specValues[field] === '?' ||specValues[field] === undefined || specValues[field] === null) {
                 return field;
             }
         }
@@ -501,15 +497,15 @@ function setProjectType(session, value, caller = 'unknown') {
 
         initializeSpecFields(session, value);
     }
-
  //   console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
 function setSpecValue(session, key, value, caller = "unspecified") {
-    const all = Object.entries(session.specValues || {})
-        .map(([key, val]) => `${key}="${val}"`)
+    if (!session.specValues) session.specValues = {};
+
+    const all = Object.entries(session.specValues)
+        .map(([k, val]) => `${k}="${val}"`)
         .join(" | ");
     console.log(`[setSpecValue] ALL SPECS: ${all || "aucune spec encore définie"}`);
-    if (!session.specValues) session.specValues = {};
 
     const old = session.specValues[key];
 
@@ -521,7 +517,6 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
-        //console.log(`[UTILS] spec "${key}" déjà égale à "${value}" — aucune ré-écriture, caller ="${caller}"`);
         return;
     }
 
@@ -530,12 +525,13 @@ function setSpecValue(session, key, value, caller = "unspecified") {
         if (value === "?") {
             session.specValues[key] = "?";
             console.trace(`[utilsTRACK] propriété "propertyUsage" initialisée à "?" | caller ="${caller}"`);
+            setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
             return;
         }
 
         if (value !== "1" && value !== "2" && value !== "E") {
             console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}"`);
-            return; // ❌ Rejet immédiat
+            return;
         }
 
         const usage = value === "1" ? "income"
@@ -543,24 +539,28 @@ function setSpecValue(session, key, value, caller = "unspecified") {
                 : "E";
 
         session.specValues[key] = usage;
-   //     console.trace(`[utilsTRACK] propriété "propertyUsage" définie → "${usage}" | current state: projectType=${session.projectType}, caller ="${caller}"`);
+        setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
         return;
     }
 
     // ✅ Mise à jour standard
     session.specValues[key] = value;
+    setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
 
-    // ✅ Ne pas faire de double log si déjà fait manuellement dans runDirector
-    if (caller !== "runDirector/?→E after 2 invalid") {
-        //    setAskedSpec(session, key, caller);
+    // 🔥 Cascade : appliquer getVoidedSpecs(), on met E à toutes les specs et asked = true pour toutes
+    //les questions qui ne seront pas posées.
+    const voidedSpecs = getVoidedSpecs(key, value);
+    for (const s of voidedSpecs) {
+        session.specValues[s] = "E";
+        setAskedSpec(session, s, `[auto] forcé à E car ${key} = ${value}`);
     }
 
     const specs = Object.entries(session.specValues)
         .map(([k, v]) => `${k}=${v}`)
         .join(', ');
-
-   // console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
+    // console.trace(`[utilsTRACK] spec "${key}" modifiée → "${value}" | current state: projectType=${session.projectType} | specs: ${specs}`);
 }
+
 
 function setAskedSpec(session, specKey, source = "manual") {
     if (!session.askedSpecs) {
