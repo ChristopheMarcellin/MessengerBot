@@ -570,8 +570,8 @@ function getVoidedSpecs(spec, value = "E") {
         "parking",
         "price",
         "location",
-        "expectations",
-        "propertyUsage"
+        "expectations"
+       // "propertyUsage"
     ];
 
     if (spec === "projectType" && value === "E") {

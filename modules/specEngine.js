@@ -289,26 +289,7 @@ function getSpecFieldsForProjectType(projectType) {
     return Object.keys(questions?.[projectType] || {});
 }
 
-function getVoidedSpecs(spec, value = "E") {
-    // Liste des specs à invalider si projectType est "E"
-    const voidIfProjectTypeE = [
-        "bedrooms",
-        "bathrooms",
-        "garage",
-        "parking",
-        "price",
-        "location",
-        "expectations",
-        "propertyUsage"
-    ];
 
-    if (spec === "projectType" && value === "E") {
-        return voidIfProjectTypeE;
-    }
-
-    // Par défaut : aucune spec à void
-    return [];
-}
 
 function allSpecsCollected(session) {
     return !getNextUnansweredSpec(session);
@@ -369,7 +350,6 @@ module.exports = {
     isValidAnswer,
     getSpecFieldsForProjectType,
     allSpecsCollected,
-    getVoidedSpecs,
     getProjectTypeFromNumber,
     buildExportRecord,
     exportToGoogleSheets
