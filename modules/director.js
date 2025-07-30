@@ -22,25 +22,19 @@ async function runDirector(context) {
         return false;
     }
 
-    // 🧭 Détermination de la prochaine spec à traiter
 
+    //ON ÉVALUE ET VALIDE LE MESSAGE REÇU EN FONCTION DE LA SPEC EN COURS DE TRAITEMENT
     const spec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${spec}_`);
 
-// 🔁 ON ÉVALUE LA SPEC À TRAITER LORSQUE LA DISCUSSION COMMENCE
     if (spec === 'none') {
-        console.log("toutes les specs ont été traitées");
-        //     context.gptAllowed = true;
+        console.log("toutes les specs ont déjà été traitées");
         context.session.mode = 'chat'
-        //   context.gptAllowed = true;
-        // logSessionState("***[DIRECTOR no summary]", session);
         await chatOnly(senderId, message, session.language || "fr");
         return true;
     }
 
-    // NEXT SPEC PROJECT TYPE
     if (spec === "projectType") {
-        //     logSessionState("***[DIRECTOR stepHandleProjectType]", session);
         const handled = await stepHandleProjectType(context);
         return handled;
     }
@@ -55,23 +49,12 @@ async function runDirector(context) {
         await stepHandleSpecAnswer(context, spec, isValid);
     }
 
-    // 🔁 ON ÉVALUE LA PROCHAINE SPEC À TRAITER POUR PROGRESSER AU TRAVERS DES SPECS
+    // 🔁 ON DÉTERMINE LA PROCHAINE SPÉCIFICATION À TRAITER ET ENVOYONS LE MESSAGE APPROPRIÉ À L'USAGER
     const nextSpec = getNextSpec(session);
-
     console.log(`[DIRECTOR] NextSpec recalculée = _${nextSpec}_`);
 
-    //TOUTES LES SPECS ONT ÉTÉ TRAITÉES
-    //if (nextSpec === 'none') {
-    //    console.log("[DIRECTOR] toutes les specs ont été traitées");
-    //    //  context.gptAllowed = true;
-    //    context.session.mode = 'chat'
-    //    //    context.gptAllowed = true;
-    //    //     logSessionState("***[DIRECTOR no summary]", session);
-    //    await chatOnly(senderId, message, session.language || "fr");
-    //    return true;
-    //}
 
-    //summarize
+    //SOMMAIRE
     if ((nextSpec === null || nextSpec === "none") && ["B", "S", "R", "E"].includes(session.projectType)) {
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");

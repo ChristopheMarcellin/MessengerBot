@@ -76,19 +76,17 @@ const questions = {
         firstName: {
             fr: "Afin de répondre à vos questions, nous aimerions mieux vous connaître.\n\n" +
                 "Vos infos sont confidentielles et servent à des fins statistiques (aucune pub de notre part ou d’un tiers).\n\n" +
-                "Une FAUSSE DÉCLARATION peut entraîner la SUSPENSION de votre accès à ce service vraiment extraordinaire\n\n" +
-                "Voici quelques exemples de services que CasaNova peut vous rendre dans le domaine exclusif de l'immobilier au Québec: \n\n" + 
-                "1-Répondre à vos questions légales\n2-Vous donner une opinion\n3-Vous alerter en temps réel des propriétés en vente que vous recherchez via un site web personnalisé \n" +
-                "4-Vous informer sur nos services"+
-                "Voici quelques exemples de services offerts via CasaNova: \n\n1-Réponses à vos questions légales\n\n2-Questions à vos demandes d'opinion \n\n\n" +
+                "Une FAUSSE DÉCLARATION peut entraîner la SUSPENSION de votre compte à ce service vraiment extraordinaire\n\n" +
+                "CasaNova peut vous rendre d'énormes services dans le domaine de l'immobilier au Québec, voici quelques exemples: \n\n" + 
+                "1-Répondre à vos questions légales\n2-Vous donner une opinion\n3-Vous créer un site web contenant les propriétés à vendre qui répondent à vos critères. \n" +
+                "4-Vous informer sur nos services\n\n\n"+
                 "Commençons par votre prénom SVP ?",
             en: "In order to answer your questions, we would like to know you better.\n\n" +
-                "Your information is confidential and used for statistical purposes only (no advertising from us or any third party).\n\n" +
+                "Your information is confidential and used for statistical purposes (no advertising from us or any third party).\n\n" +
                 "A FALSE STATEMENT may result in the SUSPENSION of your access to this truly amazing service.\n\n" +
-                "Here are some examples of services CasaNova can provide you in the exclusive field of Quebec Real Estate:\n\n" +
-                "1-Answering your legal questions\n2-Giving you an opinion\n3-Alerting you in real time about properties for sale that match your search via a personalized website\n" +
-                "4-Provide price estimates for an address\n5-Informing you about our services" +
-                "Here are some examples of services offered through CasaNova:\n\n1-Answers to your legal questions\n\n2-Responses to your opinion requests\n\n\n" +
+                "CasaNova can provide you with tremendous services in the field of real estate in Quebec, here are some examples:\n\n" +
+                "1-Answering your legal questions\n2-Giving you an opinion\n3-Creating a website containing properties for sale that match your criteria.\n" +
+                "4-Informing you about our services\n\n\n" +
                 "Let's start with your first name, please?"
         },
 

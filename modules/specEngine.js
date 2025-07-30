@@ -142,8 +142,8 @@ function buildSpecSummary(session, lang = "fr") {
     console.log("CM on entre dans specSummary");
 
     const summaryHeader = lang === "fr"
-        ? "Voici un petit résumé des informations que vous nous avez transmises, vous pouvez adresser vos questions par la suite:  \n\n"
-        : "Here is a short summary of the information you provided, you may ask your questions next:   \n\n";
+        ? "Voici un récapitulatif, vous pouvez adresser vos questions par la suite:\n\n"
+        : "Here's a short summary of the information provided, you may ask your questions next:\n\n";
 
     const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
     const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);

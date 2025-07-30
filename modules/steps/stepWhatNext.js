@@ -11,7 +11,8 @@ async function stepWhatNext(context, spec, previousSpec) {
     const lang = context.session.language || 'fr';
  //   console.log(`[WHATNEXT] Langue dans session = ${lang}`);
     const nextSpec = getNextSpec(context.session);
-    //Toutes les specs sont complétées
+
+    //Toutes les specs sont complétées - NE DEVRAIT JAMAIS SE RENDRE ICI
     if (!nextSpec) {
         console.log('[WHATNEXT !nextSpec] ✅ Toutes les specs sont complètes → aucune question à poser.');
         return false;
@@ -22,8 +23,8 @@ async function stepWhatNext(context, spec, previousSpec) {
     if (previousSpec === spec) {
         console.log(`[WHATNEXT] Question posée de nouveau pcq ancienne spec était :"${previousSpec}" et la nouvelle est ${spec}`);
         prefix = lang === 'fr'
-            ? "Désolé, nous n'avons pas compris votre réponse précédente. Voici la question à nouveau :\n\n"
-            : "Sorry, we didn't understand your previous answer. Here's the question again:\n\n";
+            ? "Désolé, assurez-vous de formuler votre réponse tel que proposé. Voici la question à nouveau :\n\n"
+            : "Sorry, can you observe the format requested for your answer. Here's the question again:\n\n";
     }
 
     // === Initialisation obligatoire ===

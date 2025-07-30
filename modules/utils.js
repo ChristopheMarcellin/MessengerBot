@@ -62,6 +62,10 @@ const faqMapByKey = {
     homestaging: {
         fr: "Bien entendu, nous vous aidons à montrer votre propriété sous son meilleur jour en vous fournissant les services conseils appropriés.",
         en: "Of course, we help you homestage your property at its best by providing the appropriate advisory services."
+    },
+    website: {
+        fr: "En plus de nos sites Web respectifs www.carolebaillargeon.com et https://christophe-marcellin.c21.ca/ pour consulter nos propriétés en vente, nous pouvons concevoir rapidement un site qui présente les propriétés qui se concentrent sur vos attentes.",
+        en: "In addition to our respective websites www.carolebaillargeon.com and https://christophe-marcellin.c21.ca/ to view our properties for sale, we can quickly design a website that showcases properties precisely matching your expectations."
     }
 
 };
@@ -71,7 +75,7 @@ async function classifyIntent(message, lang = 'fr') {
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
     const categories = [
         'hours', 'contact', 'consultation', 'rental',
-        'commercial', 'territory', 'carole', 'christophe', 'team', 'homestaging'
+        'commercial', 'territory', 'carole', 'christophe', 'team', 'homestaging', 'website'
     ];
     const examples = lang === 'fr'
         ? `Exemples :\n` +
@@ -89,6 +93,7 @@ async function classifyIntent(message, lang = 'fr') {
 	`"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Faites-vous de la valorisation immobilière ou du home staging ?" → faq:homestaging\n` +
+        `"Parlez moi de votre site web ou du siteweb personnalisé" → faq:website\n` +
         `"Quels documents faut-il fournir pour vendre une propriété ?" → gpt\n` +
         `"Combien coûte vendre une maison avec un courtier ?" → gpt\n` +
         `"Est-ce que les offres multiples sont encore fréquentes ?" → gpt\n` +
@@ -127,6 +132,7 @@ async function classifyIntent(message, lang = 'fr') {
         `"What is your address, where are your offices located?" → faq:office\n` +
         `"Do you work on the South Shore and or in Montreal?" → faq:territory\n` +
         `"Do you handle commercial properties?" → faq:commercial\n` +
+        `"Tell me about your website or the website that is customized with my expecations" → faq:website\n` 
         `"What documents are required to sell a property?" → gpt\n` +
         `"How much does it cost to sell a home with a broker?" → gpt\n` +
         `"Are multiple offers still common?" → gpt\n` +
