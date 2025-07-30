@@ -510,7 +510,6 @@ function setSpecValue(session, key, value, caller = "unspecified") {
     const all = Object.entries(session.specValues)
         .map(([k, val]) => `${k}="${val}"`)
         .join(" | ");
-    console.log(`[setSpecValue] ALL SPECS: ${all || "aucune spec encore définie"}`);
 
     const old = session.specValues[key];
 

@@ -27,7 +27,7 @@ async function runDirector(context) {
     const spec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${spec}_`);
 
-    //TOUTES LES SPECS ONT ÉTÉ TRAITÉES
+// 🔁 ON ÉVALUE LA SPEC À TRAITER LORSQUE LA DISCUSSION COMMENCE
     if (spec === 'none') {
         console.log("toutes les specs ont été traitées");
         //     context.gptAllowed = true;
@@ -55,21 +55,21 @@ async function runDirector(context) {
         await stepHandleSpecAnswer(context, spec, isValid);
     }
 
-    // 🔁 Nouvelle évaluation de la prochaine spec après traitement
+    // 🔁 ON ÉVALUE LA PROCHAINE SPEC À TRAITER POUR PROGRESSER AU TRAVERS DES SPECS
     const nextSpec = getNextSpec(session);
 
     console.log(`[DIRECTOR] NextSpec recalculée = _${nextSpec}_`);
 
     //TOUTES LES SPECS ONT ÉTÉ TRAITÉES
-    if (nextSpec === 'none') {
-        console.log("toutes les specs ont été traitées");
-        //  context.gptAllowed = true;
-        context.session.mode = 'chat'
-        //    context.gptAllowed = true;
-        //     logSessionState("***[DIRECTOR no summary]", session);
-        await chatOnly(senderId, message, session.language || "fr");
-        return true;
-    }
+    //if (nextSpec === 'none') {
+    //    console.log("[DIRECTOR] toutes les specs ont été traitées");
+    //    //  context.gptAllowed = true;
+    //    context.session.mode = 'chat'
+    //    //    context.gptAllowed = true;
+    //    //     logSessionState("***[DIRECTOR no summary]", session);
+    //    await chatOnly(senderId, message, session.language || "fr");
+    //    return true;
+    //}
 
     //summarize
     if ((nextSpec === null || nextSpec === "none") && ["B", "S", "R", "E"].includes(session.projectType)) {
@@ -83,6 +83,9 @@ async function runDirector(context) {
         return true;
     }
 
+    // 👉 Sinon, poser la prochaine question
+    await stepWhatNext(context, nextSpec, spec);
+    return true;
 }
 
 module.exports = { runDirector };
