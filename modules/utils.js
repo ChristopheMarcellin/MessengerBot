@@ -3,7 +3,7 @@ const axios = require('axios');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
-
+const evalPrix = require('./evalPrix');
 
 
 console.log("🧩 [utils.js] **************************** Chargé — typeof isNumeric =", typeof isNumeric);
@@ -329,16 +329,14 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
     console.log("📬 Code postal extrait :", codePostal);
 
     // 2) Si code postal → appel evalPrix
+    // === Intégration dans le pipeline ===
     if (codePostal !== "NONE") {
-        console.log("→ Passage en mode JAVA (appel evalPrix simulé)");
-        // const estimation = await evalPrix(codePostal); // à brancher avec ton evalPrix réel
-        const estimation = 425000; // simulation
-        const reply = lang === "fr"
-            ? `D’après nos données, la valeur estimative dans le secteur ${codePostal} est de ${estimation} $.`
-            : `Based on our data, the estimated value in the ${codePostal} area is ${estimation} $.`;
+        console.log("→ Passage en mode JAVA (appel evalPrix réel)");
+        const { valeur, precision } = evalPrix(codePostal);
+        const reply = buildEstimateMessage(valeur, precision, lang);
         await sendMessage(senderId, reply);
         return;
-    }
+    } 
 
     // 3) Sinon → GPT HEAVY dédié aux estimations
     const heavyPrompt = lang === "fr"
@@ -388,6 +386,67 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
         await sendMessage(senderId, fallback);
     }
 }
+
+// === Fonction utilitaire pour mapper la précision ===
+function getPrecisionLabel(level, lang = 'fr') {
+    if (lang === 'fr') {
+        switch (level) {
+            case 3: return "bon";
+            case 2: return "moyen";
+            case 1: return "bas";
+            default: return "inconnu";
+        }
+    } else {
+        switch (level) {
+            case 3: return "high";
+            case 2: return "medium";
+            case 1: return "low";
+            default: return "unknown";
+        }
+    }
+}
+
+// === Construction du message complet ===
+function buildEstimateMessage(valeur, precision, lang = 'fr') {
+    if (valeur === 0) {
+        return lang === 'fr'
+            ? "Désolé, je n’ai pu trouver de statistiques pertinentes pour le lieu désigné."
+            : "Sorry, I couldn’t find any relevant statistics for the specified location.";
+    }
+
+    const confiance = getPrecisionLabel(precision, lang);
+    if (lang === 'fr') {
+        return (
+            `D’après nos données, la valeur estimative pour l'endroit ciblé est de ${valeur} $ le pied carré, ` +
+            `ce qui signifie environ ${valeur * 1000} $ pour 1000 pieds carrés. ` +
+            `(niveau de confiance : ${confiance}). ` +
+            `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
+            `comme le positionnement de la propriété ou les rénovations faites. ` +
+            `Vous devriez toujours vous fier à un professionnel de l'immobilier comme Carole ou Christophe pour fournir un estimé fiable.`
+        );
+    } else {
+        return (
+            `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
+            `which means approximately ${valeur * 1000} $ for 1000 square feet. ` +
+            `(confidence level: ${confiance}). ` +
+            `Obviously, several factors can influence the accuracy of this estimate, ` +
+            `such as the property's positioning or renovations made. ` +
+            `You should always rely on a real estate professional like Carole or Christophe to provide a reliable estimate.`
+        );
+    }
+}
+
+// === Appel dans le flux ===
+if (codePostal !== "NONE") {
+    console.log("→ Passage en mode JAVA (appel evalPrix réel)");
+    const { valeur, precision } = evalPrix(codePostal);
+    const reply = buildEstimateMessage(valeur, precision, lang);
+    await sendMessage(senderId, reply);
+    return;
+}
+
+
+
 
 //gpt classifies project
 

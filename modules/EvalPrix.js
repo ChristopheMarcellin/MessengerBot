@@ -63,13 +63,13 @@ function evalPrix(codePostal) {
     console.log(`Code postal saisi: ${codePostal} (normalisé: ${cp.cp6})`);
 
     const steps = [
-        { gran: "CP6", min: 11, fn: medianeClassique, label: "mediane-classique-CP6" },
-        { gran: "CP6", min: 5, fn: medianeHaute, label: "mediane-haute-CP6" },
-        { gran: "CP4", min: 5, fn: medianeHaute, label: "mediane-haute-CP4" },
-        { gran: "CP6", min: 3, fn: moyenne, label: "moyenne-CP6" },
-        { gran: "CP4", min: 3, fn: moyenne, label: "moyenne-CP4" },
-        { gran: "CP3", min: 5, fn: medianeHaute, label: "mediane-haute-CP3" },
-        { gran: "CP3", min: 1, fn: moyenne, label: "moyenne-CP3" }
+        { gran: "CP6", min: 11, fn: medianeClassique, label: "mediane-classique-CP6", precision: 2 },
+        { gran: "CP6", min: 5, fn: medianeHaute, label: "mediane-haute-CP6", precision: 3 },
+        { gran: "CP4", min: 5, fn: medianeHaute, label: "mediane-haute-CP4", precision: 3 },
+        { gran: "CP6", min: 3, fn: moyenne, label: "moyenne-CP6", precision: 1 },
+        { gran: "CP4", min: 3, fn: moyenne, label: "moyenne-CP4", precision: 1 },
+        { gran: "CP3", min: 5, fn: medianeHaute, label: "mediane-haute-CP3", precision: 3 },
+        { gran: "CP3", min: 1, fn: moyenne, label: "moyenne-CP3", precision: 1 }
     ];
 
     for (const step of steps) {
@@ -78,12 +78,17 @@ function evalPrix(codePostal) {
         if (values.length >= step.min) {
             const val = step.fn(values);
             console.log(`[INFO] Utilisé: ${step.label} (${values.length} valeurs) → ${val.toFixed(2)} $/pc`);
-            return { valeur: +val.toFixed(2), type: step.label, nbValeurs: values.length };
+            return { 
+                valeur: +val.toFixed(2), 
+                type: step.label,        // méthode utilisée (pour les logs)
+                nbValeurs: values.length,
+                precision: step.precision // 1, 2, 3 pour la fiabilité
+            };
         }
     }
 
     console.log("[INFO] Aucune donnée suffisante trouvée.");
-    return { valeur: 0, type: "aucune donnée", nbValeurs: 0 };
+    return { valeur: 0, type: "aucune donnée", nbValeurs: 0, precision: 0 };
 }
 
 // === MODE INTERACTIF ===
