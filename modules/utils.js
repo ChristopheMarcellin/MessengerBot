@@ -15,6 +15,17 @@ function stripGptSignature(text) {
         .trim();
 }
 
+// === 🆕 Historique des conversations par utilisateur ===
+const conversationHistory = {};
+function buildContextualPrompt(senderId, currentMessage, lang = 'fr') {
+    if (!conversationHistory[senderId]) conversationHistory[senderId] = [];
+    conversationHistory[senderId].push(currentMessage);
+    if (conversationHistory[senderId].length > 5) conversationHistory[senderId].shift(); // garde les 5 derniers
+    const context = conversationHistory[senderId].slice(0, -1).join('\n');
+    return (lang === 'fr'
+        ? `Voici le contexte des questions précédentes:\n${context}\n\nVoici la nouvelle question:\n${currentMessage}\n\nRéponds en tenant compte du contexte.`
+        : `Here is the context of previous questions:\n${context}\n\nHere is the new question:\n${currentMessage}\n\nAnswer considering the context.`);
+}
 
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
 const faqMapByKey = {
@@ -86,11 +97,11 @@ async function classifyIntent(message, lang = 'fr') {
         `"Puis-je vous appeler directement ?" → faq:contact\n` +
         `"Où est situé votre bureau ?" → faq:contact\n` +
         `"Qui est carole baillargeon, quelle est son expérience ?" → faq:carole \n` +
-	`"Qui est christophe marcellin, quelle est son expérience ?" → faq:christophe\n` +
-	`"Que pouvez-vous me dire de votre équipe ?" → faq:team \n` +
-	`"Faites vous de la location ou du locatif ?" → faq:rental \n` +
+	    `"Qui est christophe marcellin, quelle est son expérience ?" → faq:christophe\n` +
+	    `"Que pouvez-vous me dire de votre équipe ?" → faq:team \n` +
+	    `"Faites vous de la location ou du locatif ?" → faq:rental \n` +
         `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
-	`"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
+	    `"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Faites-vous de la valorisation immobilière ou du home staging ?" → faq:homestaging\n` +
         `"Parlez moi de votre site web ou du siteweb personnalisé" → faq:website\n` +
@@ -113,9 +124,8 @@ async function classifyIntent(message, lang = 'fr') {
         `"Est-ce risqué de vendre sans courtier ?" → gpt\n` +
         `"Est-ce que Proprio Direct est mieux qu’un courtier ?" → gpt\n` +
         `"Faut-il toujours faire une inspection ou quand dois-je faire une inspection?" → gpt\n` +
-        `"Combien vaut ma maison à Brossard ?" → gpt\n` +
-        `"Quel est le prix du pied carré dans Griffintown ?" → gpt\n` +
-        `"À quel prix avez-vous vendu ce condo ?" → gpt\n` +
+        `"Combien vaut ma maison à Brossard ?" → estimate\n` +
+        `"Quel est le prix du pied carré dans Griffintown ?" → estimate\n` +
         `"Quel est le marché actuel à Saint-Lambert ?" → gpt\n` +
         `"Peux-tu me recommander un bon restaurant ?" → other\n`
         : `Examples:\n` +
@@ -152,9 +162,8 @@ async function classifyIntent(message, lang = 'fr') {
         `"Is it risky to sell without an agent?" → gpt\n` +
         `"Is Proprio Direct better than a broker?" → gpt\n` +
         `"Should I always do an inspection or when should I do an inspection?" → gpt\n` +
-        `"How much is my home worth in Brossard?" → gpt\n` +
-        `"What’s the price per square foot in Griffintown?" → gpt\n` +
-        `"What did this condo sell for?" → gpt\n` +
+        `"How much is my home worth in Brossard?" → estimate\n` +
+        `"What’s the price per square foot in Griffintown?" → estimate\n` +
         `"What’s the market like in Saint-Lambert?" → gpt\n` +
         `"Can you recommend a good restaurant?" → other\n`;
 
@@ -207,18 +216,6 @@ async function classifyIntent(message, lang = 'fr') {
     }
 }
 
-
-// === 🆕 Historique des conversations par utilisateur ===
-const conversationHistory = {};
-function buildContextualPrompt(senderId, currentMessage, lang = 'fr') {
-    if (!conversationHistory[senderId]) conversationHistory[senderId] = [];
-    conversationHistory[senderId].push(currentMessage);
-    if (conversationHistory[senderId].length > 5) conversationHistory[senderId].shift(); // garde les 5 derniers
-    const context = conversationHistory[senderId].slice(0, -1).join('\n');
-    return (lang === 'fr'
-        ? `Voici le contexte des questions précédentes:\n${context}\n\nVoici la nouvelle question:\n${currentMessage}\n\nRéponds en tenant compte du contexte.`
-        : `Here is the context of previous questions:\n${context}\n\nHere is the new question:\n${currentMessage}\n\nAnswer considering the context.`);
-}
 async function chatOnly(senderId, message, lang = "fr") {
     const intent = await classifyIntent(message, lang);
     console.log(`Intent: ${intent}`);
@@ -234,6 +231,11 @@ async function chatOnly(senderId, message, lang = "fr") {
         }
     }
 
+    if (intent === "estimate") {
+        await handlePriceEstimate(senderId, message, lang);
+        return;
+    }
+
     // 🤖 Cas 2 : GPT (libre) avec contexte
     if (intent === "gpt") {
         const contextualMessage = buildContextualPrompt(senderId, message, lang);
@@ -243,8 +245,6 @@ async function chatOnly(senderId, message, lang = "fr") {
             `Votre rôle est de répondre immédiatement, clairement et précisément à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `Si la question concerne une estimation de prix ou une valeur immobilière, donnez la valeur médiane haute en date d'aujourd'hui, si la dimension n'est pas fournie, basez l'estimé sur 1000 pieds carrés (si la statistique la plus récente date de 2023, ajoutez 2% par année manquante, soit 4%), ` +
-            `précisez que la valeur est estimative et qu’une validation est requise avec un professionnel de l'immobilier comme Christophe ou Carole, donnez un ou deux exemples de vartions qui peuvent influer sur l'estimation sans jamais référer à la méthodologie utilisée` +
             `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
             contextualMessage
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
@@ -252,7 +252,6 @@ async function chatOnly(senderId, message, lang = "fr") {
             `Your job is to immediately and clearly answer any real estate-related question. ` +
             `Give a direct, concise, and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `If the question concerns a price estimate or a real estate value, provide the high median as of today, if the size is not provided, base the estimate on 1000 square feet (if the most recent statistic is from 2023, add 2% per missing year, i.e., 4%), specify that the value is an estimate and that validation is required by an experienced broker like Carole or Christophe, provide one or two examples as to why the estimate may be inacurate without referring to the methodology used to estimate. ` +
             `Never use phrases like "I'm here to help" or "feel free to ask." ` +
             contextualMessage;
 
@@ -298,6 +297,97 @@ async function chatOnly(senderId, message, lang = "fr") {
     await sendMessage(senderId, fallback);
 }
 
+async function handlePriceEstimate(senderId, message, lang = "fr") {
+    console.log("🔍 [PIPELINE] Demande d'estimation détectée");
+
+    // 1) GPT LIGHT → extraire code postal
+    const lightPrompt = lang === "fr"
+        ? `Retourne uniquement le code postal canadien (6 caractères) correspondant à l'adresse ou au quartier mentionné dans ce texte: "${message}". 
+          Si aucun code postal n'est trouvé, retourne uniquement "NONE". Ne donne aucune explication.`
+        : `Return only the Canadian postal code (6 characters) corresponding to the address or neighborhood mentioned in this text: "${message}". 
+          If no postal code is found, return only "NONE". Do not provide any explanation.`;
+
+    console.log("[GPT LIGHT] Prompt:", lightPrompt);
+    let codePostal = "NONE";
+    try {
+        const gptLightResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4o',
+            messages: [{ role: 'user', content: lightPrompt }],
+            max_tokens: 20,
+            temperature: 0
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+        codePostal = gptLightResponse.data.choices?.[0]?.message?.content?.trim().toUpperCase() || "NONE";
+    } catch (err) {
+        console.error(`[handlePriceEstimate] *** ERREUR GPT LIGHT : ${err.message}`);
+    }
+
+    console.log("📬 Code postal extrait :", codePostal);
+
+    // 2) Si code postal → appel evalPrix
+    if (codePostal !== "NONE") {
+        console.log("→ Passage en mode JAVA (appel evalPrix simulé)");
+        // const estimation = await evalPrix(codePostal); // à brancher avec ton evalPrix réel
+        const estimation = 425000; // simulation
+        const reply = lang === "fr"
+            ? `D’après nos données, la valeur estimative dans le secteur ${codePostal} est de ${estimation} $.`
+            : `Based on our data, the estimated value in the ${codePostal} area is ${estimation} $.`;
+        await sendMessage(senderId, reply);
+        return;
+    }
+
+    // 3) Sinon → GPT HEAVY dédié aux estimations
+    const heavyPrompt = lang === "fr"
+        ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. 
+          L'utilisateur souhaite obtenir une estimation de prix. 
+          Donnez la valeur médiane haute la plus récente (si la statistique la plus récente date de 2023, ajoutez 4% par année manquante, soit 8%). 
+          Précisez que la valeur est estimative, qu’une validation est requise avec un professionnel de l'immobilier comme Christophe ou Carole. 
+          Donnez un ou deux exemples de variations qui peuvent influer sur l'estimation (ex: rénovations, emplacement, état du marché), 
+          sans jamais référer à la méthodologie utilisée et sans parler de "médiane". 
+          N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. 
+          Question: ${message}`
+        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. 
+          The user wants a price estimate. 
+          Provide the most recent high median value (if the most recent statistic is from 2023, add 2% per missing year, i.e., 4%). 
+          Specify that the value is an estimate and must be validated by an experienced broker like Christophe or Carole. 
+          Provide one or two examples of factors that could influence the estimate (e.g., renovations, location, market conditions), 
+          without referring to the methodology used and without mentioning "median". 
+          Never use phrases like "I'm here to help" or "feel free to ask." 
+          Question: ${message}`;
+
+    console.log("[GPT HEAVY] Prompt:", heavyPrompt);
+    try {
+        const gptHeavyResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4o',
+            messages: [{ role: 'user', content: heavyPrompt }],
+            max_tokens: 200,
+            temperature: 0.6
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+
+        const gptReply = gptHeavyResponse.data.choices?.[0]?.message?.content?.trim();
+        const cleaned = gptReply ? stripGptSignature(gptReply) : null;
+        const fallback = cleaned || (lang === "fr"
+            ? "Désolé, je n’ai pas pu générer une estimation."
+            : "Sorry, I couldn't generate an estimate.");
+
+        await sendMessage(senderId, fallback);
+    } catch (err) {
+        console.error(`[handlePriceEstimate] *** ERREUR GPT HEAVY : ${err.message}`);
+        const fallback = lang === "fr"
+            ? "Désolé, je n’ai pas pu générer une estimation."
+            : "Sorry, I couldn't generate an estimate.";
+        await sendMessage(senderId, fallback);
+    }
+}
 
 //gpt classifies project
 

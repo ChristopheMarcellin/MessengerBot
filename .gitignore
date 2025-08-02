@@ -1,7 +1,26 @@
+# Dépendances
+node_modules/
+
+# Variables d'environnement
 .env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Sauvegardes & temporaires
+*.bak
+*.tmp
+
+# Notes et fichiers de dev
 indexBkp.js
+testDirector.js
+indexWebhookFilters.txt
 guide.pdf
 Diagramme.docx
-indexWebhookFilters.txt
-testDirector.js
 readme.txt
