@@ -436,16 +436,6 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
     }
 }
 
-// === Appel dans le flux ===
-if (codePostal !== "NONE") {
-    console.log("→ Passage en mode JAVA (appel evalPrix réel)");
-    const { valeur, precision } = evalPrix(codePostal);
-    const reply = buildEstimateMessage(valeur, precision, lang);
-    await sendMessage(senderId, reply);
-    return;
-}
-
-
 
 
 //gpt classifies project
