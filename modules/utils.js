@@ -5,7 +5,6 @@ const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
 const evalPrix = require('./evalPrix');
 
-
 console.log("🧩 [utils.js] **************************** Chargé — typeof isNumeric =", typeof isNumeric);
 
 function stripGptSignature(text) {
@@ -17,6 +16,7 @@ function stripGptSignature(text) {
 
 // === 🆕 Historique des conversations par utilisateur ===
 const conversationHistory = {};
+
 function buildContextualPrompt(senderId, currentMessage, lang = 'fr') {
     if (!conversationHistory[senderId]) conversationHistory[senderId] = [];
     conversationHistory[senderId].push(currentMessage);
@@ -329,16 +329,22 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
     console.log("📬 Code postal extrait :", codePostal);
 
     // 2) Si code postal → appel evalPrix
-    // === Intégration dans le pipeline ===
     if (codePostal !== "NONE") {
         console.log("→ Passage en mode JAVA (appel evalPrix réel)");
         const { valeur, precision } = evalPrix(codePostal);
-        const reply = buildEstimateMessage(valeur, precision, lang);
-        await sendMessage(senderId, reply);
-        return;
-    } 
 
-    // 3) Sinon → GPT HEAVY dédié aux estimations
+        if (valeur > 0) {
+            // On a trouvé des stats valides
+            const reply = buildEstimateMessage(valeur, precision, lang);
+            await sendMessage(senderId, reply);
+            return;
+        }
+
+        console.log("[INFO] Aucune donnée trouvée dans la BD pour ce code postal → fallback GPT Heavy");
+        // On continue vers GPT Heavy (pas de return ici)
+    }
+
+    // 3) GPT HEAVY → estimation qualitative
     const heavyPrompt = lang === "fr"
         ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. 
           L'utilisateur souhaite obtenir une estimation de prix. 
@@ -377,13 +383,16 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.");
 
-        await sendMessage(senderId, fallback);
+        // Ajout du niveau de confiance "bas" pour le fallback
+        const reply = `${fallback} ${lang === 'fr' ? '(niveau de confiance : bas)' : '(confidence level: low)'}`;
+        await sendMessage(senderId, reply);
+
     } catch (err) {
         console.error(`[handlePriceEstimate] *** ERREUR GPT HEAVY : ${err.message}`);
         const fallback = lang === "fr"
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.";
-        await sendMessage(senderId, fallback);
+        await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sampling : low)'}`);
     }
 }
 
@@ -391,7 +400,7 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
 function getPrecisionLabel(level, lang = 'fr') {
     if (lang === 'fr') {
         switch (level) {
-            case 3: return "bon";
+            case 3: return "élevé";
             case 2: return "moyen";
             case 1: return "bas";
             default: return "inconnu";
@@ -399,7 +408,7 @@ function getPrecisionLabel(level, lang = 'fr') {
     } else {
         switch (level) {
             case 3: return "high";
-            case 2: return "medium";
+            case 2: return "fair";
             case 1: return "low";
             default: return "unknown";
         }
@@ -419,7 +428,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
         return (
             `D’après nos données, la valeur estimative pour l'endroit ciblé est de ${valeur} $ le pied carré, ` +
             `ce qui signifie environ ${valeur * 1000} $ pour 1000 pieds carrés. ` +
-            `(niveau de confiance : ${confiance}). ` +
+            `(échantillonage statistique : ${confiance}). ` +
             `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
             `comme le positionnement de la propriété ou les rénovations faites. ` +
             `Vous devriez toujours vous fier à un professionnel de l'immobilier comme Carole ou Christophe pour fournir un estimé fiable.`
@@ -428,7 +437,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
         return (
             `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
             `which means approximately ${valeur * 1000} $ for 1000 square feet. ` +
-            `(confidence level: ${confiance}). ` +
+            `(statistical sampling: ${confiance}). ` +
             `Obviously, several factors can influence the accuracy of this estimate, ` +
             `such as the property's positioning or renovations made. ` +
             `You should always rely on a real estate professional like Carole or Christophe to provide a reliable estimate.`
@@ -436,10 +445,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
     }
 }
 
-
-
 //gpt classifies project
-
 async function gptClassifyProject(message, language = "fr") {
     const prompt = language === "fr"
         ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre (ex: question générale sur l'immobilier)\n5 → incompréhensible ou message sans intention (ex: "bonjour")\nRéponds uniquement par un chiffre.`
@@ -471,10 +477,6 @@ async function gptClassifyProject(message, language = "fr") {
     }
 }
 
-
-
-
-
 function isText(input) {
     if (typeof input !== 'string') return false;
 
@@ -494,7 +496,6 @@ function isNumeric(input) {
     return trimmed !== '' && !isNaN(trimmed);
 }
 
-
 function detectLanguageFromText(text) {
 
 
@@ -512,8 +513,6 @@ function detectLanguageFromText(text) {
 
     return detected;
 }
-
-
 
 function traceCaller(label) {
     const stack = new Error().stack;
@@ -649,6 +648,7 @@ function setProjectType(session, value, caller = 'unknown') {
     }
  //   console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
+
 function setSpecValue(session, key, value, caller = "unspecified") {
     if (!session.specValues) session.specValues = {};
 
@@ -731,7 +731,6 @@ function getVoidedSpecs(spec, value = "E") {
     return [];
 }
 
-
 function setAskedSpec(session, specKey, source = "manual") {
     if (!session.askedSpecs) {
         session.askedSpecs = {};
@@ -740,7 +739,6 @@ function setAskedSpec(session, specKey, source = "manual") {
     session.askedSpecs[specKey] = true;
     console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
 }
-
 
 module.exports = {
     getNextSpec,
