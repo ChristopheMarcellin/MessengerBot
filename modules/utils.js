@@ -384,7 +384,7 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
             : "Sorry, I couldn't generate an estimate.");
 
         // Ajout du niveau de confiance "bas" pour le fallback
-        const reply = `${fallback} ${lang === 'fr' ? '(niveau de confiance : bas)' : '(confidence level: low)'}`;
+        const reply = `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sample: low)'}`;
         await sendMessage(senderId, reply);
 
     } catch (err) {
@@ -427,7 +427,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
     if (lang === 'fr') {
         return (
             `D’après nos données, la valeur estimative pour l'endroit ciblé est de ${valeur} $ le pied carré, ` +
-            `ce qui signifie environ ${valeur * 1000} $ pour 1000 pieds carrés. ` +
+            `ce qui signifie environ ${(valeur * 1000).toLocaleString('fr-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ pour 1000 pieds carrés. ` +
             `(échantillonage statistique : ${confiance}). ` +
             `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
             `comme le positionnement de la propriété ou les rénovations faites. ` +
@@ -436,7 +436,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
     } else {
         return (
             `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
-            `which means approximately ${valeur * 1000} $ for 1000 square feet. ` +
+            `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square feet. ` +
             `(statistical sampling: ${confiance}). ` +
             `Obviously, several factors can influence the accuracy of this estimate, ` +
             `such as the property's positioning or renovations made. ` +

@@ -74,20 +74,30 @@ const questions = {
         },
 
         firstName: {
-            fr: "Afin de répondre à vos questions, nous aimerions mieux vous connaître.\n\n" +
-                "Vos infos sont confidentielles et servent à des fins statistiques (aucune pub de notre part ou d’un tiers).\n\n" +
-                "Une FAUSSE DÉCLARATION peut entraîner la SUSPENSION de votre compte à ce service vraiment extraordinaire\n\n" +
-                "CasaNova peut vous rendre d'énormes services dans le domaine de l'immobilier au Québec, voici quelques exemples: \n\n" + 
-                "1-Répondre à vos questions légales\n2-Vous donner une opinion\n3-Vous créer un site web contenant les propriétés à vendre qui répondent à vos critères. \n" +
-                "4-Vous informer sur nos services\n\n\n"+
-                "Commençons par votre prénom SVP ?",
-            en: "In order to answer your questions, we would like to know you better.\n\n" +
-                "Your information is confidential and used for statistical purposes (no advertising from us or any third party).\n\n" +
-                "A FALSE STATEMENT may result in the SUSPENSION of your access to this truly amazing service.\n\n" +
-                "CasaNova can provide you with tremendous services in the field of real estate in Quebec, here are some examples:\n\n" +
-                "1-Answering your legal questions\n2-Giving you an opinion\n3-Creating a website containing properties for sale that match your criteria.\n" +
-                "4-Informing you about our services\n\n\n" +
-                "Let's start with your first name, please?"
+            fr:
+                "Afin de répondre à vos questions, nous aimerions mieux vous connaître.\n\n" +
+                "*Vos informations sont confidentielles* et utilisées uniquement pour mieux vous aider et à des fins statistiques *(aucune publicité ni partage à des tiers)*. " +
+                "[Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/)\n\n" +
+                "Pour garantir un service de qualité et contribuer à son amélioration, *l'exactitude de vos informations* vous assure un accès complet aux services de CasaNova lors de votre prochaine conversation et nous permet de vous joindre si nécessaire.\n\n" +
+                "*CasaNova peut vous rendre d'énormes services* dans le domaine de l'immobilier au Québec, par exemple :\n\n" +
+                "✅ *Répondre à vos questions légales*\n" +
+                "💬 *Vous donner une opinion éclairée*\n" +
+                "🏠 *Créer un site web avec les propriétés qui correspondent à vos critères*\n" +
+                "ℹ️ *Vous informer sur nos services*\n\n\n" +
+                "Commençons par *votre prénom* SVP ?",
+
+            en:
+                "In order to answer your questions, we would like to know you better.\n\n" +
+                "*Your information is confidential* and used only to better assist you and for statistical purposes *(no advertising or sharing with third parties)*. " +
+                "[View our Privacy Policy](https://christophe-marcellin.c21.ca/)\n\n" +
+                "To ensure quality service and contribute to its improvement, *the accuracy of your information* guarantees you full access to CasaNova's services during your next conversation and allows us to contact you if necessary.\n\n" +
+                "*CasaNova can provide you with tremendous services* in the field of real estate in Quebec, for example:\n\n" +
+                "✅ *Answering your legal questions*\n" +
+                "💬 *Giving you an informed opinion*\n" +
+                "🏠 *Creating a website with properties matching your criteria*\n" +
+                "ℹ️ *Informing you about our services*\n\n\n" +
+                "Let's start with *your first name*, please?"
+
         },
 
         lastName: {
