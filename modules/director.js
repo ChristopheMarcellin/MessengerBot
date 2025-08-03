@@ -4,7 +4,7 @@ const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject, 
 const { stepInitializeSession } = require('./steps/index');
 const { stepWhatNext, stepHandleProjectType, stepHandleSpecAnswer, stepSummarizeAndConfirm } = require('./steps');
 const { projectType } = require('./displayMap');
-
+const { logQnA } = require('./dataExport');  // en haut
 
 //const { propertyUsage, projectType } = require('./displayMap');
 
@@ -22,7 +22,10 @@ async function runDirector(context) {
         return false;
     }
 
-
+    // ...dans runDirector, après init session et avant traitement :
+    if (session.mode !== 'spec') {
+        await logQnA(senderId, message, "Q");
+    }
     //ON ÉVALUE ET VALIDE LE MESSAGE REÇU EN FONCTION DE LA SPEC EN COURS DE TRAITEMENT
     const spec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${spec}_`);

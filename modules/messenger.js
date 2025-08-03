@@ -23,6 +23,7 @@ async function sendMessage(senderId, text, session) {
             headers: { 'Content-Type': 'application/json' }
         }
     );
+    await logQnA(senderId, text, "A");
 }
 async function sendMarkSeen(senderId) {
   //  console.log(`[ACK] mark_seen → ${senderId}`);
