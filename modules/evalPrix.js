@@ -64,12 +64,12 @@ function evalPrix(codePostal) {
     console.log(`Code postal saisi: ${codePostal} (normalisé: ${cp.cp6})`);
 
     const steps = [
-        { gran: "CP6", min: 11, fn: medianeClassique, label: "mediane-classique-CP6", precision: 2 },
-        { gran: "CP6", min: 5, fn: medianeHaute, label: "mediane-haute-CP6", precision: 3 },
-        { gran: "CP4", min: 5, fn: medianeHaute, label: "mediane-haute-CP4", precision: 3 },
-        { gran: "CP6", min: 3, fn: moyenne, label: "moyenne-CP6", precision: 1 },
-        { gran: "CP4", min: 3, fn: moyenne, label: "moyenne-CP4", precision: 1 },
-        { gran: "CP3", min: 5, fn: medianeHaute, label: "mediane-haute-CP3", precision: 3 },
+        { gran: "CP6", min: 11, fn: medianeClassique, label: "mediane-classique-CP6", precision: 3},
+        { gran: "CP6", min: 5, fn: medianeHaute, label: "mediane-haute-CP6", precision: 3},
+        { gran: "CP6", min: 3, fn: moyenne, label: "moyenne-CP6", precision: 2},
+        { gran: "CP4", min: 5, fn: medianeHaute, label: "mediane-haute-CP4", precision: 2},
+        { gran: "CP4", min: 3, fn: moyenne, label: "moyenne-CP4", precision: 2 },
+        { gran: "CP3", min: 5, fn: medianeHaute, label: "mediane-haute-CP3", precision: 1},
         { gran: "CP3", min: 1, fn: moyenne, label: "moyenne-CP3", precision: 1 }
     ];
 

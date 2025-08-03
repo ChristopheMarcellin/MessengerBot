@@ -142,43 +142,40 @@ function buildSpecSummary(session, lang = "fr") {
     console.log("CM on entre dans specSummary");
 
     const summaryHeader = lang === "fr"
-        ? "Voici un récapitulatif, vous pouvez adresser vos questions par la suite:\n\n"
-        : "Here's a short summary of the information provided, you may ask your questions next:\n\n";
+        ? `Voici un récapitulatif, vous pouvez adresser vos questions par la suite:\n\n`
+        : `Here's a short summary of the information provided, you may ask your questions next:\n\n`;
 
     const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
     const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);
 
-    let summary = `${summaryHeader} ${translatedProjectType}\n`;
+    let summary = `${summaryHeader}${translatedProjectType}\n`;
 
-    if (fields.propertyUsage && fields.propertyUsage !== "?") {
+    if (fields.propertyUsage && fields.propertyUsage !== "?" && fields.propertyUsage !== "E") {
         summary += `${translatedPropertyUsage}\n`;
     }
 
     for (const key in fields) {
         if (key === "propertyUsage") continue;
-        if (fields[key] !== "?") {
-            const display = getDisplayValue(key, fields[key], lang);
-            summary += `${display}\n\n`;
-        }
+        if (fields[key] === "?" || fields[key] === "E") continue; // ⬅️ on saute les ? et E
+        const display = getDisplayValue(key, fields[key], lang);
+        summary += `${display}\n\n`;
     }
 
-    // Ajouter le footer selon la langue
     const footer = lang === "fr"
-        ? "Merci, vous pouvez poser des questions sur nos services ou sur tout ce qui concerne l'immobilier au Québec.\n" +
-        "Vous pouvez également demander des prix approximatifs de l'immobilier pour des quartiers ou des adresses.\n" +
-        "Sachez que les estimations de prix sont basées sur les données disponibles qui peuvent ou non refléter fidèlement la situation actuelle.\n\n" +
-        "Mes réponses sont à titre informatif seulement et peuvent contenir des erreurs.\n\n" +
-        "Elles ne doivent jamais remplacer les conseils d'un professionnel qualifié de notre équipe."
-        : "Thank you, you may ask questions about our services or anything related to real estate in Quebec.\n" +
-        "You may also ask about real estate approximate prices for neighborhoods or addesses.\n" +
-        "Be aware that price estimates are based on available data which may or may not reflect acurately the current situation.\n\n"
-        "My responses are for informational purposes only and may contain errors.\n\n" +
-        "They should never replace the advice of a qualified professional on our team." 
+        ? `Merci, je suis prêt à répondre à vos questions en matière d'immobilier.\n\n` +
+        `Mes réponses sont à titre de référence seulement et peuvent contenir des erreurs.\n` +
+        `Mieux vaut toujours valider avec un professionnel qualifié de l'immobilier de notre équipe.\n\n` +
+        `Plus votre question est précise, plus ma réponse le sera, espérant vous donner satisfaction !`
+        : `Thank you, I am ready to answer your real estate questions.\n\n` +
+        `My answers are for reference purposes only and may contain errors.\n` +
+        `It is always better to confirm with a qualified real estate professional from our team.\n\n` +
+        `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction!`;
 
     summary += `\n${footer}`;
 
     return summary;
 }
+
 
 
 const resetInvalidSpecs = (session) => {
