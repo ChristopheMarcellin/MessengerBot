@@ -9,7 +9,7 @@ async function logQnA(senderId, message, type) {
         timestamp: new Date().toISOString(),
         action: 'appendQnA'
     };
-
+    console.log("[DEBUG logQnA] Payload envoyé à Google:", payload);
     try {
         const response = await fetch(webhookUrl, {
             method: 'POST',
