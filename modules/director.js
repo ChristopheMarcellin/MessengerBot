@@ -18,14 +18,14 @@ async function runDirector(context) {
     //pas prêt pour enclencher les prochaines étapes
     if (!isReady) {
         console.log('[DIRECTOR] is not ready to continue')
-        logSessionState("[***DIRECTOR !isReady]", session);
+      //  logSessionState("[***DIRECTOR !isReady]", session);
         return false;
     }
-
+    console.log(`[DIRECTOR] MODE MODE MODE MODE MODE MODE MODE = _${context.console.mode}_`);
     // ...dans runDirector, après init session et avant traitement :
-    if (session.mode !== 'spec') {
-        await logQnA(senderId, message, "Q");
-    }
+    //if (session.mode !== 'spec') {
+    //    await logQnA(senderId, message, "Q");
+    //}
     //ON ÉVALUE ET VALIDE LE MESSAGE REÇU EN FONCTION DE LA SPEC EN COURS DE TRAITEMENT
     const spec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${spec}_`);
