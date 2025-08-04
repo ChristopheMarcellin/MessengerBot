@@ -1,5 +1,5 @@
 // modules/dataExport.js
-const webhookUrl = 'https://script.google.com/macros/s/AKfycbzWGmTLaIFi6UA067lxMg026k7z7zJh_OmkPQsL8fn7PnSrM-MHgHJWU-b66n7hTB4e/exec;
+const webhookUrl = 'https://script.google.com/macros/s/AKfycbzWGmTLaIFi6UA067lxMg026k7z7zJh_OmkPQsL8fn7PnSrM-MHgHJWU-b66n7hTB4e/exec';
 
 async function logQnA(senderId, message, type) {
     const payload = {
