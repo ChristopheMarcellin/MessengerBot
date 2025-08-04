@@ -21,7 +21,7 @@ async function runDirector(context) {
       //  logSessionState("[***DIRECTOR !isReady]", session);
         return false;
     }
-    console.log(`[DIRECTOR] MODE MODE MODE MODE MODE MODE MODE = _${context.console.mode}_`);
+    console.log(`[DIRECTOR] MODE MODE MODE MODE MODE MODE MODE = _${context.session.mode}_`);
     // ...dans runDirector, après init session et avant traitement :
     //if (session.mode !== 'spec') {
     //    await logQnA(senderId, message, "Q");
