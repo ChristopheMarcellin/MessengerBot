@@ -23,9 +23,9 @@ async function runDirector(context) {
     }
     console.log(`[DIRECTOR] MODE MODE MODE MODE MODE MODE MODE = _${context.session.mode}_`);
     // ...dans runDirector, après init session et avant traitement :
-    //if (session.mode !== 'spec') {
-    //    await logQnA(senderId, message, "Q");
-    //}
+    if (session.mode !== 'spec') {
+        await logQnA(senderId, message, "Q");
+    }
     //ON ÉVALUE ET VALIDE LE MESSAGE REÇU EN FONCTION DE LA SPEC EN COURS DE TRAITEMENT
     const spec = getNextSpec(session);
     console.log(`[DIRECTOR] NextSpec à traiter = _${spec}_`);
