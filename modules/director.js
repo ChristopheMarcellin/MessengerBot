@@ -4,7 +4,7 @@ const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject, 
 const { stepInitializeSession } = require('./steps/index');
 const { stepWhatNext, stepHandleProjectType, stepHandleSpecAnswer, stepSummarizeAndConfirm } = require('./steps');
 const { projectType } = require('./displayMap');
-const { logQnA } = require('./dataExport');  // en haut
+const { logQnA } = require('./dataExport');  
 
 //const { propertyUsage, projectType } = require('./displayMap');
 
