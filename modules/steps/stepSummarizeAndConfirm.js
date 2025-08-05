@@ -1,6 +1,6 @@
 const { buildSpecSummary, buildExportRecord } = require('../specEngine');
 const { sendMessage } = require('../messenger');
-const { exportToGoogleSheets } = require('./dataExport');
+const { exportToGoogleSheets } = require('../dataExport');
 
 async function stepSummarizeAndConfirm(context) {
     const { senderId, session } = context;
