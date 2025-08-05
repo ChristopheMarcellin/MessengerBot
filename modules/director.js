@@ -62,10 +62,11 @@ async function runDirector(context) {
         if (session.mode !== "chat") {
             console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
             await stepSummarizeAndConfirm(context);
+            session.mode = "chat";
             return true;
         }
         console.log("[DIRECTOR] ℹ️ Session déjà en mode chat → passage à GPT");
-        await chatOnly(senderId, message, session.language || "fr");
+        await chatOnly(senderId, message, session);
         return true;
     }
 

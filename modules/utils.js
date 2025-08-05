@@ -216,7 +216,8 @@ async function classifyIntent(message, lang = 'fr') {
     }
 }
 
-async function chatOnly(senderId, message, lang = "fr") {
+async function chatOnly(senderId, message, session) {
+    const lang = session.lang||'fr';
     const intent = await classifyIntent(message, lang);
     console.log(`Intent: ${intent}`);
 
@@ -226,7 +227,7 @@ async function chatOnly(senderId, message, lang = "fr") {
         const faqText = faqMapByKey[key]?.[lang];
         if (faqText) {
             console.log(`[CHAT] Réponse FAQ détectée via GPT → cat: ${key}`);
-            await sendMessage(senderId, faqText);
+            await sendMessage(senderId, faqText, session);
             return;
         }
     }
@@ -276,7 +277,7 @@ async function chatOnly(senderId, message, lang = "fr") {
                 ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !"
                 : "Sorry, I didn’t understand your answer in relation to the question asked!");
 
-            await sendMessage(senderId, fallback);
+            await sendMessage(senderId, fallback,session);
             return;
 
         } catch (err) {
@@ -284,7 +285,7 @@ async function chatOnly(senderId, message, lang = "fr") {
             const fallback = lang === "fr"
                 ? "Désolé, je n’ai pas compris."
                 : "Sorry, I didn’t understand.";
-            await sendMessage(senderId, fallback);
+            await sendMessage(senderId, fallback,session);
             return;
         }
     }

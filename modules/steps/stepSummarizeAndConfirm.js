@@ -11,7 +11,6 @@ async function stepSummarizeAndConfirm(context) {
     await sendMessage(senderId, recap);
     session.lastUserMessage = null;
 
-    session.mode = "chat";
     const rowData = buildExportRecord(context.session);
     await exportToGoogleSheets(rowData);
 
