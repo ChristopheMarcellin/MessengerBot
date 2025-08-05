@@ -331,6 +331,6 @@ module.exports = {
     getSpecFieldsForProjectType,
     allSpecsCollected,
     getProjectTypeFromNumber,
-    buildExportRecord,
-    exportToGoogleSheets
+    buildExportRecord
+
 };
