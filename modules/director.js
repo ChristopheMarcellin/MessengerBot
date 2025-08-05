@@ -33,7 +33,7 @@ async function runDirector(context) {
     if (spec === 'none') {
         console.log("toutes les specs ont déjà été traitées");
         context.session.mode = 'chat'
-        await chatOnly(senderId, message, session.language || "fr");
+        await chatOnly(senderId, message, context);
         return true;
     }
 
