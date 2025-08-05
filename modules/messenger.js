@@ -27,6 +27,8 @@ async function sendMessage(senderId, text, session) {
     if (session && session.mode !== 'spec') {
         await logQnA(senderId, text, "A");
     }
+    else { console.log("pas de logQnA envoyé")}
+
 }
 async function sendMarkSeen(senderId) {
   //  console.log(`[ACK] mark_seen → ${senderId}`);
