@@ -6,8 +6,13 @@ async function sendMessage(senderId, text, session) {
     console.log(`[SEND] To: ${senderId} | Message: ${text}`);
 
     if (typeof text === 'string' && text.trim() === '4') {
-    //    console.warn(`[ALERTE TRACE] >>> Le bot s’apprête à ENVOYER "4" vers ${senderId}`);
-     //   console.trace('[TRACE ORIGINE] Envoi de "4" déclenché ici :');
+        // console.warn(`[ALERTE TRACE] >>> Le bot s’apprête à ENVOYER "4" vers ${senderId}`);
+        // console.trace('[TRACE ORIGINE] Envoi de "4" déclenché ici :');
+    }
+
+    // Sécurisation : si pas de session, on tente de prendre context.session (global)
+    if (!session && typeof context !== 'undefined' && context.session) {
+        session = context.session;
     }
 
     if (session) {
@@ -24,12 +29,14 @@ async function sendMessage(senderId, text, session) {
             headers: { 'Content-Type': 'application/json' }
         }
     );
+
     if (session && session.mode !== 'spec') {
         await logQnA(senderId, text, "A");
+    } else {
+        console.log(`[SEND] pas de logQnA session mode: ${session ? session.mode : 'undefined'} | Message: ${text}`);
     }
-    console.log(`[SEND] pas de logQnA session mode: ${session ? session.mode : 'undefined'} | Message: ${text}`);
-
 }
+
 async function sendMarkSeen(senderId) {
   //  console.log(`[ACK] mark_seen → ${senderId}`);
     await axios.post(

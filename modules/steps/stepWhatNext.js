@@ -44,7 +44,7 @@ async function stepWhatNext(context, spec, previousSpec) {
         }
 
         console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
-        await sendMessage(senderId, prefix + questionText);
+        await sendMessage(senderId, prefix + questionText, context.session);
         return true;
     }
 
@@ -68,7 +68,7 @@ async function stepWhatNext(context, spec, previousSpec) {
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
     console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
         
-    await sendMessage(senderId, prefix + questionText);
+    await sendMessage(senderId, prefix + questionText, context.session);
 
     return true;
 }

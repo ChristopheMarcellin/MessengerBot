@@ -3,18 +3,19 @@ const { sendMessage } = require('../messenger');
 const { exportToGoogleSheets } = require('../dataExport');
 
 async function stepSummarizeAndConfirm(context) {
-    const { senderId, session } = context;
-    const lang = session.language || 'fr';
+    const { senderId } = context;
+    let { session } = context;
+    const lang = session?.language || 'fr';
 
     const recap = buildSpecSummary(session, lang);
- //   console.log("on sort de build summary")
-    await sendMessage(senderId, recap);
+    await sendMessage(senderId, recap, session || (typeof context !== 'undefined' ? context.session : null));
     session.lastUserMessage = null;
 
-    const rowData = buildExportRecord(context.session);
+    const rowData = buildExportRecord(session);
     await exportToGoogleSheets(rowData);
 
     return true;
 }
+
 
 module.exports = stepSummarizeAndConfirm;

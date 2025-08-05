@@ -216,8 +216,9 @@ async function classifyIntent(message, lang = 'fr') {
     }
 }
 
-async function chatOnly(senderId, message, session) {
-    const lang = session.lang||'fr';
+async function chatOnly(senderId, message, context) {
+    const session = context.session;
+    const lang = session.lang || 'fr';
     const intent = await classifyIntent(message, lang);
     console.log(`Intent: ${intent}`);
 
@@ -233,7 +234,7 @@ async function chatOnly(senderId, message, session) {
     }
 
     if (intent === "estimate") {
-        await handlePriceEstimate(senderId, message, lang);
+        await handlePriceEstimate(senderId, message, context); // ← passe maintenant context complet
         return;
     }
 
@@ -277,7 +278,7 @@ async function chatOnly(senderId, message, session) {
                 ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !"
                 : "Sorry, I didn’t understand your answer in relation to the question asked!");
 
-            await sendMessage(senderId, fallback,session);
+            await sendMessage(senderId, fallback, session);
             return;
 
         } catch (err) {
@@ -285,7 +286,7 @@ async function chatOnly(senderId, message, session) {
             const fallback = lang === "fr"
                 ? "Désolé, je n’ai pas compris."
                 : "Sorry, I didn’t understand.";
-            await sendMessage(senderId, fallback,session);
+            await sendMessage(senderId, fallback, session);
             return;
         }
     }
@@ -295,10 +296,14 @@ async function chatOnly(senderId, message, session) {
         ? "Désolé, je ne suis pas certain de comprendre votre question mes connaissances se limitent à l'immobilier, peut-être une reformulation m'aiderait à mieux vous répondre !"
         : "Sorry, I'm not sure I understand your question. My knowledge is limited to real estate, but perhaps rephrasing it could help me provide a better answer.";
 
-    await sendMessage(senderId, fallback);
+    await sendMessage(senderId, fallback, session);
 }
 
-async function handlePriceEstimate(senderId, message, lang = "fr") {
+
+async function handlePriceEstimate(senderId, message, context) {
+    const session = context.session;
+    const lang = session?.lang || "fr";
+
     console.log("🔍 [PIPELINE] Demande d'estimation détectée");
 
     // 1) GPT LIGHT → extraire code postal
@@ -337,7 +342,7 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
         if (valeur > 0) {
             // On a trouvé des stats valides
             const reply = buildEstimateMessage(valeur, precision, lang);
-            await sendMessage(senderId, reply);
+            await sendMessage(senderId, reply, session);
             return;
         }
 
@@ -384,18 +389,18 @@ async function handlePriceEstimate(senderId, message, lang = "fr") {
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.");
 
-        // Ajout du niveau de confiance "bas" pour le fallback
         const reply = `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sample: low)'}`;
-        await sendMessage(senderId, reply);
+        await sendMessage(senderId, reply, session);
 
     } catch (err) {
         console.error(`[handlePriceEstimate] *** ERREUR GPT HEAVY : ${err.message}`);
         const fallback = lang === "fr"
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.";
-        await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sampling : low)'}`);
+        await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sampling : low)'}`, session);
     }
 }
+
 
 // === Fonction utilitaire pour mapper la précision ===
 function getPrecisionLabel(level, lang = 'fr') {
