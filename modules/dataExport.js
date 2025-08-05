@@ -1,16 +1,20 @@
 // modules/dataExport.js
-const webhookUrl = 'https://script.google.com/macros/s/AKfycbzAPAYkCgXH_18p_egT1fWuuaQZ9B1zZmzl04QlfTj3TeoNXX35W9PK4G8qkp-Fhnbw/exec';
+const webhookUrl = 'https://script.google.com/macros/s/AKfycbz6K5G6AQtaahuPqYglKiM2gXGLXBMSb9RW8Zz2W7GVsjJEACxfrg7dMGls5SnbfIHA/exec';
 
 
-async function logQnA(senderId, message, type) {
+/**
+ * Exporte un enregistrement complet (specs) vers Google Sheets
+ * @param {Object} rowData - Données de la ligne (toutes les specs)
+ */
+async function exportToGoogleSheets(rowData) {
     const payload = {
-        senderId,
-        type,
-        message,
-        timestamp: new Date().toISOString(),
-        action: 'appendQnA'
+        ...rowData,
+        action: 'appendRow', // Indique au Google Script que c'est un appendRow
+        timestamp: new Date().toISOString()
     };
-    console.log("[DEBUG logQnA] Payload envoyé à Google:", payload);
+
+    console.log("[EXPORT] Payload envoyé à Google Sheets:", payload);
+
     try {
         const response = await fetch(webhookUrl, {
             method: 'POST',
@@ -19,10 +23,41 @@ async function logQnA(senderId, message, type) {
         });
 
         const text = await response.text();
-        console.log(`[QnA LOG] ${type} de ${senderId} → "${message}" | Sheets: ${text}`);
+        console.log("[EXPORT] Réponse Sheets :", text);
     } catch (err) {
-        console.error("[QnA LOGGING] Erreur d'envoi :", err);
+        console.error("[EXPORT] Erreur export Sheets :", err);
     }
 }
 
-module.exports = { logQnA };
+/**
+ * Ajoute une entrée QnA (Question/Réponse) à un enregistrement existant
+ * @param {string} senderId - Identifiant de session
+ * @param {string} message - Texte du QnA
+ * @param {string} type - "Q" ou "A"
+ */
+async function logQnA(senderId, message, type) {
+    const payload = {
+        senderId,
+        message,
+        type,
+        action: 'appendQnA',
+        timestamp: new Date().toISOString()
+    };
+
+    console.log("[QnA] Payload envoyé à Google Sheets:", payload);
+
+    try {
+        const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const text = await response.text();
+        console.log(`[QnA] ${type} de ${senderId} → "${message}" | Sheets: ${text}`);
+    } catch (err) {
+        console.error("[QnA] Erreur d'envoi :", err);
+    }
+}
+
+module.exports = { exportToGoogleSheets, logQnA };

@@ -3,7 +3,6 @@ const questions = require('./questions');
 const displayMap = require('./displayMap');
 const { isNumeric } = require('./utils');
 
-
 function getPromptForSpec(projectType, specKey, lang = "en") {
     const questionSet = questions?.[projectType];
     const rawQuestion = questionSet?.[specKey]?.[lang] || `_${specKey}?`;
@@ -319,22 +318,6 @@ function buildExportRecord(session) {
 }
 
 
-async function exportToGoogleSheets(rowData) {
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbxguRpiWDJHmqP153umdsXbZ_JlWLenlRXnH-vst12885H-Adse98OTm-A4NN-PFIZY/exec' // ← colle ton URL ici
-
-    try {
-        const response = await fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(rowData)
-        });
-
-        const text = await response.text();
-        console.log("[EXPORT] Réponse Sheets :", text);
-    } catch (err) {
-        console.error("[EXPORT] Erreur export Sheets :", err);
-    }
-}
 
 module.exports = {
     getPromptForSpec,
