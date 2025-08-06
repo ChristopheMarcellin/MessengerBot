@@ -234,7 +234,7 @@ async function chatOnly(senderId, message, context) {
     }
 
     if (intent === "estimate") {
-        await handlePriceEstimate(senderId, message, context); // ← passe maintenant context complet
+        await handlePriceEstimate(senderId, message, session); // ← passe maintenant context complet
         return;
     }
 
@@ -300,8 +300,8 @@ async function chatOnly(senderId, message, context) {
 }
 
 
-async function handlePriceEstimate(senderId, message, context) {
-    const session = context.session;
+async function handlePriceEstimate(senderId, message, session) {
+    //const session = context.session;
     const lang = session?.lang || "fr";
 
     console.log("🔍 [PIPELINE] Demande d'estimation détectée");

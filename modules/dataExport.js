@@ -1,5 +1,5 @@
 // modules/dataExport.js
-const webhookUrl = 'https://script.google.com/macros/s/AKfycbze8Tyv9JUR68QWnLYjJ--evnzbRY3ncSmYXjgzzJZ1dbg6I0omiT9s7GDf8bohPfp2/exec';
+const webhookUrl = 'https://script.google.com/macros/s/AKfycbxZvfWUJ846eCx6BOD-R-igjekQnmA9znh_zZSrDca2uDKKuqhYseP7sZy2jx71q6_W/exec';
 
 
 /**
