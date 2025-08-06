@@ -31,10 +31,10 @@ async function sendMessage(senderId, text, session) {
     );
 
     if (session && session.mode !== 'spec') {
-        console.log(`Entré dans l'envoi de réponse: ${session ? session.mode : 'undefined'} | Message: ${text}`);
+     //   console.log(`Entré dans l'envoi de réponse: ${session ? session.mode : 'undefined'} | Message: ${text}`);
         await logQnA(senderId, text, "A");
     } else {
-        console.log(`[SEND] pas de logQnA session mode: ${session ? session.mode : 'undefined'} | Message: ${text}`);
+       // console.log(`[SEND] pas de logQnA session mode: ${session ? session.mode : 'undefined'} | Message: ${text}`);
     }
 }
 

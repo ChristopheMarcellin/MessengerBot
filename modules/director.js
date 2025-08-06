@@ -17,7 +17,7 @@ async function runDirector(context) {
 
     //pas prêt pour enclencher les prochaines étapes
     if (!isReady) {
-        console.log('[DIRECTOR] is not ready to continue')
+     //   console.log('[DIRECTOR] is not ready to continue')
       //  logSessionState("[***DIRECTOR !isReady]", session);
         return false;
     }
@@ -33,6 +33,8 @@ async function runDirector(context) {
     if (spec === 'none') {
         console.log("toutes les specs ont déjà été traitées");
         context.session.mode = 'chat'
+        console.log("session.language" + session.language);
+        console.log("context.language" + context.language);
         await chatOnly(senderId, message, context);
         return true;
     }
@@ -46,7 +48,7 @@ async function runDirector(context) {
     if (spec !== null) {
 
         const isValid = await isValidAnswer(context, session.projectType, spec, session.language || "fr");
-        console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${spec}"_ = _"${context.message}"_`);
+    //   console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${spec}"_ = _"${context.message}"_`);
 
         // 🔄 Traitement simple (sans appel de stepWhatNext ici)
         await stepHandleSpecAnswer(context, spec, isValid);
@@ -54,13 +56,13 @@ async function runDirector(context) {
 
     // 🔁 ON DÉTERMINE LA PROCHAINE SPÉCIFICATION À TRAITER ET ENVOYONS LE MESSAGE APPROPRIÉ À L'USAGER
     const nextSpec = getNextSpec(session);
-    console.log(`[DIRECTOR] NextSpec recalculée = _${nextSpec}_`);
+ //   console.log(`[DIRECTOR] NextSpec recalculée = _${nextSpec}_`);
 
 
     //SOMMAIRE
     if ((nextSpec === null || nextSpec === "none") && ["B", "S", "R", "E"].includes(session.projectType)) {
         if (session.mode !== "chat") {
-            console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
+      //      console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
             await stepSummarizeAndConfirm(context);
             session.mode = "chat";
             return true;

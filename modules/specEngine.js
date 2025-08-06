@@ -76,7 +76,7 @@ const updateSpecFromInput = (field, decodedValue, specValues) => {
     const previous = specValues[field] ?? "undefined";
     const next = (decodedValue && decodedValue.trim() !== "") ? decodedValue : "?";
     specValues[field] = next;
-    console.log(`[SPEC ENGINE] spec field "${field}" changed from "${previous}" to "${next}" AND THIS LOG SHOULD SHOULD BE DEAD CODE`);
+ //   console.log(`[SPEC ENGINE] spec field "${field}" changed from "${previous}" to "${next}" AND THIS LOG SHOULD SHOULD BE DEAD CODE`);
 };
 
 function getDisplayValue(field, value, lang = "fr") {
@@ -138,7 +138,7 @@ function getDisplayValue(field, value, lang = "fr") {
 
 function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
-    console.log("CM on entre dans specSummary");
+  //  console.log("CM on entre dans specSummary");
 
     const summaryHeader = lang === "fr"
         ? `Voici un récapitulatif, vous pouvez adresser vos questions par la suite:\n\n`
@@ -192,21 +192,21 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
 
     const message = context.message;
     if (typeof message !== 'string') return false;
-    console.log(`[spec Engine] validating message or interpretation text value: __${message}_ and projecttype: _${projectType} for: field=_${field}`);
+  //  console.log(`[spec Engine] validating message or interpretation text value: __${message}_ and projecttype: _${projectType} for: field=_${field}`);
     if (!message) return false;
 
     const input = message.trim();
 
     // 🎯 0. Cas spécial : refus explicite (valable sauf pour projectType)
     if (input === "E" && field !== "projectType") {
-        console.log(`[spec Engine] validating field=__${field}_ | input="E" | valid=true (refus explicite accepté)`);
+     //   console.log(`[spec Engine] validating field=__${field}_ | input="E" | valid=true (refus explicite accepté)`);
         return true;
     }
 
     // 🎯 1. location (texte libre court)
     if (field === "location") {
         const isValid = typeof input === "string" && input.length > 0 && input.length <= 25;
-        console.log(`[spec Engine] validating field=location | input=__${input}_ | valid=_${isValid}_`);
+     //   console.log(`[spec Engine] validating field=location | input=__${input}_ | valid=_${isValid}_`);
         return isValid;
     }
 
@@ -215,14 +215,14 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
 
         if (isNumeric(input)) {
             const isValid = ["1", "2", "3", "4"].includes(input);
-            console.log(`[spec Engine] validating field=projectType | input=__${input}_ | valid=_${isValid}_`);
+        //    console.log(`[spec Engine] validating field=projectType | input=__${input}_ | valid=_${isValid}_`);
             return isValid;
 
         }
         else {
             const decoded = await gptClassifyNumericSpecAnswer(input, lang);
             const isValid = ["1", "2", "3", "4"].includes(decoded);
-            console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
+          //  console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
             return isValid;
         }
     }
@@ -243,14 +243,14 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
 
         const isValid = isNumeric(decoded);
         if (isValid) context.message = decoded;
-        console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
+      //  console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
         return isValid;
     }
 
     // 🎯 5. phone
     if (field === "phone") {
         const isValid = /^[\d\s\-\+\(\)]{7,25}$/.test(input);
-        console.log(`[spec Engine] validating field=phone | input="${input}" | valid=_${isValid}_`);
+     //   console.log(`[spec Engine] validating field=phone | input="${input}" | valid=_${isValid}_`);
         return isValid;
     }
 
@@ -264,7 +264,7 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
     // 🎯 7. firstName / lastName
     if (["firstName", "lastName"].includes(field)) {
         const isValid = /^[a-zA-ZÀ-ÿ' -]{2,}$/.test(input);
-        console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_`);
+      //  console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_`);
         return isValid;
     }
 
@@ -277,7 +277,7 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
     const language = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
     const map = displayMap?.[field]?.[language];
     const isValid = map ? Object.keys(map).includes(input) : true;
-    console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_ (via displayMap fallback)`);
+   // console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_ (via displayMap fallback)`);
     return isValid;
 }
 
@@ -303,14 +303,14 @@ function buildExportRecord(session) {
 
     // Log des champs fixes
     Object.entries(flatRecord).forEach(([key, value]) => {
-        console.log(`[EXPORT] Champ: ${key} → Valeur: ${value}`);
+    //    console.log(`[EXPORT] Champ: ${key} → Valeur: ${value}`);
     });
 
     // Ajoute toutes les specs enregistrées
     if (session.specValues && typeof session.specValues === 'object') {
         Object.entries(session.specValues).forEach(([key, value]) => {
             flatRecord[key] = value;
-            console.log(`[EXPORT] Champ: ${key} (spec) → Valeur: ${value}`);
+         //   console.log(`[EXPORT] Champ: ${key} (spec) → Valeur: ${value}`);
         });
     }
 

@@ -21,7 +21,7 @@ function loadData() {
         CP4: (row["CP4"] || "").toString().toUpperCase(),
         CP3: (row["CP3"] || "").toString().toUpperCase()
     })).filter(r => !isNaN(r.PC));
-    console.log(`Données chargées : ${data.length} lignes valides.`);
+ //   console.log(`Données chargées : ${data.length} lignes valides.`);
     return data;
 }
 
@@ -75,10 +75,10 @@ function evalPrix(codePostal) {
 
     for (const step of steps) {
         const values = getValues(data, cp, step.gran);
-        console.log(`[DEBUG] ${step.label}: ${values.length} valeurs`);
+     //   console.log(`[DEBUG] ${step.label}: ${values.length} valeurs`);
         if (values.length >= step.min) {
             const val = step.fn(values);
-            console.log(`[INFO] Utilisé: ${step.label} (${values.length} valeurs) → ${val.toFixed(2)} $/pc`);
+      //      console.log(`[INFO] Utilisé: ${step.label} (${values.length} valeurs) → ${val.toFixed(2)} $/pc`);
             return { 
                 valeur: +val.toFixed(2), 
                 type: step.label,        // méthode utilisée (pour les logs)

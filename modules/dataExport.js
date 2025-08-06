@@ -12,7 +12,7 @@ async function exportToGoogleSheets(rowData) {
         timestamp: new Date().toISOString()
     };
 
-    console.log("[EXPORT] Payload envoyé à Google Sheets:", payload);
+  //  console.log("[EXPORT] Payload envoyé à Google Sheets:", payload);
 
     try {
         const response = await fetch(webhookUrl, {
@@ -22,7 +22,7 @@ async function exportToGoogleSheets(rowData) {
         });
 
         const text = await response.text();
-        console.log("[EXPORT] Réponse Sheets :", text);
+    //    console.log("[EXPORT] Réponse Sheets :", text);
     } catch (err) {
         console.error("[EXPORT] Erreur export Sheets :", err);
     }
@@ -43,7 +43,7 @@ async function logQnA(senderId, message, type) {
         timestamp: new Date().toISOString()
     };
 
-    console.log("[QnA] Payload envoyé à Google Sheets:", payload);
+  //  console.log("[QnA] Payload envoyé à Google Sheets:", payload);
 
     try {
         const response = await fetch(webhookUrl, {
@@ -53,7 +53,7 @@ async function logQnA(senderId, message, type) {
         });
 
         const text = await response.text();
-        console.log(`[QnA] ${type} de ${senderId} → "${message}" | Sheets: ${text}`);
+     //   console.log(`[QnA] ${type} de ${senderId} → "${message}" | Sheets: ${text}`);
     } catch (err) {
         console.error("[QnA] Erreur d'envoi :", err);
     }

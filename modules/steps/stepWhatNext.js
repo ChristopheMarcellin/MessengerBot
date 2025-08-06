@@ -21,7 +21,7 @@ async function stepWhatNext(context, spec, previousSpec) {
     // 💬 Étape spéciale : détection de relance (même spec que précédente)
     let prefix = "";
     if (previousSpec === spec) {
-        console.log(`[WHATNEXT] Question posée de nouveau pcq ancienne spec était :"${previousSpec}" et la nouvelle est ${spec}`);
+       // console.log(`[WHATNEXT] Question posée de nouveau pcq ancienne spec était :"${previousSpec}" et la nouvelle est ${spec}`);
         prefix = lang === 'fr'
             ? "Désolé, assurez-vous de formuler votre réponse tel que proposé. Voici la question à nouveau :\n\n"
             : "Sorry, can you observe the format requested for your answer. Here's the question again:\n\n";
@@ -43,7 +43,7 @@ async function stepWhatNext(context, spec, previousSpec) {
             return false;
         }
 
-        console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
+      //  console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
         await sendMessage(senderId, prefix + questionText, context.session);
         return true;
     }
@@ -66,7 +66,7 @@ async function stepWhatNext(context, spec, previousSpec) {
   //  setAskedSpec(context.session, nextSpec, 'stepWhatNext for all and any reg. specs');
 
     const questionText = getPromptForSpec(nextSpec, lang, context.session.projectType);
-    console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
+   // console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
         
     await sendMessage(senderId, prefix + questionText, context.session);
 
