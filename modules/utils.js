@@ -216,8 +216,8 @@ async function classifyIntent(message, lang = 'fr') {
     }
 }
 
-async function chatOnly(senderId, message, context) {
-    const session = context.session;
+async function chatOnly(senderId, message, session) {
+  //  const session = context.session;
     const lang = session.lang;
     const intent = await classifyIntent(message, lang);
     console.log(`Intent: ${intent}`);
