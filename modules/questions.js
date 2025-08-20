@@ -223,36 +223,28 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 function getPromptForProjectType(lang = 'fr') {
     return lang === 'en'
-        ? `Hello, I’m CasaNova, your AI-powered assistant.
-
-*I can provide you with valuable services* in the field of real estate in Quebec, such as:
-
-📊 *Providing an estimate for a property*
-🔢 *Performing a mortgage calculation*
-🏠 *Creating a website with properties matching your criteria*
-💬 *Giving you an informed opinion*
-⚖️ *Answering your legal questions (Quebec)*
-ℹ️ *Informing you about our services*
-
-To better assist you, which option best describes you:
-
+        ? `Hello, I’m CasaNova, your AI-powered assistant.\n\n
+*I can provide you with valuable services* in the field of real estate in Quebec, such as:\n
+📊 *Providing an estimate for a property*\n
+🔢 *Performing a mortgage calculation*\n
+🏠 *Creating a website with properties matching your criteria*\n
+💬 *Giving you an informed opinion*\n
+⚖️ *Answering your legal questions (Quebec)*\n
+ℹ️ *Informing you about our services*\n\n
+To better assist you, which option best describes you:\n
 1 (buy)
 2 (sell)
 3 (rent out)
 4 (I have questions)`
-        : `Bonjour, je suis CasaNova, votre assistant propulsé par l’IA.
-
-*Je peux vous rendre de précieux services* dans le domaine de l'immobilier au Québec, par exemple :
-
-📊 *Vous fournir un estimé pour une propriété*
-🔢 *Faire un calcul hypothécaire*
-🏠 *Créer un site web avec les propriétés qui correspondent à vos critères*
-💬 *Vous donner une opinion éclairée*
-⚖️ *Répondre à vos questions légales (Québec)*
-ℹ️ *Vous informer sur nos services*
-
-Pour bien vous assister, quelle intention vous décrit le mieux : 
-
+        : `Bonjour, je suis CasaNova, votre assistant propulsé par l’IA.\n\n
+*Je peux vous rendre de précieux services* dans le domaine de l'immobilier au Québec, par exemple :\n
+📊 *Vous fournir un estimé pour une propriété*\n
+🔢 *Faire un calcul hypothécaire*\n
+🏠 *Créer un site web avec les propriétés qui correspondent à vos critères*\n
+💬 *Vous donner une opinion éclairée*\n
+⚖️ *Répondre à vos questions légales (Québec)*\n
+ℹ️ *Vous informer sur nos services*\n\n
+Pour bien vous assister, quelle intention vous décrit le mieux :\n
 1 (acheter)
 2 (vendre)
 3 (offrir en location)
