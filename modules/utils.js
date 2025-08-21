@@ -218,6 +218,16 @@ async function classifyIntent(message, lang = 'fr') {
 
 async function chatOnly(senderId, message, session) {
   //  const session = context.session;
+
+
+    if (!session.language) {
+        if (message && isNaN(message)) { // exclure numériques simples
+            session.language = detectLanguageFromText(message) || "en";
+        } else {
+            session.language = "en"; // fallback dur
+        }
+    }
+
     const lang = session.language || 'fr';
     const intent = await classifyIntent(message, lang);
     console.log(`Intent: ${intent}`);
@@ -234,25 +244,31 @@ async function chatOnly(senderId, message, session) {
     }
 
     if (intent === "estimate") {
+        const ok = await checkQuota(senderId, session);
+        if (!ok) return; // quota atteint → stop
         await handlePriceEstimate(senderId, message, session); // ← passe maintenant context complet
         return;
     }
 
     // 🤖 Cas 2 : GPT (libre) avec contexte
     if (intent === "gpt") {
+
+        const ok = await checkQuota(senderId, session);
+        if (!ok) return; // quota atteint → stop
+
         const contextualMessage = buildContextualPrompt(senderId, message, lang);
         const prompt = lang === "fr"
             ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
             `Vous parlez au nom des courtiers Carole Baillargeon et Christophe Marcellin. ` +
-            `Votre rôle est de répondre immédiatement, clairement et précisément à toute question liée à l’immobilier. ` +
+            `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
             `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
             contextualMessage
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of brokers Carole Baillargeon and Christophe Marcellin. ` +
-            `Your job is to immediately and clearly answer any real estate-related question. ` +
-            `Give a direct, concise, and informative answer — no greetings, no restating the question. ` +
+            `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
+            `Give a direct and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
             `Never use phrases like "I'm here to help" or "feel free to ask." ` +
             contextualMessage;
@@ -293,8 +309,8 @@ async function chatOnly(senderId, message, session) {
 
     // 🙃 Cas 3 : autre
     const fallback = lang === "fr"
-        ? "Désolé, je ne suis pas certain de comprendre votre question mes connaissances se limitent à l'immobilier, peut-être une reformulation m'aiderait à mieux vous répondre !"
-        : "Sorry, I'm not sure I understand your question. My knowledge is limited to real estate, but perhaps rephrasing it could help me provide a better answer.";
+        ? "Désolé, cette question ne semble pas porter sur l'immobilier, peut-être une reformulation m'aiderait à mieux vous répondre !"
+        : "Sorry, this question seems unrelated to real estate, but perhaps rephrasing it could help me provide a better answer.";
 
     await sendMessage(senderId, fallback, session);
 }
@@ -355,17 +371,17 @@ async function handlePriceEstimate(senderId, message, session) {
         ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. 
           L'utilisateur souhaite obtenir une estimation de prix. 
           Donnez la valeur médiane haute la plus récente (si la statistique la plus récente date de 2023, ajoutez 4% par année manquante, soit 8%). 
-          Précisez que la valeur est estimative, qu’une validation est requise avec un professionnel de l'immobilier comme Christophe ou Carole. 
+          Précisez que la valeur est estimative, qu’une validation est requise avec un professionnel de l'immobilier de notre équipe. 
           Donnez un ou deux exemples de variations qui peuvent influer sur l'estimation (ex: rénovations, emplacement, état du marché), 
-          sans jamais référer à la méthodologie utilisée et sans parler de "médiane". 
+          Ne jamais référer à la méthode de calcul utilisée pour cette estimation. 
           N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. 
           Question: ${message}`
         : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. 
           The user wants a price estimate. 
           Provide the most recent high median value (if the most recent statistic is from 2023, add 2% per missing year, i.e., 4%). 
-          Specify that the value is an estimate and must be validated by an experienced broker like Christophe or Carole. 
-          Provide one or two examples of factors that could influence the estimate (e.g., renovations, location, market conditions), 
-          without referring to the methodology used and without mentioning "median". 
+          Specify that the value is an estimate and must be validated by an experienced broker from our team. 
+          Provide one or two examples of factors that could influence the estimate (e.g., renovations, location, market conditions). 
+          Never refer to the methodology or mathematical formula used to provide the estimate.
           Never use phrases like "I'm here to help" or "feel free to ask." 
           Question: ${message}`;
 
@@ -400,7 +416,21 @@ async function handlePriceEstimate(senderId, message, session) {
         await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sampling : low)'}`, session);
     }
 }
+async function checkQuota(senderId, session) {
+    session.questionCount = (session.questionCount || 0) + 1;
 
+    if (session.questionCount > session.maxQuestions) {
+        const lang = session.language || "fr";
+        const limitMsg = (lang === "fr")
+            ? "C'est avec grand plaisir que nous vous avons répondu à plusieurs de vos questions. Nos ressources technologiques étant limitées, nous vous encourageons à communiquer dès maintenant avec Christophe Marcellin au 514-231-6370 pour de plus amples détails."
+            : "We were pleased to answer several of your questions. Since our technological resources are limited, we encourage you to contact Christophe Marcellin at 514-231-6370 for further details.";
+
+        await sendMessage(senderId, limitMsg);
+        return false; // 🚫 stop: quota dépassé
+    }
+
+    return true; // ✅ quota OK
+}
 
 // === Fonction utilitaire pour mapper la précision ===
 function getPrecisionLabel(level, lang = 'fr') {

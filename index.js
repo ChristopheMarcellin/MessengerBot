@@ -68,8 +68,7 @@ app.post('/webhook', async (req, res) => {
 
         // 4️⃣ Mémorisation brute du message
 
-        if (isRepeatMessage(session, receivedMessage, timestamp)) {
-            console.warn(`[HARD BLOCK] Message déjà traité: "${receivedMessage}" @${timestamp}`);
+        if (shouldSkipMessage(session, receivedMessage, timestamp)) {
             return res.sendStatus(200);
         }
 

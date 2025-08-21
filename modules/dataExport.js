@@ -34,15 +34,17 @@ async function exportToGoogleSheets(rowData) {
  * @param {string} message - Texte du QnA
  * @param {string} type - "Q" ou "A"
  */
-async function logQnA(senderId, message, type) {
+async function logQnA(senderId, message, type, session) {
     const payload = {
         senderId,
         message,
         type,
         action: 'appendQnA',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        questionCount: session?.questionCount || 0
     };
-
+    // ensuite ton fetch habituel vers le Google Apps Script
+}
   //  console.log("[QnA] Payload envoyé à Google Sheets:", payload);
 
     try {

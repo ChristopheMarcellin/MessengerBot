@@ -225,7 +225,7 @@ function getPromptForProjectType(lang = 'fr') {
     return lang === 'en'
         ? `Hello, I’m CasaNova, your AI-powered assistant.\n\n
 *I can provide you with valuable services* in the field of real estate in Quebec, such as:\n
-📊 *Providing an estimate for a property*\n
+📊 *Providing an estimate for a property in a neighborhood or for a specific address (estimates are more accurate within our area of service)*\n
 🔢 *Performing a mortgage calculation*\n
 🏠 *Creating a website with properties matching your criteria*\n
 💬 *Giving you an informed opinion*\n
@@ -238,7 +238,7 @@ To better assist you, which option best describes you:\n
 4 (I have questions)`
         : `Bonjour, je suis CasaNova, votre assistant propulsé par l’IA.\n\n
 *Je peux vous rendre de précieux services* dans le domaine de l'immobilier au Québec, par exemple :\n
-📊 *Vous fournir un estimé pour une propriété*\n
+📊 *Vous fournir un estimé pour une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
 🔢 *Faire un calcul hypothécaire*\n
 🏠 *Créer un site web avec les propriétés qui correspondent à vos critères*\n
 💬 *Vous donner une opinion éclairée*\n

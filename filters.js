@@ -86,6 +86,39 @@ function isRepeatMessage(session, text, timestamp) {
 function setLastPayload(session, text, timestamp) {
     session.lastPayload = `${text}|${timestamp}`;
 }
+// modules/filters.js
+
+function shouldSkipMessage(session, message, timestamp) {
+    if (!message || !timestamp) return true; // sécurité
+
+    const now = Date.now();
+    const MAX_AGE_MS = 60 * 1000; // 1 minute de tolérance (à ajuster si tu veux plus)
+
+    // 1️⃣ Trop vieux
+    if (now - timestamp > MAX_AGE_MS) {
+        console.warn(`[SKIP] Message trop vieux ignoré: "${message}" @${timestamp}`);
+        return true;
+    }
+
+    // 2️⃣ Doublon du dernier message
+    if (session?.lastPayload
+        && session.lastPayload.message === message
+        && session.lastPayload.timestamp === timestamp) {
+        console.warn(`[HARD BLOCK] Message déjà traité: "${message}" @${timestamp}`);
+        return true;
+    }
+
+    return false;
+}
+
+function setLastPayload(session, message, timestamp) {
+    session.lastPayload = { message, timestamp };
+}
+
+module.exports = {
+    shouldSkipMessage,
+    setLastPayload
+};
 
 module.exports = {
     isValidIncomingMessage,

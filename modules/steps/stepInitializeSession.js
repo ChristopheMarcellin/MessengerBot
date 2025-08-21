@@ -29,10 +29,13 @@ async function stepInitializeSession(context) {
         session = getSession(senderId);
         if (!session) {
             session = resetSession(context);  // Créer une nouvelle session si elle n'existe pas
-            if (isText(message) && typeof session.language !== 'string' &&!isNumeric(message)) {
-                session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
-            }
-            console.log(`[INIT] ***** Session re-créée car manquante langue détectée:'${session.language}' pour '${message}'`);
+            if (isText(message) && !isNumeric(message)) {
+                session.language = detectLanguageFromText(message);  // ✅ tentative de détection
+                }
+            if (!session.language) {
+                session.language = "fr";  // 🔒 fallback robuste si rien détecté
+               }
+               console.log(`[INIT] ***** Session re-créée, langue='${session.language}' pour '${message}'`);
         }
         context.session = session;
 

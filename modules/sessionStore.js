@@ -39,7 +39,7 @@ function resetSession(context) {
         lastUserMessage: null,
         lastBotMessage: null,
         questionCount: 0,
-        maxQuestions: 40,
+        maxQuestions: 10,
         ProjectDate: new Date().toISOString(),
         mode: "spec"
     });
