@@ -216,9 +216,104 @@ async function classifyIntent(message, lang = 'fr') {
     }
 }
 
-async function chatOnly(senderId, message, session) {
-  //  const session = context.session;
 
+async function chatOnly(senderId, message, session) {
+    if (!session.language) {
+        if (message && isNaN(message)) { // exclure numériques simples
+            session.language = detectLanguageFromText(message) || "en";
+        } else {
+            session.language = "en"; // fallback dur
+        }
+    }
+
+    const lang = session.language || 'fr';
+    const intent = await classifyIntent(message, lang);
+    console.log(`Intent: ${intent}`);
+
+    // 🔎 Cas 1 : FAQ → PAS de quota
+    if (intent?.startsWith("faq:")) {
+        const key = intent.split(":")[1];
+        const faqText = faqMapByKey[key]?.[lang];
+        if (faqText) {
+            console.log(`[CHAT] Réponse FAQ détectée via GPT → cat: ${key}`);
+            await sendMessage(senderId, faqText, session);
+            return;
+        }
+    }
+
+    // 🚨 Étape 2 : quota check obligatoire pour tout le reste
+    const ok = await checkQuota(senderId, session);
+    if (!ok) return;
+
+    // 🔎 Cas 2 : ESTIMATE
+    if (intent === "estimate") {
+        await handlePriceEstimate(senderId, message, session);
+        return;
+    }
+
+    // 🤖 Cas 3 : GPT (libre) avec contexte
+    if (intent === "gpt") {
+        const contextualMessage = buildContextualPrompt(senderId, message, lang);
+        const prompt = lang === "fr"
+            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
+            `Vous parlez au nom des courtiers Carole Baillargeon et Christophe Marcellin. ` +
+            `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
+            `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
+            `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
+            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
+            contextualMessage
+            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
+            `You speak on behalf of brokers Carole Baillargeon and Christophe Marcellin. ` +
+            `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
+            `Give a direct and informative answer — no greetings, no restating the question. ` +
+            `You are allowed to give professional, legal, or strategic advice. ` +
+            `Never use phrases like "I'm here to help" or "feel free to ask." ` +
+            contextualMessage;
+
+        console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
+
+        try {
+            const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+                model: "gpt-4o",
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 200,
+                temperature: 0.6
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                }
+            });
+
+            const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+            const cleaned = gptReply ? stripGptSignature(gptReply) : null;
+            const fallback = cleaned || (lang === "fr"
+                ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !"
+                : "Sorry, I didn’t understand your answer in relation to the question asked!");
+
+            await sendMessage(senderId, fallback, session);
+            return;
+
+        } catch (err) {
+            console.error(`[chatOnly] *** ERREUR GPT : ${err.message}`);
+            const fallback = lang === "fr"
+                ? "Désolé, je n’ai pas compris."
+                : "Sorry, I didn’t understand.";
+            await sendMessage(senderId, fallback, session);
+            return;
+        }
+    }
+
+    // 🙃 Cas 4 : autre (compte dans le quota)
+    const fallback = lang === "fr"
+        ? "Désolé, cette question ne semble pas porter sur l'immobilier, peut-être une reformulation m'aiderait à mieux vous répondre !"
+        : "Sorry, this question seems unrelated to real estate, but perhaps rephrasing it could help me provide a better answer.";
+
+    await sendMessage(senderId, fallback, session);
+}
+
+async function chatOnlyOriginal(senderId, message, session) {
+    // const session = context.session;
 
     if (!session.language) {
         if (message && isNaN(message)) { // exclure numériques simples
@@ -252,9 +347,6 @@ async function chatOnly(senderId, message, session) {
 
     // 🤖 Cas 2 : GPT (libre) avec contexte
     if (intent === "gpt") {
-        console.log("[UTILS chat intent gpt] Avant incrément:", session.questionCount);
-        session.questionCount = (session.questionCount || 0) + 1;
-        console.log("[UTILS chat intent gpt] Après incrément:", session.questionCount);
         const ok = await checkQuota(senderId, session);
         if (!ok) return; // quota atteint → stop
 
@@ -316,7 +408,6 @@ async function chatOnly(senderId, message, session) {
 
     await sendMessage(senderId, fallback, session);
 }
-
 
 async function handlePriceEstimate(senderId, message, session) {
     //const session = context.session;
@@ -420,7 +511,7 @@ async function handlePriceEstimate(senderId, message, session) {
 }
 async function checkQuota(senderId, session) {
     session.questionCount = (session.questionCount || 0) + 1;
-
+    console.log("[UTILS checkQuota]", session.questionCount);
     if (session.questionCount > session.maxQuestions) {
         const lang = session.language || "fr";
         const limitMsg = (lang === "fr")
