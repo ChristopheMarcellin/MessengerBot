@@ -252,7 +252,9 @@ async function chatOnly(senderId, message, session) {
 
     // 🤖 Cas 2 : GPT (libre) avec contexte
     if (intent === "gpt") {
-
+        console.log("[UTILS chat intent gpt] Avant incrément:", session.questionCount);
+        session.questionCount = (session.questionCount || 0) + 1;
+        console.log("[UTILS chat intent gpt] Après incrément:", session.questionCount);
         const ok = await checkQuota(senderId, session);
         if (!ok) return; // quota atteint → stop
 

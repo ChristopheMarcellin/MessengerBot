@@ -25,6 +25,11 @@ function getAllSessions() {
 
 // ✅ Fusion : reset enrichi sans effet de bord
 function resetSession(context) {
+
+    const err = new Error();
+    console.log(`[RESET] resetSession déclenché pour senderId=${context.senderId}`);
+    console.log(err.stack); // affiche la pile complète
+
     const session = {};  // 🔥 purge complète
 
     Object.assign(session, {
