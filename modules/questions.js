@@ -150,7 +150,7 @@ For example you may say:
         firstName: {
             fr: `Avant de répondre à vos questions, nous aimerions mieux vous connaître.
 
-*Vos informations sont confidentielles*, utilisées uniquement pour mieux vous servir et à des fins statistiques *(aucune publicité ni partage à des tiers)*. [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/)
+*Vos informations sont confidentielles*, utilisées uniquement pour mieux vous servir et à des fins statistiques *(aucune publicité ni partage à des tiers)*. [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)
 
 Pour garantir un service de qualité et contribuer à son amélioration, *l'exactitude de vos informations* vous assure un accès complet aux services de CasaNova lors de votre prochaine conversation et nous permet de vous joindre si nécessaire.
 
@@ -158,7 +158,7 @@ Commençons par *votre prénom* SVP ?`,
 
             en: `Before addressing your questions, we would like to know you better.
 
-*Your information is confidential* and used only to better assist you and for statistical purposes *(no advertising or sharing with third parties)*. [View our Privacy Policy](https://christophe-marcellin.c21.ca/)
+*Your information is confidential* and used only to better assist you and for statistical purposes *(no advertising or sharing with third parties)*. [View our Privacy Policy](https://christophe-marcellin.c21.ca/en/contact/#policy)
 
 To ensure quality service and contribute to its improvement, *the accuracy of your information* guarantees you full access to CasaNova's services during your next conversation and allows us to contact you if necessary.
 

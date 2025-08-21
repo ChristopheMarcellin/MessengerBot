@@ -515,8 +515,8 @@ async function checkQuota(senderId, session) {
     if (session.questionCount > session.maxQuestions) {
         const lang = session.language || "fr";
         const limitMsg = (lang === "fr")
-            ? "C'est avec grand plaisir que nous vous avons répondu à plusieurs de vos questions. Nos ressources technologiques étant limitées, nous vous encourageons à communiquer dès maintenant avec Christophe Marcellin au 514-231-6370 pour de plus amples détails."
-            : "We were pleased to answer several of your questions. Since our technological resources are limited, we encourage you to contact Christophe Marcellin at 514-231-6370 for further details.";
+            ? "C'est avec grand plaisir que nous vous avons répondu à plusieurs de vos questions en immobilier, vous pouvez continuer à vous informer sur nos services cependant. Nos ressources technologiques étant limitées, nous vous encourageons à communiquer dès maintenant avec Christophe Marcellin au 514-231-6370 pour de plus amples détails."
+            : "We were pleased to answer several of your real estate questions, you may continue to ask about our services however. Since our technological resources are limited, we encourage you to contact Christophe Marcellin at 514-231-6370 for further details.";
 
         await sendMessage(senderId, limitMsg);
         return false; // 🚫 stop: quota dépassé
