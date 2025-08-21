@@ -10,7 +10,7 @@ const { getSession } = require('./modules/sessionStore');
 const { runDirector } = require('./modules/director');
 const {
     isValidIncomingMessage,
-    isRepeatMessage,
+    shouldSkipMessage,
     setLastPayload
 } = require('./filters');
 

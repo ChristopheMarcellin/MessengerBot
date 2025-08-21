@@ -127,5 +127,6 @@ module.exports = {
     isInvalidMessage,
     isTooOld,
     isRepeatMessage,
-    setLastPayload
+    setLastPayload,
+    shouldSkipMessage
 };
