@@ -43,9 +43,7 @@ async function logQnA(senderId, message, type, session) {
         timestamp: new Date().toISOString(),
         questionCount: session?.questionCount || 0
     };
-    // ensuite ton fetch habituel vers le Google Apps Script
-}
-  //  console.log("[QnA] Payload envoyé à Google Sheets:", payload);
+    // console.log("[QnA] Payload envoyé à Google Sheets:", payload);
 
     try {
         const response = await fetch(webhookUrl, {
@@ -55,10 +53,11 @@ async function logQnA(senderId, message, type, session) {
         });
 
         const text = await response.text();
-     //   console.log(`[QnA] ${type} de ${senderId} → "${message}" | Sheets: ${text}`);
+        // console.log(`[QnA] ${type} de ${senderId} → "${message}" | Sheets: ${text}`);
     } catch (err) {
         console.error("[QnA] Erreur d'envoi :", err);
     }
 }
+
 
 module.exports = { exportToGoogleSheets, logQnA };
