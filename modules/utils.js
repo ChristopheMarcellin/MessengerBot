@@ -656,6 +656,9 @@ function getNextSpec(session) {
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
 
+    // Bloc 1b : propertyUsage juste après projectType
+    if (!propertyUsage || propertyUsage === '?') return 'propertyUsage';
+
     // Bloc 2 : specs spécifiques
     const typeBlock = questions[projectType];
     if (!typeBlock || typeof typeBlock !== 'object') {

@@ -50,17 +50,15 @@ async function stepWhatNext(context, spec, previousSpec) {
 
     // === Étape 2 : propertyUsage ===
     if (nextSpec === "propertyUsage") {
-        const usage = context.session.specValues?.propertyUsage;
+        const questionText = getPromptForPropertyUsage(lang);
 
-        if (usage === "personal") {
-            ["bedrooms", "bathrooms", "garage"].forEach(field => {
-                if (context.session.askedSpecs?.[field] !== true) {
-                    setAskedSpec(context.session, field, "stepWhatNext for propertyUsage");
-                }
-            });
-        } else if (usage === "income") {
-          //  console.log("[WHATNEXT] propertyUsage = income → aucune exclusion de specs");
-        }
+        // ✅ marquer comme posée
+        setAskedSpec(context.session, nextSpec, 'stepWhatNext for propertyUsage');
+
+        // envoyer la question
+        await sendMessage(senderId, prefix + questionText, context.session);
+
+        return true;
     }
 
   //  setAskedSpec(context.session, nextSpec, 'stepWhatNext for all and any reg. specs');

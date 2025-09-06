@@ -6,7 +6,7 @@ function stepInitializeSession(context) {
     let session = getSession(senderId);
 
     if (!session || typeof session !== 'object') {
-        console.log('[INIT] Nouvelle session → initialisation forcée');
+      //  console.log('[INIT] Nouvelle session → initialisation forcée');
         session = {};
         setSession(senderId, session);
     }
@@ -17,14 +17,14 @@ function stepInitializeSession(context) {
 
 module.exports = {
 
-  stepCheckEndSession: require('./stepCheckEndSession').stepCheckEndSession,
+  //stepCheckEndSession: require('./stepCheckEndSession').stepCheckEndSession,
   stepInitializeSession: require('./stepInitializeSession').stepInitializeSession,
-  stepAskNextSpec: require('./stepAskNextSpec').stepAskNextSpec,
-  stepCollectContact: require('./stepCollectContact').stepCollectContact,
-  stepHandleFallback: require('./stepHandleFallback').stepHandleFallback,
+  //stepAskNextSpec: require('./stepAskNextSpec').stepAskNextSpec,
+  //stepCollectContact: require('./stepCollectContact').stepCollectContact,
+  //stepHandleFallback: require('./stepHandleFallback').stepHandleFallback,
   stepWhatNext: require('./stepWhatNext').stepWhatNext,
   stepHandleProjectType: require('./stepHandleProjectType'),
-    stepHandleSpecAnswer: require('./stepHandleSpecAnswer'),
-  stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm')
+  stepHandleSpecAnswer: require('./stepHandleSpecAnswer'),
+  //stepSummarizeAndConfirm: require('./stepSummarizeAndConfirm')
 
 };
