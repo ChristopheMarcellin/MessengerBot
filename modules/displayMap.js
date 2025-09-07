@@ -82,7 +82,7 @@ module.exports = {
     wantsContact: {
     fr: {
         1: "Suivi demandé: oui",
-        2: "Suivi demandé: non"
+        2: "Suivi demandé: non",
 	3: "Alertes seulement"
     },
     en: {
