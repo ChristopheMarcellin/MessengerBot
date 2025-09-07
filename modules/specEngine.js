@@ -197,6 +197,12 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
 
     const input = message.trim();
 
+    // 🎯 -1. Cas spécial : refus explicite (E interne, X alias externe)
+    if (input.toUpperCase() === "E" || input.toUpperCase() === "X") {
+        context.message = "E"; // uniformiser en "E"
+        return true;
+    }
+
     // 🎯 0. Cas spécial : refus explicite (valable sauf pour projectType)
     if (input === "E" && field !== "projectType") {
      //   console.log(`[spec Engine] validating field=__${field}_ | input="E" | valid=true (refus explicite accepté)`);
@@ -235,17 +241,7 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
     }
 
     // 🎯 4. Champs numériques purs (price, bedrooms, etc.)
-    const numericFields = ["price", "bedrooms", "bathrooms", "garage", "parking", "age", "propertyUsage"];
-    if (numericFields.includes(field)) {
-        if (isNumeric(input)) return true;
 
-        const decoded = await gptClassifyNumericSpecAnswer(input, lang);
-
-        const isValid = isNumeric(decoded);
-        if (isValid) context.message = decoded;
-      //  console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
-        return isValid;
-    }
 
     // 🎯 5. phone
     if (field === "phone") {

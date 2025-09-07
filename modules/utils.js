@@ -810,14 +810,19 @@ function setSpecValue(session, key, value, caller = "unspecified") {
             return;
         }
 
-        if (value !== "1" && value !== "2" && value !== "E") {
+        if (!["1", "2", "3", "4", "E"].includes(value)) {
             console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}"`);
             return;
         }
 
-        const usage = value === "1" ? "income"
-            : value === "2" ? "personal"
-                : "E";
+        let usage;
+        switch (value) {
+            case "1": usage = "Unifamiliale"; break;
+            case "2": usage = "Condo"; break;
+            case "3": usage = "Logement"; break;
+            case "4": usage = "Multiplex"; break;
+            case "E": usage = "E"; break;
+        }
 
         session.specValues[key] = usage;
         setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
