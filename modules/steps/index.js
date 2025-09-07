@@ -19,7 +19,7 @@ module.exports = {
 
 //  stepCheckEndSession: require('./stepCheckEndSession').stepCheckEndSession,
   stepInitializeSession: require('./stepInitializeSession').stepInitializeSession,
-  stepAskNextSpec: require('./stepAskNextSpec').stepAskNextSpec,
+ // stepAskNextSpec: require('./stepAskNextSpec').stepAskNextSpec,
  // stepCollectContact: require('./stepCollectContact').stepCollectContact,
 //  stepHandleFallback: require('./stepHandleFallback').stepHandleFallback,
   stepWhatNext: require('./stepWhatNext').stepWhatNext,
