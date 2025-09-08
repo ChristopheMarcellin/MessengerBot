@@ -35,6 +35,7 @@ function resetSession(context) {
     Object.assign(session, {
         senderId: context.senderId,
         language: undefined,
+	termsShown: false,
         projectType: "?",
         propertyUsage: "?",
         specValues: {},
@@ -47,6 +48,7 @@ function resetSession(context) {
         maxQuestions: 10,
         ProjectDate: new Date().toISOString(),
         mode: "spec"
+	
     });
 
     context.session = session;         // 🧠 mise à jour immédiate

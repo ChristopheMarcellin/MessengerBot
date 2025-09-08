@@ -266,54 +266,66 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
     );
 }
 
-function getPromptForProjectType(lang = 'fr') {
-    return lang === 'en'
-        ? `Hello, I’m CasaNova, your AI-powered assistant.\n\n
-*I can provide you with valuable services* in the field of real estate in Quebec, such as:\n
-📊 *Providing an estimate for a property in a neighborhood or for a specific address (estimates are more accurate within our area of service)*\n
-🔢 *Performing a mortgage calculation*\n
-📢  *Creating alerts when a property meets your search criteria*\n
-💬 *Giving you an informed opinion*\n
-⚖️ *Answering your legal questions (Quebec)*\n
-ℹ️ *Informing you about our services*\n\n
-To better assist you, which option number best describes you:\n
-1️⃣ (buy)
-2️⃣ (sell)
-3️⃣ (rent out)
-4️⃣ (I have questions - Real Estate talk)`
-        : `Bonjour, je suis CasaNova, votre assistant propulsé par l’IA.\n\n
-*Je peux vous rendre de précieux services* dans le domaine de l'immobilier au Québec, par exemple :\n
-📊 *Vous fournir un estimé pour une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
-🔢 *Faire un calcul hypothécaire*\n
-📢  *Créer des alertes qui correspondent à vos critères de recherche*\n
-💬 *Vous donner une opinion éclairée*\n
-⚖️ *Répondre à vos questions légales (Québec)*\n
-ℹ️ *Vous informer sur nos services*\n\n
-Pour bien vous assister, quel no. d'intention vous décrit le mieux :\n
 
-1️⃣ Acheter 
+const PREAMBLE = {
+    fr: `📜 *Termes d'utilisation*\n
+La qualité de votre expérience et la disponibilité de mes services est liée à l'exactitude de vos informations et à la pertinence de vos propos. En aucun cas vous n'êtes tenu de répondre aux questions posées.  
+Vous pouvez répondre "X" pour passer une question.  
+
+🔒 *Politique de confidentialité*\n
+Vos informations sont confidentielles (aucune publicité ni partage à des tiers).  
+[Consulter la politique complète](https://christophe-marcellin.c21.ca/contact/#politique)\n\n`,
+    en: `📜 *Terms of Use*\n
+The quality of your experience and the availability of my services depend on the accuracy of your information and the relevance of your responses. You are under no obligation to answer questions.  
+You may reply "X" to skip a question.  
+
+🔒 *Privacy Policy*\n
+Your information is confidential (no advertising or sharing with third parties).  
+[View full policy](https://christophe-marcellin.c21.ca/contact/#politique)\n\n`
+};
+
+// 🔹 ProjectType
+function getPromptForProjectType(lang = 'fr', session) {
+    const preamble = !session.termsShown ? PREAMBLE[lang] + "\n" : "";
+    session.termsShown = true;
+    return preamble + (
+        lang === 'en'
+            ? `To better assist you, which option number best describes you:\n
+1️⃣ Buying  
+2️⃣ Selling  
+3️⃣ Renting out  
+4️⃣ I have questions – Real Estate talk`
+            : `Pour bien vous assister, quel no. d'intention vous décrit le mieux :\n
+1️⃣ Acheter  
 2️⃣ Vendre  
 3️⃣ Offrir en location  
-4️⃣ J'ai des question, je veux parler d'immobilier`
-
+4️⃣ J'ai des questions, je veux parler d'immobilier`
+    );
 }
 
-function getPromptForPropertyUsage(lang = 'fr') {
-    return lang === 'en'
-        ? `🏠 To be precise, please enter the option number that corresponds to the type of property you have in mind:  
-
+// 🔹 PropertyUsage
+function getPromptForPropertyUsage(lang = 'fr', session) {
+    const preamble = !session.termsShown ? PREAMBLE[lang] + "\n" : "";
+    session.termsShown = true;
+    return preamble + (
+        lang === 'en'
+            ? `🏠 To be precise, please enter the option number that corresponds to the type of property you have in mind:\n
 1️⃣ Single-family home  
 2️⃣ Condo  
 3️⃣ Apartment  
 4️⃣ Multiplex`
-        : `🏠 Veuillez me préciser le type de propriété qui vous intéresse, 
-en m'indiquant le numéro correspondant :  
-
+            : `🏠 Veuillez me préciser le type de propriété qui vous intéresse, en m'indiquant le numéro correspondant :\n
 1️⃣ Unifamiliale  
 2️⃣ Condo  
 3️⃣ Logement  
-4️⃣ Multiplex`;
+4️⃣ Multiplex`
+    );
 }
+
+module.exports = {
+    getPromptForProjectType,
+    getPromptForPropertyUsage
+};
 
 
 
