@@ -1,4 +1,4 @@
-// modules/dataExport.js
+// modules/googleData.js anciennement dataExport
 const webhookUrl = 'https://script.google.com/macros/s/AKfycbwqU02i0A8z74kA0rwPTnsyseBXjVU2Hbc7_XLeRhlX-f4TMK_1xflaMeeMuSnJlBw7/exec';
 
 /**
@@ -59,5 +59,13 @@ async function logQnA(senderId, message, type, session) {
     }
 }
 
+async function getMaxQuestions(senderId) {
+  const url = `${webhookUrl}?senderId=${encodeURIComponent(senderId)}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  return data.value;
+}
 
-module.exports = { exportToGoogleSheets, logQnA };
+
+
+module.exports = { exportToGoogleSheets, logQnA, getMaxQuestions };

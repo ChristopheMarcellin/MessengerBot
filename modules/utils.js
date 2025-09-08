@@ -3,6 +3,7 @@ const axios = require('axios');
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
+const { getMaxQuestions } = require('./googleData');
 const evalPrix = require('./evalPrix');
 
 console.log("🧩 [utils.js] **************************** Chargé — typeof isNumeric =", typeof isNumeric);
@@ -78,7 +79,6 @@ const faqMapByKey = {
         fr: "En plus de nos sites Web respectifs www.carolebaillargeon.com et https://christophe-marcellin.c21.ca/ pour consulter nos propriétés en vente, nous pouvons concevoir rapidement un site qui présente les propriétés qui se concentrent sur vos attentes.",
         en: "In addition to our respective websites www.carolebaillargeon.com and https://christophe-marcellin.c21.ca/ to view our properties for sale, we can quickly design a website that showcases properties precisely matching your expectations."
     }
-
 };
 
 async function classifyIntent(message, lang = 'fr') {
@@ -256,14 +256,14 @@ async function chatOnly(senderId, message, session) {
         const contextualMessage = buildContextualPrompt(senderId, message, lang);
         const prompt = lang === "fr"
             ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
-            `Vous parlez au nom des courtiers Carole Baillargeon et Christophe Marcellin. ` +
+            `Vous parlez au nom du courtier Christophe Marcellin. ` +
             `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
             `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
             contextualMessage
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
-            `You speak on behalf of brokers Carole Baillargeon and Christophe Marcellin. ` +
+            `You speak on behalf of Christophe Marcellin Broker. ` +
             `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
             `Give a direct and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
@@ -464,19 +464,20 @@ async function handlePriceEstimate(senderId, message, session) {
         ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. 
           L'utilisateur souhaite obtenir une estimation de prix. 
           Donnez la valeur médiane haute la plus récente (si la statistique la plus récente date de 2023, ajoutez 4% par année manquante, soit 8%). 
-          Précisez que la valeur est estimative, qu’une validation est requise avec un professionnel de l'immobilier de notre équipe. 
-          Donnez un ou deux exemples de variations qui peuvent influer sur l'estimation (ex: rénovations, emplacement, état du marché), 
-          Ne jamais référer à la méthode de calcul utilisée pour cette estimation. 
+          Précisez que la valeur est estimative et que peu de statistiques sont disponibles sur ce territoire non couvert, qu’une validation est requise avec un professionnel de l'immobilier de notre équipe. 
+          Donnez un ou deux exemples de variations qui peuvent influer sur l'estimation, 
+          Ne jamais expliquer comment vous êtes arrivé à votre estimé. 
           N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. 
           Question: ${message}`
-        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. 
-          The user wants a price estimate. 
-          Provide the most recent high median value (if the most recent statistic is from 2023, add 2% per missing year, i.e., 4%). 
-          Specify that the value is an estimate and must be validated by an experienced broker from our team. 
-          Provide one or two examples of factors that could influence the estimate (e.g., renovations, location, market conditions). 
-          Never refer to the methodology or mathematical formula used to provide the estimate.
-          Never use phrases like "I'm here to help" or "feel free to ask." 
-          Question: ${message}`;
+        : 
+        `You are a virtual assistant specialized in residential and commercial real estate in Quebec. 
+        The user wants to obtain a price estimate. 
+        Provide the most recent high median value (if the most recent statistic is from 2023, add 4% per missing year, i.e., 8%). 
+        Specify that the value is only an estimate and that few statistics are available in this uncovered territory, so validation with a professional from our team is required. 
+        Give one or two examples of variations that may influence the estimate. 
+        Never explain how you arrived at your estimate. 
+        Never use phrases like “I’m here to help you” or “ask me your questions.” 
+        Question:  ${message}`;
 
     console.log("[GPT HEAVY] Prompt:", heavyPrompt);
     try {
@@ -510,13 +511,17 @@ async function handlePriceEstimate(senderId, message, session) {
     }
 }
 async function checkQuota(senderId, session) {
+    const quota = await getMaxQuestions(senderId);
+    const max = parseInt(quota, 10) || 0;
+
     session.questionCount = (session.questionCount || 0) + 1;
-    console.log("[UTILS checkQuota]", session.questionCount);
-    if (session.questionCount > session.maxQuestions) {
+    console.log("[UTILS checkQuota]", senderId, session.questionCount, "/", max);
+
+    if (session.questionCount > max) {
         const lang = session.language || "fr";
         const limitMsg = (lang === "fr")
-            ? "C'est avec grand plaisir que nous vous avons répondu à plusieurs de vos questions en immobilier, vous pouvez continuer à vous informer sur nos services cependant. Nos ressources technologiques étant limitées, nous vous encourageons à communiquer dès maintenant avec Christophe Marcellin au 514-231-6370 pour de plus amples détails."
-            : "We were pleased to answer several of your real estate questions, you may continue to ask about our services however. Since our technological resources are limited, we encourage you to contact Christophe Marcellin at 514-231-6370 for further details.";
+            ? "Désolé mais vraisemblablement, la qualité, l'authenticité ou le sérieux des données que vous me transmettez m'empêche de répondre à davantage de vos questions. Vous pouvez continuer à vous informer sur nos services cependant ou communiquer avec Christophe Marcellin au 514-231-6370 pour de plus amples renseignements."
+            : "Sorry, but it seems that the quality, authenticity, or seriousness of the data you are providing prevents me from answering any more of your questions. However, you may continue to ask about our services or contact Christophe Marcellin at 514-231-6370 for further information.";
 
         await sendMessage(senderId, limitMsg);
         return false; // 🚫 stop: quota dépassé
@@ -560,7 +565,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
             `(échantillonage statistique : ${confiance}). ` +
             `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
             `comme le positionnement de la propriété ou les rénovations faites. ` +
-            `Vous devriez toujours vous fier à un professionnel de l'immobilier comme Carole ou Christophe pour fournir un estimé fiable.`
+            `Vous devriez toujours vous fier à un professionnel de l'immobilier pour fournir un estimé fiable.`
         );
     } else {
         return (
@@ -569,7 +574,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
             `(statistical sampling: ${confiance}). ` +
             `Obviously, several factors can influence the accuracy of this estimate, ` +
             `such as the property's positioning or renovations made. ` +
-            `You should always rely on a real estate professional like Carole or Christophe to provide a reliable estimate.`
+            `You should always rely on a real estate professional to provide a reliable estimate.`
         );
     }
 }
