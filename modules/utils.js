@@ -463,19 +463,19 @@ async function handlePriceEstimate(senderId, message, session) {
     const heavyPrompt = lang === "fr"
         ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. 
           L'utilisateur souhaite obtenir une estimation de prix. 
-          Donnez la valeur médiane haute la plus récente (si la statistique la plus récente date de 2023, ajoutez 4% par année manquante, soit 8%). 
-          Précisez que la valeur est estimative et que peu de statistiques sont disponibles sur ce territoire non couvert, qu’une validation est requise avec un professionnel de l'immobilier de notre équipe. 
+          Calculez la valeur médiane haute la plus récente (si la statistique la plus récente date de 2023, ajoutez 4% par année manquante, soit 8%). 
+          Donnez le résultat de ce calcul. Précisez que la valeur est estimative et que peu de statistiques ont été compilées pour ce territoire, qu’une validation est requise avec un professionnel de l'immobilier de notre équipe. 
           Donnez un ou deux exemples de variations qui peuvent influer sur l'estimation, 
-          Ne jamais expliquer comment vous êtes arrivé à votre estimé. 
+          Ne jamais expliquer comment vous êtes arrivé à votre estimé ne jamais référe à la médiane haute. 
           N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. 
           Question: ${message}`
         : 
         `You are a virtual assistant specialized in residential and commercial real estate in Quebec. 
         The user wants to obtain a price estimate. 
-        Provide the most recent high median value (if the most recent statistic is from 2023, add 4% per missing year, i.e., 8%). 
-        Specify that the value is only an estimate and that few statistics are available in this uncovered territory, so validation with a professional from our team is required. 
+        Calculate the most recent high median value (if the most recent statistic is from 2023, add 4% per missing year, i.e., 8%). 
+        Return the result of the calculation and specify that the value is only an estimate and that few statistics have been gathered for this territory, so validation with a professional from our team is required. 
         Give one or two examples of variations that may influence the estimate. 
-        Never explain how you arrived at your estimate. 
+        Never explain how you arrived at your estimate never mention the terms 'high median'. 
         Never use phrases like “I’m here to help you” or “ask me your questions.” 
         Question:  ${message}`;
 
@@ -499,7 +499,7 @@ async function handlePriceEstimate(senderId, message, session) {
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.");
 
-        const reply = `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sample: low)'}`;
+        const reply = `${fallback} ${lang === 'fr' ? '(qualité statistique : basse)' : '(statistical sample quality: low)'}`;
         await sendMessage(senderId, reply, session);
 
     } catch (err) {
@@ -507,7 +507,7 @@ async function handlePriceEstimate(senderId, message, session) {
         const fallback = lang === "fr"
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.";
-        await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(échantillonage statistique : bas)' : '(statistical sampling : low)'}`, session);
+        await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(qualité statistique : basse)' : '(statistical sample quality : low)'}`, session);
     }
 }
 async function checkQuota(senderId, session) {
@@ -520,8 +520,8 @@ async function checkQuota(senderId, session) {
     if (session.questionCount > max) {
         const lang = session.language || "fr";
         const limitMsg = (lang === "fr")
-            ? "Désolé mais vraisemblablement, la qualité, l'authenticité ou le sérieux des données que vous me transmettez m'empêche de répondre à davantage de vos questions. Vous pouvez continuer à vous informer sur nos services cependant ou communiquer avec Christophe Marcellin au 514-231-6370 pour de plus amples renseignements."
-            : "Sorry, but it seems that the quality, authenticity, or seriousness of the data you are providing prevents me from answering any more of your questions. However, you may continue to ask about our services or contact Christophe Marcellin at 514-231-6370 for further information.";
+            ? "J'aimerais pouvoir vous fournir davantage d'informations et espère vous avoir été utile jusqu'ici, toutefois pour des raisons techniques ou avoir enfreint les conditions d'utilisation, il m'est impossible de répondre à des questions autres que celles qui portent sur notre service.  Vous pouvez communiquer avec Christophe Marcellin au 514-231-6370 pour de plus amples renseignements."
+            : "I would like to be able to provide you with more information and I hope I have been helpful so far, however, for technical reasons or for having violated the terms of use, I am unable to answer questions other than those related to our service. You may contact Christophe Marcellin at 514-231-6370 for further information.";
 
         await sendMessage(senderId, limitMsg);
         return false; // 🚫 stop: quota dépassé
@@ -562,7 +562,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
         return (
             `D’après nos données, la valeur estimative pour l'endroit ciblé est de ${valeur} $ le pied carré, ` +
             `ce qui signifie environ ${(valeur * 1000).toLocaleString('fr-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ pour 1000 pieds carrés. ` +
-            `(échantillonage statistique : ${confiance}). ` +
+            `(qualité de l'échantillonage statistique : ${confiance}). ` +
             `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
             `comme le positionnement de la propriété ou les rénovations faites. ` +
             `Vous devriez toujours vous fier à un professionnel de l'immobilier pour fournir un estimé fiable.`
@@ -571,7 +571,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
         return (
             `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
             `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square feet. ` +
-            `(statistical sampling: ${confiance}). ` +
+            `(statistical sample quality: ${confiance}). ` +
             `Obviously, several factors can influence the accuracy of this estimate, ` +
             `such as the property's positioning or renovations made. ` +
             `You should always rely on a real estate professional to provide a reliable estimate.`

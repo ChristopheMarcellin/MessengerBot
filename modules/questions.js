@@ -46,8 +46,8 @@ Dites:
         },
 
         location: {
-            en: `📍 Which region, city or neighborhood(s) would be your ideal target?`,
-            fr: `📍 Quelle région, ville ou quartier(s) serait votre cible idéale ?`,
+            en: `📍 Please confirm next the region, city and even the neighborhood(s) of the target property if possible!`,
+            fr: `📍 Veuillez confirmer la région, ville et possiblement le(s) quartier(s) de la propriété concernée !`,
         },
     },
 
@@ -186,9 +186,9 @@ For example you may say:
 📊 5 - De compiler des statistiques.
 
 
-Vous n'êtes pas tenu de répondre aux questions, toutefois sachez que la qualité des services
-de CasaNova et votre expérience dépendent de *l'exactitude de vos informations*, le choix de vos réponses est irréversible particulièrement
-si nous ne pouvons vous joindre.
+*Vous n'êtes pas tenu de répondre aux questions*, toutefois sachez que *la qualité de votre expérience et la disponibilité des services
+de CasaNova est liée à l'exactitude de vos informations et la pertinence de vos propos*. Le choix de vos réponses ou de vos propos sont notés et parfois irréversibles, particulièrement
+si nous n'avons aucun moyen pour vous joindre.  Ceci constitue les *"termes d'utilisation"*.
 
 *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)
 
@@ -209,13 +209,11 @@ Commençons par *votre prénom* SVP ?`,
 📊 5 - Compile useful statistics.  
 
 
-You are not required to answer these questions. However, please note that the quality of CasaNova's services and your overall experience depend on *the accuracy of your information*. Your choices are irreversible, particularly if we are unable to contact you.  
+You are not required to answer the questions, however please note that the quality of your experience and the availability of CasaNova’s services depend on the accuracy of your information and the relevance of your responses. The choice of your answers or comments is recorded and may sometimes be irreversible, particularly if we have no way to contact you. This constitutes the “terms of use”.
 
-*Your information is confidential* (no advertising or sharing with third parties). [View our Privacy Policy](https://christophe-marcellin.c21.ca/en/contact/#policy)  
+Your information is confidential (no advertising or sharing with third parties). Consult our privacy policy https://christophe-marcellin.c21.ca/en/contact/#policy
 
-*If you do not wish to answer one of the following questions, simply reply with "X" (without quotes) considering what precedes.*  
-
-Let's start with *your first name*, please?`,
+Therefore, if you do not wish to answer one of the following questions, simply reply with "X" (without quotes), taking into account the above.`,
     }
 
 ,
@@ -302,15 +300,14 @@ Pour bien vous assister, quel no. d'intention vous décrit le mieux :\n
 
 function getPromptForPropertyUsage(lang = 'fr') {
     return lang === 'en'
-        ? `🏠 What type of property are you interested in?  
-Please choose the corresponding option:  
+        ? `🏠 To be precise, please enter the option number that corresponds to the type of property you have in mind:  
 
 1️⃣ Single-family home  
 2️⃣ Condo  
 3️⃣ Apartment  
 4️⃣ Multiplex`
-        : `🏠 Quel est le type de propriété qui vous intéresse ?  
-Veuillez choisir l'option correspondante :  
+        : `🏠 Veuillez me préciser le type de propriété qui vous intéresse, 
+en m'indiquant le numéro correspondant :  
 
 1️⃣ Unifamiliale  
 2️⃣ Condo  
