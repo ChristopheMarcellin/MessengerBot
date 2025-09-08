@@ -192,7 +192,7 @@ si nous ne pouvons vous joindre.
 
 *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)
 
-*Ainsi, si vous ne désirez pas répondre à l'une des questions qui suit, simplement répondre "X" (sans les guillemets).*  
+*Ainsi, si vous ne désirez pas répondre à l'une des questions qui suit, simplement répondre "X" (sans les guillemets) en tenant compte de ce qui précède.*  
 
 Commençons par *votre prénom* SVP ?`,
 
@@ -213,7 +213,7 @@ You are not required to answer these questions. However, please note that the qu
 
 *Your information is confidential* (no advertising or sharing with third parties). [View our Privacy Policy](https://christophe-marcellin.c21.ca/en/contact/#policy)  
 
-*If you do not wish to answer one of the following questions, simply reply with "X" (without quotes).*  
+*If you do not wish to answer one of the following questions, simply reply with "X" (without quotes) considering what precedes.*  
 
 Let's start with *your first name*, please?`,
     }
@@ -247,13 +247,13 @@ Let's start with *your first name*, please?`,
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ 📲 alertes seulement`,
+3️⃣ Les alertes Web seulement SVP`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
 1️⃣ Yes  
 2️⃣ No  
-3️⃣ 📲 Alerts only`,
+3️⃣ Web Alerts only please`,
     }
 ,
 
