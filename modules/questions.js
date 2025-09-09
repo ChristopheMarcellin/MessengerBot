@@ -324,6 +324,7 @@ Ainsi je vous invite à prendre connaissance de ce qui suit avant de débuter no
 🔒 2 - Notre "Politique de confidentialité"\n
 🛎️ 3 - Aperçu de mes services\n\n
 
+
 *La qualité de votre expérience et la disponibilité de mes services est liée à l'exactitude de vos informations et à la pertinence de vos propos*. En aucun cas vous n'êtes tenu de répondre aux questions qui vous sont posées, toutefois sachez que le choix de vos réponses ou de vos propos sont enregistrés et ont une nature permanente, notamment si je n’ai aucun moyen de vous contacter.\n\n
 Ainsi, si vous choisissez de ne pas répondre à l'une de mes questions lors de notre échange, simplement répondre par "X" (sans les guillemets) en tenant compte de ce qui précède.\n
 Un refus de répondre peut être justifié et n’entraîne pas automatiquement une baisse de la qualité de mon service. Par exemple, ne pas fournir votre adresse peut limiter mes services, mais ne pas divulguer votre âge serait sans grande conséquence.\n\n
@@ -349,6 +350,8 @@ Therefore, if you choose not to answer one of my questions during our exchange, 
 Refusing to answer may be justified and does not automatically reduce the quality of my service. For example, not providing your address may limit what I can do, but not disclosing your age will have little consequence.\n\n
 🔒 2 - Our "Privacy Policy"\n
 *Your information is confidential* (no advertising or sharing with third parties).\n
+
+
 
 🛎️ 3 - Overview of my services\n
 *I can provide you with valuable services in the field of real estate in Québec, for example:*\n
