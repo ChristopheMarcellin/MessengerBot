@@ -274,7 +274,22 @@ Ainsi je vous invite à prendre connaissance de ce qui suit avant de débuter no
 📜 1 - Les "Termes d’utilisation" de ce service\n
 🔒 2 - Notre "Politique de confidentialité"\n
 🛎️ 3 - Aperçu de mes services\n\n
-`,
+
+*La qualité de votre expérience et la disponibilité de mes services est liée à l'exactitude de vos informations et à la pertinence de vos propos*. En aucun cas vous n'êtes tenu de répondre aux questions qui vous sont posées, toutefois sachez que le choix de vos réponses ou de vos propos sont enregistrés et ont une nature permanente, notamment si je n’ai aucun moyen de vous contacter.\n\n
+Ainsi, si vous choisissez de ne pas répondre à l'une de mes questions lors de notre échange, simplement répondre par "X" (sans les guillemets) en tenant compte de ce qui précède.\n
+Un refus de répondre peut être justifié et n’entraîne pas automatiquement une baisse de la qualité de mon service. Par exemple, ne pas fournir votre adresse peut limiter mes services, mais ne pas divulguer votre âge serait sans grande conséquence.\n\n
+🔒 2 - Notre "Politique de confidentialité"\n
+*Vos informations sont confidentielles* (aucune publicité ni partage à des tiers).\n
+[Consulter l’entièreté de notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n\n
+🛎️ 3 - Aperçu de mes services\n
+*Je peux vous rendre de précieux services dans le domaine de l'immobilier au Québec, par exemple :*\n
+📊 *Vous fournir un estimé pour une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
+🔢 *Faire un calcul hypothécaire*\n
+📢 *Créer des alertes qui correspondent à vos critères de recherche*\n
+💬 *Vous donner une opinion éclairée*\n
+⚖️ *Répondre à vos questions légales (Québec)*\n
+ℹ️ *Vous informer sur nos services*\n\n`
+,
     en: `Hello, I’m CasaNova, your AI-powered real estate assistant.\n\n
 My interactive nature allows you to ask me questions, and for me to ask you some in return.\n\n
 Before we begin, please take note of the following:\n\n
