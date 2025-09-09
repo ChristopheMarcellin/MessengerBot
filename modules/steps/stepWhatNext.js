@@ -32,25 +32,33 @@ async function stepWhatNext(context, spec, previousSpec) {
 
     // === Étape 1 : projectType ===
     if (nextSpec === "projectType") {
-        const questionText = getPromptForProjectType(lang, context.session);
+        // Toujours préambule + question
+        const questionText = getPreamble(lang) + "\n" + getPromptForProjectType(lang);
+
+        // Marquer le préambule comme affiché
+        context.session.termsShown = true;
 
         if (context.session.mode === 'spec') {
             setAskedSpec(context.session, nextSpec, 'stepWhatNext for projectType');
-        }
-        else {
-
-            context.session.mode = 'spec'
+        } else {
+            context.session.mode = 'spec';
             return false;
         }
 
-      //  console.log(`[WHATNEXT] Question pour la spec "${nextSpec}" → ${questionText}`);
         await sendMessage(senderId, prefix + questionText, context.session);
         return true;
     }
 
     // === Étape 2 : propertyUsage ===
     if (nextSpec === "propertyUsage") {
-        const questionText = getPromptForPropertyUsage(lang, context.session);
+        let questionText;
+
+        if (!context.session.termsShown) {
+            questionText = getPreamble(lang) + "\n" + getPromptForPropertyUsage(lang);
+            context.session.termsShown = true; // ✅ marquer comme affiché
+        } else {
+            questionText = getPromptForPropertyUsage(lang);
+        }
 
         // ✅ marquer comme posée
         setAskedSpec(context.session, nextSpec, 'stepWhatNext for propertyUsage');
