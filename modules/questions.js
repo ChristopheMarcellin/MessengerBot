@@ -271,14 +271,14 @@ const PREAMBLE = {
     fr: `Bonjour, je suis CasaNova, votre assistant en immobilier propulsé par l’IA.\n\n
 Ma nature interactive vous permet de me poser des questions et à moi de vous en poser.\n\n
 Ainsi je vous invite à prendre connaissance de ce qui suit avant de débuter notre échange :\n\n
-📜 1 - Les « termes d’utilisation » de ce service\n
-🔒 2 - Notre « Politique de confidentialité »\n
+📜 1 - Les "Termes d’utilisation" de ce service\n
+🔒 2 - Notre "Politique de confidentialité"\n
 🛎️ 3 - Aperçu de mes services\n\n
-📜 1 - Les « termes d’utilisation » de ce service\n
+
 *La qualité de votre expérience et la disponibilité de mes services est liée à l'exactitude de vos informations et à la pertinence de vos propos*. En aucun cas vous n'êtes tenu de répondre aux questions qui vous sont posées, toutefois sachez que le choix de vos réponses ou de vos propos sont enregistrés et ont une nature permanente, notamment si je n’ai aucun moyen de vous contacter.\n\n
 Ainsi, si vous choisissez de ne pas répondre à l'une de mes questions lors de notre échange, simplement répondre par "X" (sans les guillemets) en tenant compte de ce qui précède.\n
 Un refus de répondre peut être justifié et n’entraîne pas automatiquement une baisse de la qualité de mon service. Par exemple, ne pas fournir votre adresse peut limiter mes services, mais ne pas divulguer votre âge serait sans grande conséquence.\n\n
-🔒 2 - Notre « Politique de confidentialité »\n
+🔒 2 - Notre "Politique de confidentialité"\n
 *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers).\n
 [Consulter l’entièreté de notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n\n
 🛎️ 3 - Aperçu de mes services\n
@@ -291,17 +291,16 @@ Un refus de répondre peut être justifié et n’entraîne pas automatiquement 
 ℹ️ *Vous informer sur nos services*\n\n`,
     en: `Hello, I’m CasaNova, your AI-powered real estate assistant.\n\n
 My interactive nature allows you to ask me questions, and for me to ask you some in return.\n\n
-Before we begin our exchange, please take note of the following:\n\n
-📜 1 - The “Terms of Use” of this service\n
-🔒 2 - Our “Privacy Policy”\n
+Before we begin, please take note of the following:\n\n
+📜 1 - The "Terms of Use" of this service\n
+🔒 2 - Our "Privacy Policy"\n
 🛎️ 3 - Overview of my services\n\n
-📜 1 - The “Terms of Use” of this service\n
-*The quality of your experience and the availability of my services depend on the accuracy of your information and the relevance of your responses*. You are under no obligation to answer the questions I ask you, however please note that your answers or comments are recorded and may be permanent, especially if I have no way to contact you.\n\n
+*The quality of your experience and the availability of my services depend on the accuracy of your information and the relevance of your responses.* You are under no obligation to answer the questions I ask. However, please note that your answers or comments are recorded and may be permanent, especially if I have no way to contact you.\n\n
 Therefore, if you choose not to answer one of my questions during our exchange, simply reply with "X" (without quotes) while keeping the above in mind.\n
-Refusing to answer may be justified and does not automatically reduce the quality of my service. For example, not providing your address may limit what I can do, but not disclosing your age would have little consequence.\n\n
-🔒 2 - Our “Privacy Policy”\n
+Refusing to answer may be justified and does not automatically reduce the quality of my service. For example, not providing your address may limit what I can do, but not disclosing your age will have little consequence.\n\n
+🔒 2 - Our "Privacy Policy"\n
 *Your information is confidential* (no advertising or sharing with third parties).\n
-[View our full privacy policy](https://christophe-marcellin.c21.ca/contact/#politique)\n\n
+[View our full privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)\n\n
 🛎️ 3 - Overview of my services\n
 *I can provide you with valuable services in the field of real estate in Québec, for example:*\n
 📊 *Provide an estimate for a property in a neighborhood or at a specific address (our estimates are more accurate within our main territory)*\n
