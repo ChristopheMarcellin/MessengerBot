@@ -310,6 +310,7 @@ function getPromptForPropertyUsage(lang = 'fr', session) {
 
     const preamble = !session.termsShown ? PREAMBLE[lang] + "\n" : "";
     session.termsShown = true;
+
     return preamble + (
         lang === 'en'
             ? `🏠 To be precise, please enter the option number that corresponds to the type of property you have in mind:\n
