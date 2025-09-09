@@ -26,16 +26,18 @@ function getAllSessions() {
 // ✅ Fusion : reset enrichi sans effet de bord
 function resetSession(context) {
 
-    const err = new Error();
+  //  const err = new Error();
+
+//    console.log(err.stack); // affiche la pile complète
+
     console.log(`[RESET] resetSession déclenché pour senderId=${context.senderId}`);
-    console.log(err.stack); // affiche la pile complète
 
     const session = {};  // 🔥 purge complète
 
     Object.assign(session, {
         senderId: context.senderId,
         language: undefined,
-	termsShown: false,
+	    termsShown: false,
         projectType: "?",
         propertyUsage: "?",
         specValues: {},
@@ -75,6 +77,7 @@ function logSessionState(label, session) {
     const snapshot = {
         language: session.language,
         ProjectDate: session.ProjectDate,
+        termsShown: false,
         questionCount: session.questionCount,
         maxQuestions: session.maxQuestions,
         askedSpecs: session.askedSpecs,
