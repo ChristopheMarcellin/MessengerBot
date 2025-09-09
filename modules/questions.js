@@ -374,4 +374,5 @@ module.exports = {
     getPromptForSpec,
     getPromptForProjectType,
     getPromptForPropertyUsage,
+    getPreamble
 };

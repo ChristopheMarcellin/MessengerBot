@@ -1,5 +1,5 @@
 const { setAskedSpec, getNextSpec } = require('../utils');
-const { getPromptForSpec, getPromptForProjectType, getPromptForPropertyUsage } = require('../questions');
+const { getPromptForSpec, getPromptForProjectType, getPromptForPropertyUsage, getPreamble } = require('../questions');
 const { sendMessage } = require('../messenger');
 const { saveSession } = require('../sessionStore');
 const { buildSpecSummary } = require('../specEngine');
