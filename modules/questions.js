@@ -329,7 +329,7 @@ Ainsi, si vous choisissez de ne pas répondre à l'une de mes questions lors de 
 Un refus de répondre peut être justifié et n’entraîne pas automatiquement une baisse de la qualité de mon service. Par exemple, ne pas fournir votre adresse peut limiter mes services, mais ne pas divulguer votre âge serait sans grande conséquence.\n\n
 🔒 2 - Notre "Politique de confidentialité"\n
 *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers).\n
-[Consulter l’entièreté de notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n\n
+
 🛎️ 3 - Aperçu de mes services\n
 *Je peux vous rendre de précieux services dans le domaine de l'immobilier au Québec, par exemple :*\n
 📊 *Vous fournir un estimé pour une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
@@ -349,7 +349,7 @@ Therefore, if you choose not to answer one of my questions during our exchange, 
 Refusing to answer may be justified and does not automatically reduce the quality of my service. For example, not providing your address may limit what I can do, but not disclosing your age will have little consequence.\n\n
 🔒 2 - Our "Privacy Policy"\n
 *Your information is confidential* (no advertising or sharing with third parties).\n
-[View our full privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)\n\n
+
 🛎️ 3 - Overview of my services\n
 *I can provide you with valuable services in the field of real estate in Québec, for example:*\n
 📊 *Provide an estimate for a property in a neighborhood or at a specific address (our estimates are more accurate within our main territory)*\n
