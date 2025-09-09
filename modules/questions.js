@@ -268,18 +268,7 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 
 
 const PREAMBLE = {
-    fr: `Bonjour, je suis CasaNova, votre assistant en immobilier propulsé par l’IA.\n\n
-Ma nature interactive vous permet de me poser des questions et à moi de vous en poser.\n\n
-Ainsi je vous invite à prendre connaissance de ce qui suit avant de débuter notre échange :\n\n
-📜 1 - Les "Termes d’utilisation" de ce service\n
-🔒 2 - Notre "Politique de confidentialité"\n
-🛎️ 3 - Aperçu de mes services\n\n
-
-*La qualité de votre expérience et la disponibilité de mes services est liée à l'exactitude de vos informations et à la pertinence de vos propos*. En aucun cas vous n'êtes tenu de répondre aux questions qui vous sont posées, toutefois sachez que le choix de vos réponses ou de vos propos sont enregistrés et ont une nature permanente, notamment si je n’ai aucun moyen de vous contacter.\n\n
-Ainsi, si vous choisissez de ne pas répondre à l'une de mes questions lors de notre échange, simplement répondre par "X" (sans les guillemets) en tenant compte de ce qui précède.\n
-Un refus de répondre peut être justifié et n’entraîne pas automatiquement une baisse de la qualité de mon service. Par exemple, ne pas fournir votre adresse peut limiter mes services, mais ne pas divulguer votre âge serait sans grande conséquence.\n\n
-🔒 2 - Notre "Politique de confidentialité"\n
-*Vos informations sont confidentielles* (aucune publicité ni partage à des tiers).\n
+    fr: `Bonjour, je suis CasaNova, votre assistant en immobilier propulsé par l’IA'
 `
 ,
     en: `Hello, I’m CasaNova, your AI-powered real estate assistant.\n\n
@@ -293,6 +282,9 @@ Before we begin, please take note of the following:\n\n
 
 // 🔹 ProjectType
 function getPromptForProjectType(lang = 'fr', session) {
+
+    console.log(`[DEBUG PROMPT projectType] termsShown=${session?.termsShown}, projectType=${session?.projectType}`);
+
     const preamble = !session.termsShown ? PREAMBLE[lang] + "\n" : "";
     session.termsShown = true;
     return preamble + (
@@ -312,6 +304,10 @@ function getPromptForProjectType(lang = 'fr', session) {
 
 // 🔹 PropertyUsage
 function getPromptForPropertyUsage(lang = 'fr', session) {
+
+    console.log(`[DEBUG PROMPT projectType] termsShown=${session?.termsShown}, projectType=${session?.propertyUsage}`);
+
+
     const preamble = !session.termsShown ? PREAMBLE[lang] + "\n" : "";
     session.termsShown = true;
     return preamble + (
