@@ -32,7 +32,7 @@ async function stepWhatNext(context, spec, previousSpec) {
 
     // === Étape 1 : projectType ===
     if (nextSpec === "projectType") {
-        const questionText = getPromptForProjectType(lang);
+        const questionText = getPromptForProjectType(lang, context.session);
 
         if (context.session.mode === 'spec') {
             setAskedSpec(context.session, nextSpec, 'stepWhatNext for projectType');
@@ -50,7 +50,7 @@ async function stepWhatNext(context, spec, previousSpec) {
 
     // === Étape 2 : propertyUsage ===
     if (nextSpec === "propertyUsage") {
-        const questionText = getPromptForPropertyUsage(lang);
+        const questionText = getPromptForPropertyUsage(lang, context.session);
 
         // ✅ marquer comme posée
         setAskedSpec(context.session, nextSpec, 'stepWhatNext for propertyUsage');
