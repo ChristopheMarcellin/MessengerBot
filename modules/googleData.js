@@ -1,5 +1,5 @@
 // modules/googleData.js anciennement dataExport
-const webhookUrl = 'https://script.google.com/macros/s/AKfycbzIK5Nts-JZ5IM0dIGun266ZTm9Qr5QKQvtIEUs3jsMuTF11eJz2MRASgp2DZwlFIQ/exec';
+const webhookUrl = 'https://script.google.com/macros/s/AKfycbwzja5mD31qgIzcVkzKYJUfao5fpE0Kq74_BzXJspSY_XqI3zgv823McU3vt9fKofXV/exec';
 
 /**
  * Exporte un enregistrement complet (specs) vers Google Sheets
@@ -66,6 +66,34 @@ async function getMaxQuestions(senderId) {
   return data.value;
 }
 
+/**
+ * Vérifie dans Google Sheets si un senderId existe déjà
+ * @param {string} senderId
+ * @returns {boolean} true si trouvé, false sinon
+ */
+async function checkSenderInSheets(senderId) {
+    const url = `${webhookUrl}?action=checkSender&senderId=${encodeURIComponent(senderId)}`;
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (typeof data.exists === "boolean") {
+            if (data.exists) {
+                console.log(`[checkSenderInSheets] ✅ SenderId trouvé dans Google Sheets: ${senderId}`);
+            } else {
+                console.log(`[checkSenderInSheets] ❌ SenderId absent dans Google Sheets: ${senderId}`);
+            }
+            return data.exists; // true ou false
+        }
+
+        console.warn("[checkSenderInSheets] ⚠️ Réponse inattendue:", data);
+        return false;
+    } catch (err) {
+        console.error("[checkSenderInSheets] ❌ Erreur:", err);
+        return false;
+    }
+}
 
 
-module.exports = { exportToGoogleSheets, logQnA, getMaxQuestions };
+module.exports = { exportToGoogleSheets, logQnA, getMaxQuestions, checkSenderInSheets };

@@ -17,8 +17,6 @@ async function runDirector(context) {
 
     //pas prêt pour enclencher les prochaines étapes
     if (!isReady) {
-     //   console.log('[DIRECTOR] is not ready to continue')
-      //  logSessionState("[***DIRECTOR !isReady]", session);
         return false;
     }
     console.log(`[DIRECTOR] MODE MODE MODE MODE MODE MODE MODE = _${context.session.mode}_`);

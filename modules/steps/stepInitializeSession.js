@@ -1,5 +1,6 @@
 const { setProjectType, initializeSpecFields, detectLanguageFromText, getNextSpec, isText, isNumeric } = require('../utils');
 const { getSession, saveSession, resetSession, logSessionState } = require('../sessionStore');
+const { checkSenderInSheets } = require('../googleData')
 
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
@@ -17,7 +18,7 @@ async function stepInitializeSession(context) {
 
         session = resetSession(context);
       //  context.session = session;
-        context.session.mode = 'end session';
+     //   context.session.mode = 'end session';
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
         return false;
@@ -25,21 +26,43 @@ async function stepInitializeSession(context) {
 
     // Initialisation normale
     if (!context.session || context.session.senderId !== senderId) {
-        // Créer une nouvelle session pour l'utilisateur courant
-        session = getSession(senderId);
-        if (!session) {
-            session = resetSession(context);  // Créer une nouvelle session si elle n'existe pas
-            if (isText(message) && !isNumeric(message)) {
-                session.language = detectLanguageFromText(message);  // ✅ tentative de détection
-                }
-            if (!session.language) {
-                session.language = "fr";  // 🔒 fallback robuste si rien détecté
-               }
-               console.log(`[INIT] ***** Session re-créée, langue='${session.language}' pour '${message}'`);
-        }
-        context.session = session;
+                session = getSession(senderId);
+        
+                    // 🔍 Vérif Google Sheets : si le senderId n’existe pas → reset forcé
+                    const existsInSheets = await checkSenderInSheets(senderId);
+                if (!existsInSheets) {
+                        console.log(`[INIT] ❌ SenderId ${senderId} absent dans Sheets → reset forcé`);
+                        session = resetSession(context);
+                    }
+        
+                    if (!session) {
+                            session = resetSession(context);
+                            if (isText(message) && !isNumeric(message)) {
+                                    session.language = detectLanguageFromText(message);
+                                }
+                            if (!session.language) {
+                                    session.language = "fr";
+                                }
+                            console.log(`[INIT] ***** Session re-créée, langue='${session.language}' pour '${message}'`);
+                        }
+        
+                   context.session = session;
+                return true;
+        //// Créer une nouvelle session pour l'utilisateur courant
+        //session = getSession(senderId);
+        //if (!session) {
+        //    session = resetSession(context);  // Créer une nouvelle session si elle n'existe pas
+        //    if (isText(message) && !isNumeric(message)) {
+        //        session.language = detectLanguageFromText(message);  // ✅ tentative de détection
+        //        }
+        //    if (!session.language) {
+        //        session.language = "fr";  // 🔒 fallback robuste si rien détecté
+        //       }
+        //       console.log(`[INIT] ***** Session re-créée, langue='${session.language}' pour '${message}'`);
+        //}
+        //context.session = session;
 
-        return true;
+       // return true;
     } else {
         // Utiliser la session existante si elle correspond à l'utilisateur
         session = context.session;
