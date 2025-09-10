@@ -172,12 +172,12 @@ For example you may say:
 
 ,
 
-    firstName: {
-        fr: `Quelques informations seraient nécessaires avant de passer à vos questions, ceci nous permet:
+        firstName: {
+            fr: `Les questions qui suivent conernent vos coordonnées, ceci nous permet:
 
 📢 1 - De vous alerter lorsqu'une propriété rencontre vos besoins.  
 
-🏡 2 - De vous contacter lorsqu'une propriété est hors marché ou ailleurs que sur Centris par choix ou pour confidentialité.  
+🏡 2 - De vous contacter lorsqu'une propriété est hors marché ou ailleurs que sur Centris® par choix ou pour confidentialité.  
 
 🤝 3 - De vous joindre lorsque vous le demandez.  
 
@@ -186,35 +186,36 @@ For example you may say:
 📊 5 - De compiler des statistiques.
 
 
-*Vous n'êtes pas tenu de répondre aux questions*, toutefois sachez que *la qualité de votre expérience et la disponibilité des services
-de CasaNova est liée à l'exactitude de vos informations et la pertinence de vos propos*. Le choix de vos réponses ou de vos propos sont notés et parfois irréversibles, particulièrement
-si nous n'avons aucun moyen pour vous joindre.  Ceci constitue les *"termes d'utilisation"*.
+Petit rappel: 
+1 - *Vous n'êtes pas tenu de répondre aux questions*
+2 - *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)
 
-*Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)
+*Simplement répondre "X" (sans les guillemets) pour ne pas répondre plutôt que de donner une fausse information.*  
 
-*Ainsi, si vous ne désirez pas répondre à l'une des questions qui suit, simplement répondre "X" (sans les guillemets) en tenant compte de ce qui précède.*  
+Commençons la prise de vos coordonnées par *votre prénom* SVP ?`,
 
-Commençons par *votre prénom* SVP ?`,
-
-        en: `Before moving on to your questions, a few details are necessary. This allows us to:
+            en: `The following questions concern your contact details. This allows us to:
 
 📢 1 - Alert you when a property matches your needs.  
 
-🏡 2 - Contact you about off-market properties or listings not on Centris (by choice or for confidentiality).  
+🏡 2 - Contact you about off-market properties or listings not shown on Centris (by choice or for confidentiality).  
 
-🤝 3 - Reach out when you request it.  
+🤝 3 - Reach you when you request it.  
 
 ℹ️ 4 - Have a minimum of information when you decide to contact us.  
 
-📊 5 - Compile useful statistics.  
+📊 5 - Compile statistics.  
 
 
-You are not required to answer the questions, however please note that the quality of your experience and the availability of CasaNova’s services depend on the accuracy of your information and the relevance of your responses. The choice of your answers or comments is recorded and may sometimes be irreversible, particularly if we have no way to contact you. This constitutes the “terms of use”.
+Reminder:
+1 - *You are not required to answer these questions*
+2 - *Your information is confidential* (no advertising or sharing with third parties). [View our privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)
 
-Your information is confidential (no advertising or sharing with third parties). Consult our privacy policy https://christophe-marcellin.c21.ca/en/contact/#policy
+*Simply reply with "X" (without quotes) to skip a question rather than providing false information.*  
 
-Therefore, if you do not wish to answer one of the following questions, simply reply with "X" (without quotes), taking into account the above.`,
-    }
+Let’s start with your contact details — may I have your *first name* please?`,
+        }
+
 
 ,
 
@@ -224,10 +225,9 @@ Therefore, if you do not wish to answer one of the following questions, simply r
     },
 
     age: {
-        fr: `🎂 Quel âge avez-vous SVP ?  
-(chiffre seulement SVP)`,
-        en: `🎂 What is your age please?  
-(number only please)`,
+        fr: `🎂 Pour nos statistiques, votre année de naissance SVP ?  
+(chiffres seulement ex.: 84 pour 1984)`,
+        en: `🎂 For our statistics, may I have your year of birth please? (numbers only e.g.: 84 for 1984)`,
     },
 
     phone: {
@@ -236,8 +236,8 @@ Therefore, if you do not wish to answer one of the following questions, simply r
     },
 
     email: {
-        fr: `✉️ Quelle est votre adresse courriel ?`,
-        en: `✉️ What is your email address?`,
+        fr: `✉️ Quelle est votre adresse courriel SVP ?`,
+        en: `✉️ What is your email address please?`,
     },
 
     wantsContact: {
@@ -267,18 +267,6 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 }
 
 
-const PREAMBLE = {
-    fr: `Bonjour, je suis CasaNova, votre assistant en immobilier propulsé par l’IA'
-`
-,
-    en: `Hello, I’m CasaNova, your AI-powered real estate assistant.\n\n
-My interactive nature allows you to ask me questions, and for me to ask you some in return.\n\n
-Before we begin, please take note of the following:\n\n
-📜 1 - The "Terms of Use" of this service\n
-🔒 2 - Our "Privacy Policy"\n
-🛎️ 3 - Overview of my services\n\n
-`
-};
 
 // 🔹 ProjectType
 function getPromptForProjectType(lang = 'fr') {
@@ -288,7 +276,7 @@ function getPromptForProjectType(lang = 'fr') {
 1️⃣ Buying  
 2️⃣ Selling  
 3️⃣ Renting out  
-4️⃣ I have questions – Real Estate talk`
+4️⃣ Let's talk Real Estate`
             : `Pour bien vous assister, quel no. d'intention vous décrit le mieux :\n
 1️⃣ Acheter  
 2️⃣ Vendre  
@@ -321,10 +309,10 @@ function getPreamble(lang = 'fr')
 Ma nature interactive permet aux usagers de me poser des questions et moi d'en poser.
 Avant de poursuivre, il serait utile de prendre connaissance de ce qui suit:\n\n
 📜 1 - *Termes d’utilisation*\n
-Pour ignorer une question, on peut répondre par "X" (sans guillemets)
+Pour ignorer mes questions, on peut répondre par "X" (sans guillemets)
 Ne pas répondre à une question est encouragé plutôt que de fournir une fausse information. 
 *Toutefois, la qualité de cette expérience et mon niveau de service sont directement liés à l'exactitude des réponses fournies et à la pertinence des propos.*
-Répondre aux questions est optionnel mais les réponses revêtent un caractère permanent, surtout si on ne peut joindre l'usager.
+Répondre aux questions est optionnel mais les réponses enregistrées revêtent un caractère permanent, surtout si on ne peut joindre l'usager.
 Évidemment, ne pas répondre peut être justifié et n'entraîne pas automatiquement une baisse de service.\n\n
 🔒 2 - "Politique de confidentialité"\n
 *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n
@@ -337,22 +325,22 @@ Répondre aux questions est optionnel mais les réponses revêtent un caractère
 💬 *Vous donner une opinion éclairée*\n
 ⚖️ *Répondre à vos questions légales (Québec)*\n
 ℹ️ *Vous informer sur nos services*\n\n`
-   : `Hello, I’m CasaNova, your AI-powered real estate assistant.\n\n
-My interactive nature allows you to ask me questions, and for me to ask you some in return.\n\n
-Before we begin, please take note of the following:\n\n
-📜 1 - The "Terms of Use" of this service\n
-🔒 2 - Our "Privacy Policy"\n
-🛎️ 3 - Overview of my services\n\n
-*The quality of your experience and the availability of my services depend on the accuracy of your information and the relevance of your responses.* You are under no obligation to answer the questions I ask. However, please note that your answers or comments are recorded and may be permanent, especially if I have no way to contact you.\n\n
-Therefore, if you choose not to answer one of my questions during our exchange, simply reply with "X" (without quotes) while keeping the above in mind.\n
-Refusing to answer may be justified and does not automatically reduce the quality of my service. For example, not providing your address may limit what I can do, but not disclosing your age will have little consequence.\n\n
-🔒 2 - Our "Privacy Policy"\n
-*Your information is confidential* (no advertising or sharing with third parties).\n
+      : `Hello, I’m CasaNova, your AI real estate assistant.  
+My interactive nature allows users to ask me questions, and for me to ask questions in return.  
+Before we continue, please take note of the following:\n\n
 
+📜 1 - *Terms of Use*\n
+To skip any of my questions, you may reply with "X" (without quotes).  
+Not answering a question is preferable to providing false information.  
+*However, the quality of this experience and the level of service I can provide are directly linked to the accuracy of your answers and the relevance of your comments.*  
+Answering is optional, but your responses are recorded and may be permanent, especially if we have no way to contact you.  
+Of course, choosing not to answer may be justified and does not automatically reduce the level of service.\n\n
 
+🔒 2 - *Privacy Policy*\n
+*Your information is confidential* (no advertising or sharing with third parties). [View our privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)\n\n
 
 🛎️ 3 - Overview of my services\n
-*I can provide you with valuable services in the field of real estate in Québec, for example:*\n
+*I can provide you with valuable real estate services in Québec, for example:*\n
 📊 *Provide an estimate for a property in a neighborhood or at a specific address (our estimates are more accurate within our main territory)*\n
 🔢 *Perform a mortgage calculation*\n
 📢 *Create alerts that match your search criteria*\n
