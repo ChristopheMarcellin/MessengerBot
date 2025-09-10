@@ -44,6 +44,7 @@ async function stepWhatNext(context, spec, previousSpec) {
             context.session.mode = 'spec';
             return false;
         }
+        console.log(`[WHATNEXT DEBUG] projectType message="${questionText.replace(/\n/g, "\\n")}"`);
 
         await sendMessage(senderId, prefix + questionText, context.session);
         return true;
@@ -63,11 +64,15 @@ async function stepWhatNext(context, spec, previousSpec) {
         // ✅ marquer comme posée
         setAskedSpec(context.session, nextSpec, 'stepWhatNext for propertyUsage');
 
+        // 🔍 log avant envoi
+        console.log(`[WHATNEXT DEBUG] propertyUsage message="${questionText.replace(/\n/g, "\\n")}"`);
+
         // envoyer la question
         await sendMessage(senderId, prefix + questionText, context.session);
 
         return true;
     }
+
 
   //  setAskedSpec(context.session, nextSpec, 'stepWhatNext for all and any reg. specs');
 
