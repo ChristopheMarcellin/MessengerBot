@@ -293,7 +293,7 @@ function getPromptForProjectType(lang = 'fr') {
 1️⃣ Acheter  
 2️⃣ Vendre  
 3️⃣ Offrir en location  
-4️⃣ J'ai des questions, je veux parler d'immobilier`
+4️⃣ J'aimerais parler d'immobilier`
    ;
 }
 
@@ -317,19 +317,19 @@ function getPromptForPropertyUsage(lang = 'fr') {
 
 function getPreamble(lang = 'fr')
 {
-  return  lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier.\n\n
-Ma nature interactive permet aux usagers de me poser des questions et moi d'en poser.\n\n
-Avant de poursuivre, il est utile de prendre connaissance de ce qui suit  :\n\n
-
-📜 1 - *Termes d’utilisation*\n\n
-*La qualité de cette expérience et mon niveau de service sont directement liés à l'exactitude des réponses fournies et la pertinence des propos*. 
-Répondre aux questions est optionnel, toutefois les réponses revêtent un caractère permanent, surtout si on ne peut joindre l'usager.\n\n
-Ne pas répondre à une question est encouragé plutôt que de fournir une fausse information. Pour ignorer une question, répondre par "X" (sans guillemets) en tenant compte de ce qui précède.\n
-Ne pas répondre peut être justifié et n'entraîne pas automatiquement une baisse de service.\n\n
-🔒 2 - "Politique de confidentialité"\n\n
+  return  lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier.
+Ma nature interactive permet aux usagers de me poser des questions et moi d'en poser.
+Avant de poursuivre, il serait utile de prendre connaissance de ce qui suit:\n\n
+📜 1 - *Termes d’utilisation*\n
+Pour ignorer une question, on peut répondre par "X" (sans guillemets)
+Ne pas répondre à une question est encouragé plutôt que de fournir une fausse information. 
+*Toutefois, la qualité de cette expérience et mon niveau de service sont directement liés à l'exactitude des réponses fournies et à la pertinence des propos.*
+Répondre aux questions est optionnel mais les réponses revêtent un caractère permanent, surtout si on ne peut joindre l'usager.
+Évidemment, ne pas répondre peut être justifié et n'entraîne pas automatiquement une baisse de service.\n\n
+🔒 2 - "Politique de confidentialité"\n
 *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n
 
-🛎️ 3 - Aperçu de mes services\n\n
+🛎️ 3 - Aperçu de mes services\n
 *Je peux vous rendre de précieux services dans le domaine de l'immobilier au Québec, par exemple :*\n
 📊 *Vous fournir un estimé pour une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
 🔢 *Faire un calcul hypothécaire*\n
