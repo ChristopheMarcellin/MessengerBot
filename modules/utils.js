@@ -658,6 +658,9 @@ function getNextSpec(session) {
     const { projectType, specValues = {}, askedSpecs = {} } = session;
     const propertyUsage = specValues.propertyUsage;
 
+    // Bloc 0 : refus explicite
+    if (projectType === 'E' || propertyUsage === 'E') return null;
+
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
 
