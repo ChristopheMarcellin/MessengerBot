@@ -317,21 +317,19 @@ function getPromptForPropertyUsage(lang = 'fr') {
 
 function getPreamble(lang = 'fr')
 {
-  return  lang === 'fr' ? `Bonjour, je suis CasaNova, votre assistant en immobilier propulsé par l’IA.\n\n
-Ma nature interactive vous permet de me poser des questions et à moi de vous en poser.\n\n
-Ainsi je vous invite à prendre connaissance de ce qui suit avant de débuter notre échange :\n\n
-📜 1 - Les "Termes d’utilisation" de ce service\n
-🔒 2 - Notre "Politique de confidentialité"\n
+  return  lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier.\n\n
+Ma nature interactive permet aux usagers de me poser des questions et moi d'en poser.\n\n
+Avant de poursuivre, il est utile de prendre connaissance de ce qui suit  :\n\n
+
+📜 1 - *Termes d’utilisation*\n\n
+*La qualité de cette expérience et mon niveau de service sont directement liés à l'exactitude des réponses fournies et la pertinence des propos*. 
+Répondre aux questions est optionnel, toutefois les réponses revêtent un caractère permanent, surtout si on ne peut joindre l'usager.\n\n
+Ne pas répondre à une question est encouragé plutôt que de fournir une fausse information. Pour ignorer une question, répondre par "X" (sans guillemets) en tenant compte de ce qui précède.\n
+Ne pas répondre peut être justifié et n'entraîne pas automatiquement une baisse de service.\n\n
+🔒 2 - "Politique de confidentialité"\n\n
+*Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n
+
 🛎️ 3 - Aperçu de mes services\n\n
-
-
-*La qualité de votre expérience et la disponibilité de mes services est liée à l'exactitude de vos informations et à la pertinence de vos propos*. En aucun cas vous n'êtes tenu de répondre aux questions qui vous sont posées, toutefois sachez que le choix de vos réponses ou de vos propos sont enregistrés et ont une nature permanente, notamment si je n’ai aucun moyen de vous contacter.\n\n
-Ainsi, si vous choisissez de ne pas répondre à l'une de mes questions lors de notre échange, simplement répondre par "X" (sans les guillemets) en tenant compte de ce qui précède.\n
-Un refus de répondre peut être justifié et n’entraîne pas automatiquement une baisse de la qualité de mon service. Par exemple, ne pas fournir votre adresse peut limiter mes services, mais ne pas divulguer votre âge serait sans grande conséquence.\n\n
-🔒 2 - Notre "Politique de confidentialité"\n
-*Vos informations sont confidentielles* (aucune publicité ni partage à des tiers).\n
-
-🛎️ 3 - Aperçu de mes services\n
 *Je peux vous rendre de précieux services dans le domaine de l'immobilier au Québec, par exemple :*\n
 📊 *Vous fournir un estimé pour une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
 🔢 *Faire un calcul hypothécaire*\n
