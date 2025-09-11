@@ -4,9 +4,9 @@ const { stepWhatNext } = require('./stepWhatNext');
 const { saveSession } = require('../sessionStore');
 
 async function stepHandleProjectType(context) {
-    const isValid = await isValidAnswer(context, session.projectType, "projectType", session.language || "fr");
-    const { message, session } = context;
 
+    const { message, session } = context;
+    const isValid = await isValidAnswer(context, session.projectType, "projectType", session.language || "fr");
     // === Cas 1 : entrée utilisateur valide (1,2,3,4) ===
     if (isValid) {
         const interpreted = getProjectTypeFromNumber(message);
