@@ -7,7 +7,7 @@ async function stepInitializeSession(context) {
     const isEndSession = message.trim().toLowerCase() === 'end session';
     let session;
 
-    // Validate sender Id
+    // Validate sender Id (protection, unlikely to come through this if)
     if (typeof senderId !== 'string' || senderId.trim() === '') {
         console.warn('[INIT] senderId manquant → impossible de poursuivre.');
         return false;
@@ -17,8 +17,8 @@ async function stepInitializeSession(context) {
     if (isEndSession) {
 
         session = resetSession(context);
-        //  context.session = session;
-        context.session.mode = 'end session';
+        context.session = session;
+       // context.session.mode = 'end session';
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
         return false;
