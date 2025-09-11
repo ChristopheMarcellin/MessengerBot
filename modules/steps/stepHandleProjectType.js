@@ -1,5 +1,5 @@
-const { getProjectTypeFromNumber } = require('../specEngine');
-const {setProjectType, gptClassifyProject, setSpecValue, isValidAnswer } = require('../utils');
+const { isValidAnswer, getProjectTypeFromNumber } = require('../specEngine');
+const {setProjectType, gptClassifyProject, setSpecValue } = require('../utils');
 const { stepWhatNext } = require('./stepWhatNext');
 const { saveSession } = require('../sessionStore');
 
