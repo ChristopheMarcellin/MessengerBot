@@ -658,8 +658,20 @@ function getNextSpec(session) {
     const { projectType, specValues = {}, askedSpecs = {} } = session;
     const propertyUsage = specValues.propertyUsage;
 
-    // Bloc 0 : refus explicite
-    if (projectType === 'E' ) return null;
+
+    // Bloc 0 : pas de specs spécifiques quand projectType = E
+    if (projectType === 'E') {
+        // on saute direct au bloc génériques
+        const genericBlock = questions.generic;
+        if (genericBlock && typeof genericBlock === 'object') {
+            for (const field of Object.keys(genericBlock)) {
+                if (specValues[field] === '?' || specValues[field] === undefined || specValues[field] === null) {
+                    return field;
+                }
+            }
+        }
+        return null; // tout est rempli
+    }
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
