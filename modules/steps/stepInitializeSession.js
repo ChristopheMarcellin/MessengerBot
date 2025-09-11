@@ -29,10 +29,9 @@ async function stepInitializeSession(context) {
                 session = getSession(senderId);
         
                     // 🔍 Vérif Google Sheets : si le senderId n’existe pas → reset forcé
-                    const existsInSheets = await checkSenderInSheets(senderId);
+                const existsInSheets = await checkSenderInSheets(senderId);
                 if (!existsInSheets) {
-                        console.log(`[INIT] ❌ SenderId ${senderId} absent dans Sheets → reset forcé`);
-                        session = resetSession(context);
+                       session = resetSession(context);
                     }
         
                     if (!session) {

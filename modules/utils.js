@@ -659,7 +659,7 @@ function getNextSpec(session) {
     const propertyUsage = specValues.propertyUsage;
 
     // Bloc 0 : refus explicite
-    if (projectType === 'E' || propertyUsage === 'E') return null;
+    if (projectType === 'E' ) return null;
 
     // Bloc 1 : spec manquantes de base
     if (projectType === '?') return 'projectType';
@@ -689,10 +689,10 @@ function getNextSpec(session) {
         for (const field of Object.keys(genericBlock)) {
 
             // 🆕 Si projectType = E, on saute expectations et propertyUsage
-            if (projectType === 'E' && (field === 'expectations' || field === 'propertyUsage')) {
-                console.log(`[getNextSpec] projectType = E → question générique "${field}" ignorée.`);
-                continue;
-            }
+            //if (projectType === 'E' && (field === 'expectations' || field === 'propertyUsage')) {
+            //    console.log(`[getNextSpec] projectType = E → question générique "${field}" ignorée.`);
+            //    continue;
+            //}
 
             if (specValues[field] === '?' ||specValues[field] === undefined || specValues[field] === null) {
                 return field;
