@@ -17,8 +17,8 @@ async function stepInitializeSession(context) {
     if (isEndSession) {
 
         session = resetSession(context);
-      //  context.session = session;
-     //   context.session.mode = 'end session';
+        //  context.session = session;
+        context.session.mode = 'end session';
         // DEBUG VERROU
         console.log('[INIT end session] Session explicitement remise à null.');
         return false;
@@ -26,44 +26,21 @@ async function stepInitializeSession(context) {
 
     // Initialisation normale
     if (!context.session || context.session.senderId !== senderId) {
-                session = getSession(senderId);
-        
-                    // 🔍 Vérif Google Sheets : si le senderId n’existe pas → reset forcé
-                const existsInSheets = await checkSenderInSheets(senderId);
-        if (!existsInSheets) {
-            session = resetSession(context);
-            context.session = session;
-            return true;
+        // Créer une nouvelle session pour l'utilisateur courant
+        session = getSession(senderId);
+        if (!session) {
+            session = resetSession(context);  // Créer une nouvelle session si elle n'existe pas
+            if (isText(message) && !isNumeric(message)) {
+                session.language = detectLanguageFromText(message);  // ✅ tentative de détection
+            }
+            if (!session.language) {
+                session.language = "fr";  // 🔒 fallback robuste si rien détecté
+            }
+            console.log(`[INIT] ***** Session re-créée, langue='${session.language}' pour '${message}'`);
         }
-        
-                    if (!session) {
-                            session = resetSession(context);
-                            if (isText(message) && !isNumeric(message)) {
-                                    session.language = detectLanguageFromText(message);
-                                }
-                            if (!session.language) {
-                                    session.language = "fr";
-                                }
-                            console.log(`[INIT] ***** Session re-créée, langue='${session.language}' pour '${message}'`);
-                        }
-        
-                   context.session = session;
-                return true;
-        //// Créer une nouvelle session pour l'utilisateur courant
-        //session = getSession(senderId);
-        //if (!session) {
-        //    session = resetSession(context);  // Créer une nouvelle session si elle n'existe pas
-        //    if (isText(message) && !isNumeric(message)) {
-        //        session.language = detectLanguageFromText(message);  // ✅ tentative de détection
-        //        }
-        //    if (!session.language) {
-        //        session.language = "fr";  // 🔒 fallback robuste si rien détecté
-        //       }
-        //       console.log(`[INIT] ***** Session re-créée, langue='${session.language}' pour '${message}'`);
-        //}
-        //context.session = session;
+        context.session = session;
 
-       // return true;
+        return true;
     } else {
         // Utiliser la session existante si elle correspond à l'utilisateur
         session = context.session;
@@ -81,7 +58,7 @@ async function stepInitializeSession(context) {
 
     // ✅ Si déjà initialisée, rien à faire
     if (session.specValues && session.askedSpecs) {
-     //   logSessionState("***[INIT session déjà initialisée]", session);
+        //   logSessionState("***[INIT session déjà initialisée]", session);
         //    console.log('[INIT] Session déjà initialisée → aucune action requise');
         console.log(`[INIT] *** Session re-créée car manquante langue détectée:'${session.language}' pour '${message}'`);
         return true;
@@ -91,3 +68,5 @@ async function stepInitializeSession(context) {
 }
 
 module.exports = { stepInitializeSession };
+
+
