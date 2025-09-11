@@ -44,11 +44,11 @@ async function stepHandleProjectType(context) {
         if (alreadyAsked && current === "?") {
             setProjectType(session, "E", "GPT → refus après 2 échecs");
             setSpecValue(session, "propertyUsage", "E", "lié à projectType=E (2 échecs GPT)");
-        //    console.log(`[DIRECTOR !isValidGPT] projectType et propertyUsage passés à "E" après deux tentatives floues`);
+           console.log(`[xxxxxx DIRECTOR !isValidGPT] projectType et propertyUsage passés à "E" après deux tentatives floues`);
         } else {
             setProjectType(session, "?", "GPT → invalide");
             setSpecValue(session, "propertyUsage", "?", "lié à projectType=? (GPT invalide)");
-         //   console.log(`[stepHandleProjectType] projectType invalide → reste à "?"`);
+            console.log(`[xxxxxx stepHandleProjectType] projectType invalide → reste à "?"`);
         }
     }
     saveSession(context);

@@ -22,7 +22,10 @@ const projectTypeMap = {
     "2": "S",
     "3": "R",
     "4": "E", // projet autre
+    "x": "E", // projet autre
+    "X": "E", // projet autre
     "5": "?"  // réponse incomprise
+
 };
 
 function getProjectTypeFromNumber(input) {
