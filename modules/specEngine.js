@@ -189,6 +189,7 @@ const resetInvalidSpecs = (session) => {
 
 
 async function isValidAnswer(context, projectType, field, lang = "fr") {
+    console.log(`[isValidAnswer] input="${context.message}" (type=${typeof context.message}), field=${field}, projectType=${projectType}`);
 
     const message = context.message;
     if (typeof message !== 'string') return false;
