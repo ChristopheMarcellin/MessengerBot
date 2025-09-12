@@ -6,16 +6,18 @@ module.exports = {
 
     propertyUsage: {
         fr: {
-            unifamiliale: "Unifamiliale (usage personnel)",
-            condo: "Condo (usage personnel)",
-            logement: "Logement (usage personnel)",
-            multiplex: "Multiplex (propriété à revenus)"
+            0: "Aucun type de propriété recherché",
+            1: "Unifamiliale",
+            2: "Condo (usage personnel)",
+            3: "Logement (usage personnel)",
+            4: "Multiplex (propriété à revenus)"
         },
         en: {
-            unifamiliale: "Single-family home (personal use)",
-            condo: "Condo (personal use)",
-            logement: "Apartment (personal use)",
-            multiplex: "Multiplex (income property)"
+            0: "Not searching for any property type",
+            1: "Single-family home (personal use)",
+            2: "Condo (personal use)",
+            3: "Apartment (personal use)",
+            4: "Multiplex (income property)"
         }
     },
 

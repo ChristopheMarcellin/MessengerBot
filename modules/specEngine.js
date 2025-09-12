@@ -137,27 +137,25 @@ function getDisplayValue(field, value, lang = "fr") {
     const map = displayMap[field]?.[lang];
     return map?.[value] ?? value;
 }
-
 function buildSpecSummary(session, lang = "fr") {
     const fields = session.specValues;
-  //  console.log("CM on entre dans specSummary");
+    //  console.log("CM on entre dans specSummary");
 
     const summaryHeader = lang === "fr"
         ? `Voici un récapitulatif, vous pouvez adresser vos questions par la suite:\n\n`
         : `Here's a short summary of the information provided, you may ask your questions next:\n\n`;
 
-    const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
-    const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);
+    let summary = `${summaryHeader}`;
 
-    let summary = `${summaryHeader}${translatedProjectType}\n`;
-
-    if (fields.propertyUsage && fields.propertyUsage !== "?" && fields.propertyUsage !== "E") {
-        summary += `${translatedPropertyUsage}\n`;
+    // Toujours afficher le type de projet (projectType), sauf si "?", "E" ou "0"
+    if (session.projectType && !["?", "E", "0"].includes(session.projectType)) {
+        const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
+        summary += `${translatedProjectType}\n`;
     }
 
+    // Afficher propertyUsage et toutes les autres specs, sauf si "?", "E" ou "0"
     for (const key in fields) {
-        if (key === "propertyUsage") continue;
-        if (fields[key] === "?" || fields[key] === "E") continue; // ⬅️ on saute les ? et E
+        if (!fields[key] || ["?", "E", "0"].includes(fields[key])) continue;
         const display = getDisplayValue(key, fields[key], lang);
         summary += `${display}\n\n`;
     }
@@ -176,6 +174,47 @@ function buildSpecSummary(session, lang = "fr") {
 
     return summary;
 }
+
+
+//version précédente (original)
+//function buildSpecSummary(session, lang = "fr") {
+//    const fields = session.specValues;
+//  //  console.log("CM on entre dans specSummary");
+
+//    const summaryHeader = lang === "fr"
+//        ? `Voici un récapitulatif, vous pouvez adresser vos questions par la suite:\n\n`
+//        : `Here's a short summary of the information provided, you may ask your questions next:\n\n`;
+
+//    const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
+//    const translatedPropertyUsage = getDisplayValue("propertyUsage", fields.propertyUsage, lang);
+
+//    let summary = `${summaryHeader}${translatedProjectType}\n`;
+
+//    if (fields.propertyUsage && fields.propertyUsage !== "?" && fields.propertyUsage !== "E") {
+//        summary += `${translatedPropertyUsage}\n`;
+//    }
+
+//    for (const key in fields) {
+//        if (key === "propertyUsage") continue;
+//        if (fields[key] === "?" || fields[key] === "E") continue; // ⬅️ on saute les ? et E
+//        const display = getDisplayValue(key, fields[key], lang);
+//        summary += `${display}\n\n`;
+//    }
+
+//    const footer = lang === "fr"
+//        ? `Merci, je suis prêt à répondre à vos questions en matière d'immobilier.\n\n` +
+//        `Mes réponses sont à titre de référence seulement et peuvent contenir des erreurs.\n` +
+//        `Mieux vaut toujours valider avec un professionnel qualifié de l'immobilier de notre équipe.\n\n` +
+//        `Plus votre question est précise, plus ma réponse le sera, espérant vous donner satisfaction !`
+//        : `Thank you, I am ready to answer your real estate questions.\n\n` +
+//        `My answers are for reference purposes only and may contain errors.\n` +
+//        `It is always better to confirm with a qualified real estate professional from our team.\n\n` +
+//        `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction!`;
+
+//    summary += `\n${footer}`;
+
+//    return summary;
+//}
 
 
 
@@ -271,8 +310,16 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
         return true;
     }
 
-    // 🎯 9. fallback via displayMap
-    const language = ["B", "S", "R"].includes(projectType) ? "fr" : "en";
+    // 🎯 9. propertyUsage : valeurs brutes 1–4
+    if (field === "propertyUsage") {
+        const validValues = ["0","1", "2", "3", "4"];
+        const isValid = validValues.includes(input);
+        return isValid;
+    }
+
+
+    // 🎯 10. fallback via displayMap
+    const language = ["B", "S", "R","E"].includes(projectType) ? "fr" : "en";
     const map = displayMap?.[field]?.[language];
     const isValid = map ? Object.keys(map).includes(input) : true;
    // console.log(`[spec Engine] validating field=_${field} | input="${input}" | valid=_${isValid}_ (via displayMap fallback)`);
