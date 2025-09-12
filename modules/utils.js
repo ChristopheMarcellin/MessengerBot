@@ -809,7 +809,7 @@ function setProjectType(session, interpreted, caller = 'unknown') {
     session.projectType = interpreted;
 
     // ✅ Initialisation des specs uniquement si changement de ? → B/S/R
-    if ((old === undefined || old === "?") && ["B", "S", "R"].includes(value)) {
+    if ((old === undefined || old === "?") && ["B", "S", "R"].includes(interpreted)) {
 
         initializeSpecFields(session, interpreted);
     }
