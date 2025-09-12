@@ -817,6 +817,7 @@ function setProjectType(session, value, caller = 'unknown') {
 }
 
 function setSpecValue(session, key, value, caller = "unspecified") {
+    console.log(`[xxxxx Utils setSpecValue] key="${key}" | value="${value}" | caller="${caller}"`);
     if (!session.specValues) session.specValues = {};
 
     const all = Object.entries(session.specValues)
