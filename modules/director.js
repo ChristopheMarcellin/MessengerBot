@@ -11,6 +11,13 @@ const { logQnA } = require('./googleData');
 async function runDirector(context) {
     const { message, senderId } = context;
 
+    //interception des refus  signifiés par le message: X
+    if (typeof message === "string" && message.trim().toUpperCase() === "X") {
+       // console.log(`[DIRECTOR] Conversion spéciale: "${message}" → "0"`);
+        message = "0";
+        context.message = "0";
+    }
+
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
     const session = context.session;
@@ -19,7 +26,15 @@ async function runDirector(context) {
     if (!isReady) {
         return false;
     }
+
+    //troubleshooter
     console.log(`[DIRECTOR] MODE MODE MODE MODE MODE MODE MODE = _${context.session.mode}_`);
+    console.log("[XXXXXXXXXXXXXXX DIRECTOR SESSION DEBUG]");
+    for (const key in session) {
+        if (Object.prototype.hasOwnProperty.call(session, key)) {
+            console.log(`  ${key}: ${JSON.stringify(session[key])}`);
+        }
+    }
     // ...dans runDirector, après init session et avant traitement :
     if (session.mode !== 'spec') {
         await logQnA(senderId, message, "Q", session);

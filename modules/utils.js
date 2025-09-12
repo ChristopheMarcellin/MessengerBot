@@ -582,8 +582,22 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
 //gpt classifies project
 async function gptClassifyProject(message, language = "fr") {
     const prompt = language === "fr"
-        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :\n1 → acheter\n2 → vendre\n3 → louer\n4 → autre (ex: question générale sur l'immobilier)\n5 → incompréhensible ou message sans intention (ex: "bonjour")\nRéponds uniquement par un chiffre.`
-        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:\n1 → buy\n2 → sell\n3 → rent\n4 → other (e.g. general real estate question)\n5 → unclear or no intent (e.g. "hi")\nReply with a single number only.`;
+        ? `Tu es un assistant immobilier. L'utilisateur a dit : "${message}". Classe cette réponse dans l'une de ces catégories :
+0 → refus explicite
+1 → acheter
+2 → vendre
+3 → louer
+4 → autre (ex: question générale sur l'immobilier)
+5 → incompréhensible ou message sans intention (ex: "bonjour")
+Réponds uniquement par un chiffre.`
+        : `You are a real estate assistant. The user said: "${message}". Classify the intent into one of the following:
+0 → explicit refusal
+1 → buy
+2 → sell
+3 → rent
+4 → other (e.g. general real estate question)
+5 → unclear or no intent (e.g. "hi")
+Reply with a single number only.`;
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -599,8 +613,8 @@ async function gptClassifyProject(message, language = "fr") {
         });
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const classification = raw?.match(/^[1-5]/)?.[0] || "5"; // Sécurité si retour non numérique
-        const output = classification; // On garde tel quel maintenant que 5 est prévu
+        const classification = raw?.match(/^[0-5]/)?.[0] || "5"; // Sécurité si retour non numérique
+        const output = classification;
 
         console.log(`[gptClassifyProject] GPT = "${classification}" → retour final: "${output}"`);
         return output;
@@ -610,6 +624,7 @@ async function gptClassifyProject(message, language = "fr") {
         return "?";
     }
 }
+
 
 function isText(input) {
     if (typeof input !== 'string') return false;

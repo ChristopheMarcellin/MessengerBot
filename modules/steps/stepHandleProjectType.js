@@ -6,12 +6,13 @@ const { saveSession } = require('../sessionStore');
 async function stepHandleProjectType(context) {
 
     const { message, session } = context;
+
     const isValid = await isValidAnswer(context, session.projectType, "projectType", session.language || "fr");
     // === Cas 1 : entrée utilisateur valide (1,2,3,4) ===
     if (isValid) {
         const interpreted = getProjectTypeFromNumber(message);
         setProjectType(session, interpreted, "user input");
-        console.log(`[XXXXXXXXXXXXXXXX CAS 1 interpreted = "${interpreted}"`);
+        console.log(`[XXXXXXXprojectType CAS 1 interpreted = "${interpreted}"`);
         if (interpreted === "E") {
             setSpecValue(session, "propertyUsage", "E", "lié à projectType=E (user input)");
         }
@@ -28,7 +29,7 @@ async function stepHandleProjectType(context) {
     const current = session.projectType;
     const alreadyAsked = session.askedSpecs.projectType === true;
 
-    console.log(`XXXXXXXXXXXXXXXX CAS 2 interpreted = "${classification}" interpreted = "${interpreted}"`);
+    console.log(`XXXXXXXprojectType CAS 2 interpreted = "${classification}" interpreted = "${interpreted}"`);
 
     if (isValidGPT) {
         setProjectType(session, interpreted, "interprétation par gpt");

@@ -18,12 +18,11 @@ function getPromptForSpec(projectType, specKey, lang = "en") {
 }
 
 const projectTypeMap = {
+    "0": "E",
     "1": "B",
     "2": "S",
     "3": "R",
     "4": "E", // projet autre
-    "x": "E", // projet autre
-    "X": "E", // projet autre
     "5": "?"  // réponse incomprise
 
 };
@@ -202,8 +201,7 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
     const input = message.trim();
 
     // 🎯 -1. Cas spécial : refus explicite (E interne, X alias externe)
-    if (input.toUpperCase() === "E" || input.toUpperCase() === "X") {
-        context.message = "E"; // uniformiser en "E"
+    if (input === "0") {
         return true;
     }
 
@@ -224,14 +222,14 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
     if (field === "projectType") {
 
         if (isNumeric(input)) {
-            const isValid = ["1", "2", "3", "4"].includes(input);
+            const isValid = ["0","1", "2", "3", "4"].includes(input);
         //    console.log(`[spec Engine] validating field=projectType | input=__${input}_ | valid=_${isValid}_`);
             return isValid;
 
         }
         else {
             const decoded = await gptClassifyNumericSpecAnswer(input, lang);
-            const isValid = ["1", "2", "3", "4"].includes(decoded);
+            const isValid = ["0", "1", "2", "3", "4"].includes(decoded);
           //  console.log(`[spec Engine] validating field=__${field}_ | input=__${input}_ | decoded=${decoded} | valid=${isValid}`);
             return isValid;
         }
