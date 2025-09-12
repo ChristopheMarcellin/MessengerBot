@@ -783,18 +783,18 @@ function initializeSpecFields(session, projectType) {
     console.log(`[UTILS initialize] Champs de spec initialisés pour project Type ${projectType}: ${list.join(', ')}`);
 }
 
-function setProjectType(session, value, caller = 'unknown') {
+function setProjectType(session, interpreted, caller = 'unknown') {
     //traceCaller('setProjectType');
 
     const old = session.projectType;
 
     // 🚫 Règle fusionnée : aucune modification si écrasement par "?" ou si redondant
     if (["B", "S", "R", "E"].includes(old)) {
-        if (value === "?") {
+        if (interpreted === "?") {
             console.warn(`[UTILS setProjectType] Caller = "${caller}" Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
             return;
         }
-        if (old === value) {
+        if (old === interpreted) {
            // console.log(`[UTILS setProjectType] Caller = "${caller}", projectType déjà égal à "${value}" — aucune modification`);
             return;
         }
@@ -806,12 +806,12 @@ function setProjectType(session, value, caller = 'unknown') {
 
     // ✅ Mise à jour
     //console.log(`[UTILS setProjectType] Caller ="${caller}",  la valeur qui sera affectée à session.projectType = "${value}"`);
-    session.projectType = value;
+    session.projectType = interpreted;
 
     // ✅ Initialisation des specs uniquement si changement de ? → B/S/R
     if ((old === undefined || old === "?") && ["B", "S", "R"].includes(value)) {
 
-        initializeSpecFields(session, value);
+        initializeSpecFields(session, interpreted);
     }
  //   console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
@@ -834,6 +834,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
+        console.log(`[UTILS track] valeur de spec non enregistrée pcq même que valeur précédente"${key}")`;
         return;
     }
 
@@ -848,13 +849,13 @@ function setSpecValue(session, key, value, caller = "unspecified") {
         }
 
         if (!["0", "1", "2", "3", "4", "E"].includes(value)) {
-            console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}"`);
+            console.warn(`[utilsTRACK] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}"`);
             return;
         }
 
         // 👉 On stocke la valeur brute (numérique ou E)
         session.specValues[key] = value;
-
+        console.log(`[utilsTRACK] propertyUsage value after setSpecValue: "${session.propertyUsage}"`);
         setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
         return;
     }
