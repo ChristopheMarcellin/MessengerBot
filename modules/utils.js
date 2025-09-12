@@ -837,6 +837,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
         return;
     }
 
+
     // 🔁 Traitement spécial pour propertyUsage
     if (key === "propertyUsage") {
         if (value === "?") {

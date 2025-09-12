@@ -6,7 +6,7 @@ const { saveSession } = require('../sessionStore');
 async function stepHandleProjectType(context) {
 
     const { message, session } = context;
-
+    console.log(`[TRAP] stepHandleProjectType appelé | message="${context.message}" | currentSpec="${context.session.currentSpec}"`);
     const isValid = await isValidAnswer(context, session.projectType, "projectType", session.language || "fr");
     // === Cas 1 : entrée utilisateur valide (1,2,3,4) ===
     if (isValid) {
