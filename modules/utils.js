@@ -791,7 +791,7 @@ function setProjectType(session, interpreted, caller = 'unknown') {
     // 🚫 Règle fusionnée : aucune modification si écrasement par "?" ou si redondant
     if (["B", "S", "R", "E"].includes(old)) {
         if (interpreted === "?") {
-            console.warn(`[UTILS setProjectType] Caller = "${caller}" Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
+            console.warn(`[xxxxUTILS setProjectType] Caller = "${caller}" Tentative d'écrasement de projectType "${old}" par "?" — bloqué`);
             return;
         }
         if (old === interpreted) {
@@ -828,13 +828,13 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     // 🚫 Ne pas écraser une vraie valeur par "?" (ex: 3 → ?)
     if (old && old !== "?" && old !== "E" && value === "?") {
-        console.warn(`[UTILS] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué, caller ="${caller}"`);
+        console.warn(`[xxxxxUTILS] Tentative d'écrasement de "${key}"="${old}" par "?" — bloqué, caller ="${caller}"`);
         return;
     }
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
-        console.log(`[UTILS track] valeur de spec non enregistrée pcq même que valeur précédente"${key}")`;
+        console.log(`[xxxxUTILS track] valeur de spec non enregistrée pcq même que valeur précédente"${key}")`;
         return;
     }
 
@@ -843,7 +843,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
     if (key === "propertyUsage") {
         if (value === "?") {
             session.specValues[key] = "?";
-            console.log(`[utilsTRACK] propriété "propertyUsage" initialisée à "?" | caller ="${caller}"`);
+            console.log(`[xxxxutilsTRACK] propriété "propertyUsage" initialisée à "?" | caller ="${caller}"`);
             setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
             return;
         }
@@ -855,7 +855,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
         // 👉 On stocke la valeur brute (numérique ou E)
         session.specValues[key] = value;
-        console.log(`[utilsTRACK] propertyUsage value after setSpecValue: "${session.propertyUsage}"`);
+        console.log(`[xxxxutilsTRACK] propertyUsage value after setSpecValue: "${session.propertyUsage}"`);
         setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
         return;
     }
