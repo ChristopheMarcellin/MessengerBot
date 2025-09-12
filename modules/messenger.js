@@ -3,7 +3,8 @@ const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 const { logQnA } = require('./googleData'); 
 
 async function sendMessage(senderId, text, session) {
-    console.log(`[SEND] To: ${senderId} | Message: ${text}`);
+ //   console.log(`[SEND] To: ${senderId} | Message: ${text}`);
+    console.log(`[SEND] To: ${senderId} | Message: ${text.substring(0, 20)}`);
 
     if (typeof text === 'string' && text.trim() === '4') {
         // console.warn(`[ALERTE TRACE] >>> Le bot s’apprête à ENVOYER "4" vers ${senderId}`);

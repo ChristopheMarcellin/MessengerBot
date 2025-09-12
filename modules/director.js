@@ -46,8 +46,8 @@ async function runDirector(context) {
     if (spec === 'none') {
         console.log("toutes les specs ont déjà été traitées");
         context.session.mode = 'chat'
-        console.log("session.language " + session.language);
-        console.log("context.language " + context.language);
+     //   console.log("session.language " + session.language);
+     //   console.log("context.language " + context.language);
         await chatOnly(senderId, message, session);
         return true;
     }
@@ -61,7 +61,7 @@ async function runDirector(context) {
     if (spec !== null) {
 
         const isValid = await isValidAnswer(context, session.projectType, spec, session.language || "fr");
-    //   console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${spec}"_ = _"${context.message}"_`);
+       console.log(`[DIRECTOR] Réponse jugée _${isValid ? "valide" : "invalide"} _ pour _"${spec}"_ = _"${context.message}"_`);
 
         // 🔄 Traitement simple (sans appel de stepWhatNext ici)
         await stepHandleSpecAnswer(context, spec, isValid);
@@ -75,9 +75,9 @@ async function runDirector(context) {
     //SOMMAIRE
     if ((nextSpec === null || nextSpec === "none") && ["B", "S", "R", "E"].includes(session.projectType)) {
         if (session.mode !== "chat") {
-      //      console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
-            console.log("session.language b4 summary" + session.language);
-            console.log("context.language b4 summary" + context.language);
+            console.log("[DIRECTOR] ✅ Toutes les specs sont complètes → on envoie le résumé");
+         //   console.log("session.language b4 summary" + session.language);
+          //  console.log("context.language b4 summary" + context.language);
             await stepSummarizeAndConfirm(context);
             session.mode = "chat";
             return true;
@@ -88,8 +88,8 @@ async function runDirector(context) {
         await chatOnly(senderId, message, session);
         return true;
     }
-    console.log("session.language whatNext call " + session.language);
-    console.log("context.language whatNext call " + context.language);
+ //   console.log("session.language whatNext call " + session.language);
+  //  console.log("context.language whatNext call " + context.language);
     // 👉 Sinon, poser la prochaine question
     await stepWhatNext(context, nextSpec, spec);
     return true;

@@ -840,18 +840,19 @@ function setSpecValue(session, key, value, caller = "unspecified") {
     if (key === "propertyUsage") {
         if (value === "?") {
             session.specValues[key] = "?";
-            console.trace(`[utilsTRACK] propriété "propertyUsage" initialisée à "?" | caller ="${caller}"`);
+            console.log(`[utilsTRACK] propriété "propertyUsage" initialisée à "?" | caller ="${caller}"`);
             setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
             return;
         }
 
-        if (!["1", "2", "3", "4", "E"].includes(value)) {
+        if (!["0", "1", "2", "3", "4", "E"].includes(value)) {
             console.warn(`[UTILS] Valeur invalide pour propertyUsage : "${value}" → ignorée , caller ="${caller}"`);
             return;
         }
 
         let usage;
         switch (value) {
+            case "0": usage = "Non précisé"; break;
             case "1": usage = "Unifamiliale"; break;
             case "2": usage = "Condo"; break;
             case "3": usage = "Logement"; break;
@@ -909,7 +910,7 @@ function setAskedSpec(session, specKey, source = "manual") {
       // console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
     }
     session.askedSpecs[specKey] = true;
-    console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
+ //   console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
 }
 
 module.exports = {
