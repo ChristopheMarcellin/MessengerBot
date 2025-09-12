@@ -859,11 +859,6 @@ function setSpecValue(session, key, value, caller = "unspecified") {
     }
 
 
-        session.specValues[key] = usage;
-        setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
-        return;
-    }
-
     // ✅ Mise à jour standard
     session.specValues[key] = value;
     setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
