@@ -851,15 +851,13 @@ function setSpecValue(session, key, value, caller = "unspecified") {
             return;
         }
 
-        let usage;
-        switch (value) {
-            case "0": usage = "Non précisé"; break;
-            case "1": usage = "Unifamiliale"; break;
-            case "2": usage = "Condo"; break;
-            case "3": usage = "Logement"; break;
-            case "4": usage = "Multiplex"; break;
-            case "E": usage = "E"; break;
-        }
+        // 👉 On stocke la valeur brute (numérique ou E)
+        session.specValues[key] = value;
+
+        setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
+        return;
+    }
+
 
         session.specValues[key] = usage;
         setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
