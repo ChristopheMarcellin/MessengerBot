@@ -834,7 +834,8 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
     // 🚫 Éviter la réécriture identique
     if (old === value) {
-        console.log(`[xxxxUTILS track] valeur de spec non enregistrée pcq même que valeur précédente"${key}")`;
+        console.log(`[xxxxUTILS track] valeur de spec non enregistrée pcq même que valeur précédente "${key}"`);
+
         return;
     }
 
