@@ -856,7 +856,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
         }
 
         // 👉 On stocke la valeur brute (numérique ou E)
-        session.specValues[key] = value;
+        session.propertyUsage = value;
         session.specValues[key] = value;//maintenu à 2 endroits pcq chatGPT est un imbécile, synonyme de la ligne précédente
         console.log(`[xxxxutilsTRACK] propertyUsage value after setSpecValue: "${session.propertyUsage}"`);
         setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
