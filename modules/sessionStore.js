@@ -38,7 +38,7 @@ function resetSession(context) {
         senderId: context.senderId,
         language: "fr",
 	    termsShown: false,
-        projectType: "",
+        projectType: "?",
         propertyUsage: "",
         specValues: {},
         askedSpecs: {},
