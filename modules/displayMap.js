@@ -89,12 +89,12 @@ module.exports = {
     fr: {
         1: "Suivi demandé: oui",
         2: "Suivi demandé: non",
-	3: "Alertes seulement"
+	    3: "Alertes Web seulement"
     },
     en: {
         1: "Requested follow-up: yes",
         2: "Requested follow-up: no",
-	3: "Alerts only"
+	    3: "Web Alerts only"
     }
 }
 

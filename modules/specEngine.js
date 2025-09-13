@@ -276,7 +276,7 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
 
     // 🎯 3. wantsContact : réponse 1 ou 2
     if (field === "wantsContact") {
-        const validValues = ["1", "2"];
+        const validValues = ["1", "2", "3"];
         const isValid = validValues.includes(input);
         return isValid;
     }

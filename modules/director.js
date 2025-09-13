@@ -70,6 +70,8 @@ async function runDirector(context) {
 
     // 🔁 ON DÉTERMINE LA PROCHAINE SPÉCIFICATION À TRAITER ET ENVOYONS LE MESSAGE APPROPRIÉ À L'USAGER
     const nextSpec = getNextSpec(session);
+
+
  //   console.log(`[DIRECTOR] NextSpec recalculée = _${nextSpec}_`);
 
 

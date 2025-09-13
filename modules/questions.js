@@ -4,18 +4,18 @@ const questions = {
         price: {
             en: `💰 Do you have a budget in mind ? 
 
-Say: 
+You may say: 
 
-350 (for 350 000), 
-600 (for 600 000) or 
-1200 (for 1 200 000) etc.`,
+350 (for $350 000), 
+600 (for $600 000) or 
+1200 (for $1 200 000) etc.`,
             fr: `💰 Avez-vous un budget en tête ? 
 
-Dites: 
+Vous pouvez dire: 
 
-350 (pour 350 000), 
-600 (pour 600 000) ou 
-1200 (pour 1 200 000) etc.`,
+350 (pour $350 000), 
+600 (pour $600 000) ou 
+1200 (pour $1 200 000) etc.`,
         },
 
         bedrooms: {
@@ -54,10 +54,11 @@ Dites:
     S: {
         price: {
             en: `💰 Do you have an approximate selling price in mind? 
+You may say:
 
-(say 350 for 350 000, 
-600 for 600 000 or 
-1200 for 1 200 000)`,
+(350 for $350 000, 
+600 for $600 000 or 
+1200 for $1 200 000)`,
             fr: `💰 Avez-vous un prix de vente approximatif en tête ? 
 
 (dites 350 pour 350 000, 
@@ -100,11 +101,11 @@ Dites:
     R: {
         price: {
             en: `💰 What rental price target do you have in mind? 
-
-(enter 2000 for 2000/month)?`,
+You may say:
+(2000 for 2000/month)?`,
             fr: `💰 Quel montant avez vous en tête? 
-
-(entrer 2000 pour 2000/mois) ?`,
+Vous pouvez dire:
+(2000 pour 2000/mois) ?`,
         },
 
         bedrooms: {
@@ -173,9 +174,9 @@ For example you may say:
 ,
 
         firstName: {
-            fr: `Les questions qui suivent conernent vos coordonnées, ceci nous permet:
+            fr: `Les questions qui suivent concernent vos coordonnées, ceci nous permet:
 
-📢 1 - De vous alerter lorsqu'une propriété rencontre vos besoins.  
+📢 1 - De vous offrir une page Web qui vous alerte lorsqu'une propriété rencontre vos besoins.  
 
 🏡 2 - De vous contacter lorsqu'une propriété est hors marché ou ailleurs que sur Centris® par choix ou pour confidentialité.  
 
@@ -196,7 +197,7 @@ Commençons la prise de vos coordonnées par *votre prénom* SVP ?`,
 
             en: `The following questions concern your contact details. This allows us to:
 
-📢 1 - Alert you when a property matches your needs.  
+📢 1 - To provide you with a web page that alerts you when a property meets your requirements.  
 
 🏡 2 - Contact you about off-market properties or listings not shown on Centris (by choice or for confidentiality).  
 
@@ -272,12 +273,12 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 function getPromptForProjectType(lang = 'fr') {
 
      return  lang === 'en'
-            ? `To better assist you, which option number best describes you:\n
+         ? `To better assist you, from 1 to 4, which intention best describes your goal here?\n
 1️⃣ Buying  
 2️⃣ Selling  
 3️⃣ Renting out  
 4️⃣ Let's talk Real Estate`
-            : `Pour bien vous assister, quel no. d'intention vous décrit le mieux :\n
+            : `Pour bien vous assister, de 1 à 4, quelle intention décrit le mieux votre objectif ici:\n
 1️⃣ Acheter  
 2️⃣ Vendre  
 3️⃣ Offrir en location  

@@ -680,6 +680,7 @@ function getNextSpec(session) {
         const genericBlock = questions.generic;
         if (genericBlock && typeof genericBlock === 'object') {
             for (const field of Object.keys(genericBlock)) {
+                if (field === "expectations") continue;
                 if (specValues[field] === '?' || specValues[field] === undefined || specValues[field] === null) {
                     return field;
                 }
