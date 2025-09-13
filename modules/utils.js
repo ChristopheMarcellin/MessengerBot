@@ -843,7 +843,8 @@ function setSpecValue(session, key, value, caller = "unspecified") {
     // 🔁 Traitement spécial pour propertyUsage
     if (key === "propertyUsage") {
         if (value === "?") {
-            session.specValues[key] = "?";
+            session.propertyUsage = "?";
+            session.specValues[key] = value;//maintenu à 2 endroits pcq chatGPT est un imbécile, synonyme de la ligne précédente
             console.log(`[xxxxutilsTRACK] propriété "propertyUsage" initialisée à "?" | caller ="${caller}"`);
             setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
             return;
@@ -856,6 +857,7 @@ function setSpecValue(session, key, value, caller = "unspecified") {
 
         // 👉 On stocke la valeur brute (numérique ou E)
         session.specValues[key] = value;
+        session.specValues[key] = value;//maintenu à 2 endroits pcq chatGPT est un imbécile, synonyme de la ligne précédente
         console.log(`[xxxxutilsTRACK] propertyUsage value after setSpecValue: "${session.propertyUsage}"`);
         setAskedSpec(session, key, `[auto] setAskedSpec appelé depuis setSpecValue`);
         return;

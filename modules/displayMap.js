@@ -23,6 +23,7 @@ module.exports = {
 
     bedrooms: {
         fr: {
+            0: "Pas spécifié",
             1: "1 chambre ou plus",
             2: "2 chambres ou plus",
             3: "3 chambres ou plus",
@@ -30,6 +31,7 @@ module.exports = {
             5: "5 chambres ou plus"
         },
         en: {
+            0: "Not specified",
             1: "1 bedroom or more",
             2: "2 bedrooms or more",
             3: "3 bedrooms or more",
@@ -40,11 +42,13 @@ module.exports = {
 
     bathrooms: {
         fr: {
+            0: "Pas spécifié",
             1: "1 salle de bain ou plus",
             2: "2 salles de bain ou plus",
             3: "3 salles de bain ou plus"
         },
         en: {
+            0: "Not specified",
             1: "1 bathroom or more",
             2: "2 bathrooms or more",
             3: "3 bathrooms or more"
