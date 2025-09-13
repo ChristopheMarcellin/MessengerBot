@@ -10,15 +10,17 @@ const { logQnA } = require('./googleData');
 
 async function runDirector(context) {
  
-
-    //conversion des refus  signifiés par le message: X
-    if (typeof context.message === "string" && message.trim().toUpperCase() === "X") {
+     //conversion des refus  signifiés par le message: X
+    if (typeof context.message === "string" && context.message.trim().toUpperCase() === "X") {
         context.message = "0";
     }
     const { message, senderId } = context;
 
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
+
+
+
     const session = context.session;
 
     //pas prêt pour enclencher les prochaines étapes
