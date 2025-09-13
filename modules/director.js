@@ -9,14 +9,13 @@ const { logQnA } = require('./googleData');
 //const { propertyUsage, projectType } = require('./displayMap');
 
 async function runDirector(context) {
-    const { message, senderId } = context;
+ 
 
-    //interception des refus  signifiés par le message: X
-    if (typeof message === "string" && message.trim().toUpperCase() === "X") {
-       // console.log(`[DIRECTOR] Conversion spéciale: "${message}" → "0"`);
-        message = "0";
+    //conversion des refus  signifiés par le message: X
+    if (typeof context.message === "string" && message.trim().toUpperCase() === "X") {
         context.message = "0";
     }
+    const { message, senderId } = context;
 
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
