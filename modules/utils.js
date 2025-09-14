@@ -220,9 +220,9 @@ async function classifyIntent(message, lang = 'fr') {
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
         if (message && isNaN(message)) { // exclure numériques simples
-            session.language = detectLanguageFromText(message) || "en";
+            session.language = detectLanguageFromText(message) || "fr";
         } else {
-            session.language = "en"; // fallback dur
+            session.language = "fr"; // fallback dur
         }
     }
 
@@ -511,17 +511,21 @@ async function handlePriceEstimate(senderId, message, session) {
     }
 }
 async function checkQuota(senderId, session) {
-    const quota = await getMaxQuestions(senderId);
-    const max = parseInt(quota, 10) || 0;
+    const max = await getMaxQuestions(senderId);
+    const quota = parseInt(max, 10) || 0;
 
     session.questionCount = (session.questionCount || 0) + 1;
     console.log("[UTILS checkQuota]", senderId, session.questionCount, "/", max);
 
-    if (session.questionCount > max) {
+    if (session.questionCount > quota) {
         const lang = session.language || "fr";
         const limitMsg = (lang === "fr")
-            ? "J'aimerais pouvoir vous fournir davantage d'informations et espère vous avoir été utile jusqu'ici, toutefois pour des raisons techniques ou avoir enfreint les conditions d'utilisation, il m'est impossible de répondre à des questions autres que celles qui portent sur notre service.  Vous pouvez communiquer avec Christophe Marcellin au 514-231-6370 pour de plus amples renseignements."
-            : "I would like to be able to provide you with more information and I hope I have been helpful so far, however, for technical reasons or for having violated the terms of use, I am unable to answer questions other than those related to our service. You may contact Christophe Marcellin at 514-231-6370 for further information.";
+            ? `Nb de questions : ${session.questionCount}, Quota : ${quota}.  
+J'aimerais pouvoir vous fournir davantage d'informations et j'espère vous avoir été utile jusqu'ici. Toutefois, pour des raisons techniques ou parce que les conditions d'utilisation l'imposent, il m'est impossible de répondre à des questions autres que celles portant sur notre service.  
+👉 Vous pouvez communiquer avec Christophe Marcellin au 514-231-6370 pour de plus amples renseignements.`
+            : `Number of questions: ${session.questionCount}, Quota: ${quota}.  
+I would like to be able to provide you with more information and I hope I have been helpful so far. However, for technical reasons or due to terms of use, I am unable to answer questions other than those related to our service.  
+👉 You may contact Christophe Marcellin at 514-231-6370 for further information.`;
 
         await sendMessage(senderId, limitMsg);
         return false; // 🚫 stop: quota dépassé

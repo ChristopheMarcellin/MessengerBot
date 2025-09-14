@@ -86,8 +86,8 @@ async function runDirector(context) {
             return true;
         }
         console.log("[DIRECTOR] ℹ️ Session déjà en mode chat → passage à GPT");
-        console.log("session.language moving to chat" + session.language);
-        console.log("context.language moving to chat"+ context.language);
+        console.log("session.language moving to chat " + session.language);
+        console.log("context.language moving to chat "+ context.language);
         await chatOnly(senderId, message, session);
         return true;
     }

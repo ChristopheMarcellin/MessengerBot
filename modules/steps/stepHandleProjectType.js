@@ -8,7 +8,7 @@ async function stepHandleProjectType(context) {
     const { message, session } = context;
     console.log(`[TRAP] stepHandleProjectType appelé | message="${context.message}" | currentSpec="${context.session.currentSpec}"`);
     const isValid = await isValidAnswer(context, session.projectType, "projectType", session.language || "fr");
-    // === Cas 1 : entrée utilisateur valide (1,2,3,4) ===
+    // === Cas 1 : entrée utilisateur valide (0-4) ===
     if (isValid) {
         const interpreted = getProjectTypeFromNumber(message);
         setProjectType(session, interpreted, "user input");
@@ -22,7 +22,7 @@ async function stepHandleProjectType(context) {
         return true;
     }
 
-    // === Cas 2 : classification GPT ===
+    // === Cas 2 : classification GPT si pas valide===
     const classification = await gptClassifyProject(message, session.language || "fr");
     const interpreted = getProjectTypeFromNumber(classification);
     const isValidGPT = ["B", "S", "R", "E"].includes(interpreted);//n'est pas un "?"
@@ -42,10 +42,14 @@ async function stepHandleProjectType(context) {
 
     } else {
         // === Cas 3 : double échec GPT ===
-        if (alreadyAsked && current === "?") {
-            setProjectType(session, "E", "GPT → refus après 2 échecs");
-            setSpecValue(session, "propertyUsage", "E", "lié à projectType=E (2 échecs GPT)");
-           console.log(`[xxxxxx DIRECTOR !isValidGPT] projectType et propertyUsage passés à "E" après deux tentatives floues`);
+        if (interpreted === "?") { //v2
+            //v1
+           // if (alreadyAsked && current === "?") {
+           // setProjectType(session, "E", "GPT → refus après 2 échecs");
+          //  setSpecValue(session, "propertyUsage", "E", "lié à projectType=E (2 échecs GPT)");
+           setProjectType(session, "?", "GPT → incompréhensible"); //v2
+            setSpecValue(session, "propertyUsage", "?", "GPT → incompréhensible)")//v2
+           console.log(`[xxxxxx DIRECTOR !isValidGPT] projectType et propertyUsage passés à "?"`);
         } else {
             setProjectType(session, "?", "GPT → invalide");
             setSpecValue(session, "propertyUsage", "?", "lié à projectType=? (GPT invalide)");
