@@ -161,14 +161,14 @@ function buildSpecSummary(session, lang = "fr") {
     }
 
     const footer = lang === "fr"
-        ? `Merci, je suis prêt à répondre à vos questions en matière d'immobilier.\n\n` +
+        ? `Merci, je suis prêt à échanger et à répondre à vos questions en matière d'immobilier.\n\n` +
         `Mes réponses sont à titre de référence seulement et peuvent contenir des erreurs.\n` +
         `Mieux vaut toujours valider avec un professionnel qualifié de l'immobilier de notre équipe.\n\n` +
-        `Plus votre question est précise, plus ma réponse le sera, espérant vous donner satisfaction !`
+        `Plus votre question est précise, plus ma réponse le sera, comment puis-je vous aider ?`
         : `Thank you, I am ready to answer your real estate questions.\n\n` +
         `My answers are for reference purposes only and may contain errors.\n` +
         `It is always better to confirm with a qualified real estate professional from our team.\n\n` +
-        `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction!`;
+        `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction, how may I help you ?`;
 
     summary += `\n${footer}`;
 

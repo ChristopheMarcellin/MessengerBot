@@ -174,7 +174,7 @@ For example you may say:
 ,
 
         firstName: {
-            fr: `Les questions qui suivent concernent vos coordonnées, ceci nous permet:
+            fr: `Je suis prêt à échanger avec vous, toutefois j'aimerais recueillir certaines de vos coordonnées, ceci nous permet:
 
 📢 1 - De vous offrir une page Web qui vous alerte lorsqu'une propriété rencontre vos besoins.  
 
@@ -195,7 +195,7 @@ Petit rappel:
 
 Commençons la prise de vos coordonnées par *votre prénom* SVP ?`,
 
-            en: `The following questions concern your contact details. This allows us to:
+            en: `I am ready to chat with you, however I would like to collect some of your contact information, this allows us to::
 
 📢 1 - To provide you with a web page that alerts you when a property meets your requirements.  
 
