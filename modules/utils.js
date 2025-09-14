@@ -648,24 +648,57 @@ function isNumeric(input) {
     const trimmed = input.trim();
     return trimmed !== '' && !isNaN(trimmed);
 }
+//original detectLanguage
+//function detectLanguageFromText(text) {
 
+
+//    if (typeof text !== "string" || text.trim() === "") {
+
+//        console.log(`[LANG DETECT] Texte ${text} fr désigné`);
+//        return 'fr';
+//    }
+//    const isFrench =
+//        /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||
+//        /\b(le|la|est|une|bonjour|je|j’|ça|tu|vous|avec|maison|acheter|vendre|salut|allo|propriété)\b/i.test(text);
+
+//    const detected = isFrench ? 'fr' : 'en';
+//    console.log(`[LANG DETECT] Langue détectée pour ${text}: ${detected}`);
+
+//    return detected;
+//}
 function detectLanguageFromText(text) {
-
-
     if (typeof text !== "string" || text.trim() === "") {
-
-        console.log(`[LANG DETECT] Texte ${text} fr désigné`);
-        return 'fr';
+        console.log(`[LANG DETECT] Texte vide ou invalide: forcé à 'fr'`);
+        return "fr";
     }
-    const isFrench =
-        /[àâçéèêëîïôûùüÿœæ]/i.test(text) ||
-        /\b(le|la|est|une|bonjour|je|j’|ça|tu|vous|avec|maison|acheter|vendre|salut|allo|propriété)\b/i.test(text);
 
-    const detected = isFrench ? 'fr' : 'en';
-    console.log(`[LANG DETECT] Langue détectée pour ${text}: ${detected}`);
+    const sample = text.toLowerCase();
 
+    // ✅ Détection français
+    const frenchRegex =
+        /[àâçéèêëîïôûùüÿœæ]/i.test(sample) ||
+        /\b(le|la|est|une|bonjour|salut|allo|propriété|acheter|vendre|maison|ça|vous|tu|j’|je)\b/i.test(sample);
+
+    // ✅ Détection anglais
+    const englishRegex =
+        /\b(the|house|hello|hi|property|buy|sell|good|morning|evening|you|your)\b/i.test(sample);
+
+    let detected = "fr"; // valeur par défaut
+    if (frenchRegex && !englishRegex) {
+        detected = "fr";
+    } else if (englishRegex && !frenchRegex) {
+        detected = "en";
+    } else if (englishRegex && frenchRegex) {
+        // ⚖️ Cas mixte : on choisit selon la majorité des mots
+        const frMatches = sample.match(/\b(le|la|est|une|bonjour|salut|allo|propriété|acheter|vendre|maison|ça|vous|tu|j’|je)\b/gi) || [];
+        const enMatches = sample.match(/\b(the|house|hello|hi|property|buy|sell|good|morning|evening|you|your)\b/gi) || [];
+        detected = frMatches.length >= enMatches.length ? "fr" : "en";
+    }
+
+    console.log(`[LANG DETECT] Langue détectée pour "${text}": ${detected}`);
     return detected;
 }
+
 
 function traceCaller(label) {
     const stack = new Error().stack;

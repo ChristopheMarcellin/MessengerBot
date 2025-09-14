@@ -318,14 +318,14 @@ Répondre aux questions est optionnel mais les réponses enregistrées revêtent
 🔒 2 - "Politique de confidentialité"\n
 *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n
 
-🛎️ 3 - Aperçu de mes services\n
-*Je peux vous rendre de précieux services dans le domaine de l'immobilier au Québec, par exemple :*\n
-📊 *Vous fournir un estimé pour une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
+🛎️ 3 - Aperçu des services de CasaNova:\n
+*Je peux rendre de précieux services dans le domaine de l'immobilier au Québec, par exemple :*\n
+📊 *Estimer la valeur d'une propriété dans un quartier ou pour une adresse spécifique avec un niveau de confiance (nos estimés sont plus précis pour notre territoire)*\n
+📢 *Publier un site Web personnalisé qui alerte d'une propriété trouvée selon vos critères: https://tinyurl.com/yvyu75p7*\n
 🔢 *Faire un calcul hypothécaire*\n
-📢 *Créer des alertes qui correspondent à vos critères de recherche*\n
-💬 *Vous donner une opinion éclairée*\n
-⚖️ *Répondre à vos questions légales (Québec)*\n
-ℹ️ *Vous informer sur nos services*\n\n`
+💬 *Donner une opinion éclairée en immobilier*\n
+⚖️ *Répondre aux questions légales en immobilier (Québec)*\n
+ℹ️ *Détailler nos services*\n\n`
       : `Hello, I’m CasaNova, your AI real estate assistant.  
 My interactive nature allows users to ask me questions, and for me to ask questions in return.  
 Before we continue, please take note of the following:\n\n
@@ -340,14 +340,15 @@ Of course, choosing not to answer may be justified and does not automatically re
 🔒 2 - *Privacy Policy*\n
 *Your information is confidential* (no advertising or sharing with third parties). [View our privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)\n\n
 
-🛎️ 3 - Overview of my services\n
-*I can provide you with valuable real estate services in Québec, for example:*\n
-📊 *Provide an estimate for a property in a neighborhood or at a specific address (our estimates are more accurate within our main territory)*\n
+🛎️ 3 - Overview of CasaNova’s Services:\n
+*I can provide valuable services in the field of real estate in Québec, for example:*\n
+📊 *Estimate the value of a property in a neighborhood or for a specific address with a confidence level (our estimates are more accurate within our territory)*\n
+📢 *Publish a personalized website that alerts you when a property matching your criteria is found: https://tinyurl.com/yvyu75p7*\n
 🔢 *Perform a mortgage calculation*\n
-📢 *Create alerts that match your search criteria*\n
-💬 *Offer you an informed opinion*\n
-⚖️ *Answer your legal questions (Québec)*\n
-ℹ️ *Inform you about our services*\n\n`
+💬 *Provide an informed real estate opinion*\n
+⚖️ *Answer legal real estate questions (Québec)*\n
+ℹ️ *Detail our services*\n\n
+`
 };
 
 
