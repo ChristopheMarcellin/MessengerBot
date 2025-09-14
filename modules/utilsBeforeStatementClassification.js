@@ -82,11 +82,13 @@ const faqMapByKey = {
 };
 
 async function classifyIntent(message, lang = 'fr') {
-    // Petits raccourcis directs
     if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
-
-    const faqExamples = lang === 'fr'
+    const categories = [
+        'hours', 'contact', 'consultation', 'rental',
+        'commercial', 'territory', 'carole', 'christophe', 'team', 'homestaging', 'website'
+    ];
+    const examples = lang === 'fr'
         ? `Exemples :\n` +
         `"Quand êtes-vous ouverts ?" → faq:hours\n` +
         `"Quelles sont vos heures d'affaires ?" → faq:hours\n` +
@@ -94,19 +96,43 @@ async function classifyIntent(message, lang = 'fr') {
         `"Est-ce que vous aidez pour la location ?" → faq:rental\n` +
         `"Puis-je vous appeler directement ?" → faq:contact\n` +
         `"Où est situé votre bureau ?" → faq:contact\n` +
-        `"Qui est carole baillargeon, quelle est son expérience ?" → faq:carole\n` +
-        `"Qui est christophe marcellin, quelle est son expérience ?" → faq:christophe\n` +
-        `"Que pouvez-vous me dire de votre équipe ?" → faq:team\n` +
-        `"Faites-vous de la location ou du locatif ?" → faq:rental\n` +
+        `"Qui est carole baillargeon, quelle est son expérience ?" → faq:carole \n` +
+	    `"Qui est christophe marcellin, quelle est son expérience ?" → faq:christophe\n` +
+	    `"Que pouvez-vous me dire de votre équipe ?" → faq:team \n` +
+	    `"Faites vous de la location ou du locatif ?" → faq:rental \n` +
         `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
-        `"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
+	    `"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Faites-vous de la valorisation immobilière ou du home staging ?" → faq:homestaging\n` +
-        `"Parlez moi de votre site web ou du siteweb personnalisé" → faq:website\n`
+        `"Parlez moi de votre site web ou du siteweb personnalisé" → faq:website\n` +
+        `"Quels documents faut-il fournir pour vendre une propriété ?" → gpt\n` +
+        `"Combien coûte vendre une maison avec un courtier ?" → gpt\n` +
+        `"Est-ce que les offres multiples sont encore fréquentes ?" → gpt\n` +
+        `"Quels sont les frais à prévoir à l’achat d’un condo ?" → gpt\n` +
+        `"Puis-je transformer un duplex en unifamiliale ?" → gpt\n` +
+        `"Quel est le meilleur moment pour vendre une propriété au Québec ?" → gpt\n` +
+        `"Est-ce qu’une copropriété indivise peut être financée ?" → gpt\n` +
+        `"Est-ce que les taxes municipales sont plus élevées en banlieue ?" → gpt\n` +
+        `"Comment savoir si un logement est légalement louable ?" → gpt\n` +
+        `"Comment savoir si une propriété est zonée résidentielle ou commerciale ?" → gpt\n` +
+        `"Dois-je déclarer une infiltration d’eau lors de la vente ?" → gpt\n` +
+        `"Est-ce obligatoire d’avoir un certificat de localisation à jour ?" → gpt\n` +
+        `"Puis-je vendre sans passer par un notaire ?" → gpt\n` +
+        `"Combien de temps dure une promesse d’achat ?" → gpt\n` +
+        `"Quel est le rôle de chaque professionnel de l'immobilier?" → gpt\n` +
+        `"Vaut-il mieux vendre avant d’acheter ?" → gpt\n` +
+        `"Est-ce risqué de vendre sans courtier ?" → gpt\n` +
+        `"Est-ce que Proprio Direct est mieux qu’un courtier ?" → gpt\n` +
+        `"Faut-il toujours faire une inspection ou quand dois-je faire une inspection?" → gpt\n` +
+        `"Combien vaut ma maison à Brossard ?" → estimate\n` +
+        `"Quel est le prix du pied carré dans Griffintown ?" → estimate\n` +
+        `"Quel est le marché actuel à Saint-Lambert ?" → gpt\n` +
+        `"Peux-tu me recommander un bon restaurant ?" → other\n`
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
         `"How does an evaluation work?" → faq:consultation\n` +
         `"Do you handle rentals?" → faq:rental\n` +
+        `"How do you proceed to estimate a property?" → faq:consultation\n` +
         `"Can I call you directly?" → faq:contact\n` +
         `"Where is your office located?" → faq:contact\n` +
         `"Who is Carole Baillargeon, what is her experience?" → faq:carole\n` +
@@ -115,43 +141,60 @@ async function classifyIntent(message, lang = 'fr') {
         `"Do you work with commercial properties?" → faq:commercial\n` +
         `"What is your address, where are your offices located?" → faq:office\n` +
         `"Do you work on the South Shore and or in Montreal?" → faq:territory\n` +
-        `"Tell me about your website or the website that is customized with my expecations" → faq:website\n`;
+        `"Do you handle commercial properties?" → faq:commercial\n` +
+        `"Tell me about your website or the website that is customized with my expecations" → faq:website\n` 
+        `"What documents are required to sell a property?" → gpt\n` +
+        `"How much does it cost to sell a home with a broker?" → gpt\n` +
+        `"Are multiple offers still common?" → gpt\n` +
+        `"What fees should I expect when buying a condo?" → gpt\n` +
+        `"Can I convert a duplex into a single-family home?" → gpt\n` +
+        `"When is the best time to sell a property in Quebec?" → gpt\n` +
+        `"Can an undivided co-ownership be financed?" → gpt\n` +
+        `"Are municipal taxes higher in the suburbs?" → gpt\n` +
+        `"How can I tell if a rental unit is legal?" → gpt\n` +
+        `"How can I check if a property is zoned residential or commercial?" → gpt\n` +
+        `"Do I have to disclose a water infiltration?" → gpt\n` +
+        `"Is a recent certificate of location mandatory?" → gpt\n` +
+        `"Can I sell without a notary?" → gpt\n` +
+        `"How long is a purchase offer valid?" → gpt\n` +
+        `"What is the role of real estate professionals?" → gpt\n` +
+        `"Is it better to sell before buying?" → gpt\n` +
+        `"Is it risky to sell without an agent?" → gpt\n` +
+        `"Is Proprio Direct better than a broker?" → gpt\n` +
+        `"Should I always do an inspection or when should I do an inspection?" → gpt\n` +
+        `"How much is my home worth in Brossard?" → estimate\n` +
+        `"What’s the price per square foot in Griffintown?" → estimate\n` +
+        `"What’s the market like in Saint-Lambert?" → gpt\n` +
+        `"Can you recommend a good restaurant?" → other\n`;
+
 
     const prompt = lang === 'fr'
-        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
-L'utilisateur peut envoyer soit une question, soit une affirmation.\n\n${faqExamples}\n
-Voici le message de l'utilisateur :\n"${message}"\n\n
-Catégories disponibles :
-- faq:<catégorie>
-- gpt (question immobilière hors FAQ)
-- declaration (affirmation liée à l'immobilier)
-- other (hors immobilier)\n\n
-Règles :
-1. Si le message correspond clairement à une FAQ, réponds par : faq:<catégorie>.
-2. Si c'est une question immobilière mais pas dans la FAQ → gpt.
-3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration.
-4. Si ça n'a aucun rapport avec l'immobilier → other.\n
-Réponds uniquement par un mot : faq:<catégorie>, gpt, declaration ou other.`
-        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
-The user may send either a question or a statement.\n\n${faqExamples}\n
-Here is the user's message:\n"${message}"\n\n
-Available categories:
-- faq:<category>
-- gpt (real estate question not in FAQ)
-- declaration (real estate statement)
-- other (unrelated)\n\n
-Rules:
-1. If the message clearly matches one of our predefined FAQ topics → faq:<category>.
-2. If it is a real estate question but not in the FAQ → gpt.
-3. If it is a statement related to real estate (ex: "I want to buy a condo") → declaration.
-4. If it is unrelated to real estate → other.\n
-Respond with a single word: faq:<category>, gpt, declaration, or other.`;
+        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
+        `L'utilisateur te pose une question.\n\n` +
+        `${examples}\n` +
+        `Voici la question de l'utilisateur :\n"${message}"\n\n` +
+        `Voici les catégories disponibles :\n- faq:<catégorie>\n- gpt\n- other\n\n` +
+        `Si la question correspond clairement à une catégorie de notre FAQ, réponds par : faq:<catégorie>.\n` +
+        `Si elle concerne l'immobilier (juridique, estimation, stratégie, inspection, etc.) mais ne figure pas dans la FAQ, réponds par : gpt.\n` +
+        `Si la question ne concerne pas l'immobilier ni nos services, réponds par : other.\n\n` +
+        `Réponds uniquement par un mot : faq:<catégorie>, gpt ou other.`
+        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
+        `The user is asking you a question.\n\n` +
+        `${examples}\n` +
+        `Here is the user's question:\n"${message}"\n\n` +
+        `Available categories are:\n- faq:<category>\n- gpt\n- other\n\n` +
+        `If the question clearly matches one of our predefined FAQ topics, reply with: faq:<category>.\n` +
+        `If it concerns real estate (legal, strategy, inspection, value, etc.) but is not covered by the FAQ, reply with: gpt.\n` +
+        `If the question is unrelated to real estate or our services, reply with: other.\n\n` +
+        `Respond with a single word: faq:<category>, gpt, or other.`;
+
+
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-4o',
             messages: [{ role: 'user', content: prompt }],
-            max_tokens: 20,
+            max_tokens: 50,
             temperature: 0
         }, {
             headers: {
@@ -163,7 +206,8 @@ Respond with a single word: faq:<category>, gpt, declaration, or other.`;
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const result = raw?.toLowerCase();
         console.log(`[classifyIntent] 🔎 Réponse brute GPT = "${raw}"`);
-        console.log(`[FAQ CLASSIFIER] Message : "${message}" → Résultat GPT : ${result}`);
+
+        console.log(`[FAQ CLASSIFIER] Question : "${message}" → Résultat GPT : ${result}`);
         return result || 'other';
 
     } catch (err) {
@@ -171,6 +215,7 @@ Respond with a single word: faq:<category>, gpt, declaration, or other.`;
         return 'other';
     }
 }
+
 
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
@@ -181,105 +226,91 @@ async function chatOnly(senderId, message, session) {
         }
     }
 
-    const lang = session.language || "fr";
-    const classification = await classifyIntent(message, lang);
-    console.log(`[chatOnly] classification = ${classification}`);
+    const lang = session.language || 'fr';
+    const intent = await classifyIntent(message, lang);
+    console.log(`Intent: ${intent}`);
 
-    // Cas 1 : FAQ → PAS de quota
-    if (classification?.startsWith("faq:")) {
-        const key = classification.split(":")[1];
+    // 🔎 Cas 1 : FAQ → PAS de quota
+    if (intent?.startsWith("faq:")) {
+        const key = intent.split(":")[1];
         const faqText = faqMapByKey[key]?.[lang];
         if (faqText) {
-            console.log(`[CHAT] FAQ détectée → ${key}`);
+            console.log(`[CHAT] Réponse FAQ détectée via GPT → cat: ${key}`);
             await sendMessage(senderId, faqText, session);
             return;
         }
     }
 
-    // 🚨 Vérification quota obligatoire pour tout le reste
+    // 🚨 Étape 2 : quota check obligatoire pour tout le reste
     const ok = await checkQuota(senderId, session);
     if (!ok) return;
 
-    // Cas 2 : ESTIMATE
-    if (classification === "estimate") {
+    // 🔎 Cas 2 : ESTIMATE
+    if (intent === "estimate") {
         await handlePriceEstimate(senderId, message, session);
         return;
     }
 
-    // Cas 3 : GPT (questions hors FAQ mais immo)
-    if (classification === "gpt") {
+    // 🤖 Cas 3 : GPT (libre) avec contexte
+    if (intent === "gpt") {
         const contextualMessage = buildContextualPrompt(senderId, message, lang);
         const prompt = lang === "fr"
-            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. 
-L'utilisateur vous pose une question immobilière: "${message}". 
-Répondez immédiatement, précisément et de façon concise. 
-Pas de salutation, pas de reformulation, allez droit au but. 
-Vous pouvez donner des avis professionnels, juridiques ou stratégiques. 
-${contextualMessage}`
-            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. 
-The user is asking you a real estate question: "${message}". 
-Answer immediately, precisely, and concisely. 
-No greetings, no restating the question. 
-You may give professional, legal, or strategic advice. 
-${contextualMessage}`;
+            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
+            `Vous parlez au nom du courtier Christophe Marcellin. ` +
+            `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
+            `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
+            `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
+            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
+            contextualMessage
+            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
+            `You speak on behalf of Christophe Marcellin Broker. ` +
+            `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
+            `Give a direct and informative answer — no greetings, no restating the question. ` +
+            `You are allowed to give professional, legal, or strategic advice. ` +
+            `Never use phrases like "I'm here to help" or "feel free to ask." ` +
+            contextualMessage;
 
-        return await askGptAndSend(senderId, session, prompt, lang);
+        console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
+
+        try {
+            const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+                model: "gpt-4o",
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 200,
+                temperature: 0.6
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+                }
+            });
+
+            const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
+            const cleaned = gptReply ? stripGptSignature(gptReply) : null;
+            const fallback = cleaned || (lang === "fr"
+                ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !"
+                : "Sorry, I didn’t understand your answer in relation to the question asked!");
+
+            await sendMessage(senderId, fallback, session);
+            return;
+
+        } catch (err) {
+            console.error(`[chatOnly] *** ERREUR GPT : ${err.message}`);
+            const fallback = lang === "fr"
+                ? "Désolé, je n’ai pas compris."
+                : "Sorry, I didn’t understand.";
+            await sendMessage(senderId, fallback, session);
+            return;
+        }
     }
 
-    // Cas 4 : Declaration (affirmations)
-    if (classification === "declaration") {
-        const prompt = lang === "fr"
-            ? `L'utilisateur fait une affirmation: "${message}". 
-Répondez naturellement et engagez la conversation comme un conseiller immobilier bienveillant. 
-Montrez de l'intérêt, sans donner de leçon, et relancez subtilement.`
-            : `The user made a statement: "${message}". 
-Respond naturally and engagingly, like a supportive real estate advisor. 
-Show interest, don’t lecture, and gently keep the conversation flowing.`;
+    // 🙃 Cas 4 : autre (compte dans le quota)
+    const fallback = lang === "fr"
+        ? "Désolé, cette question ne semble pas porter sur l'immobilier, peut-être une reformulation m'aiderait à mieux vous répondre !"
+        : "Sorry, this question seems unrelated to real estate, but perhaps rephrasing it could help me provide a better answer.";
 
-        return await askGptAndSend(senderId, session, prompt, lang);
-    }
-
-    // Cas 5 : Other (hors sujet)
-    if (classification === "other") {
-        const prompt = lang === "fr"
-            ? `Le message de l'utilisateur semble hors sujet par rapport à l'immobilier: "${message}". 
-Répondez poliment mais ramenez la conversation vers l'immobilier ou nos services.`
-            : `The user's message seems unrelated to real estate: "${message}". 
-Respond politely but redirect the conversation back to real estate or our services.`;
-
-        return await askGptAndSend(senderId, session, prompt, lang);
-    }
+    await sendMessage(senderId, fallback, session);
 }
-
-// Fonction utilitaire réutilisée pour GPT/Declaration/Other
-async function askGptAndSend(senderId, session, prompt, lang) {
-    try {
-        const response = await axios.post("https://api.openai.com/v1/chat/completions", {
-            model: "gpt-4o",
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 200,
-            temperature: 0.6
-        }, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-            }
-        });
-
-        const gptReply = response.data.choices?.[0]?.message?.content?.trim();
-        const fallback = gptReply || (lang === "fr" ? "Je comprends 👍" : "I understand 👍");
-        await sendMessage(senderId, fallback, session);
-
-    } catch (err) {
-        console.error(`[chatOnly] ERREUR GPT: ${err.message}`);
-        const fallback = lang === "fr"
-            ? "Désolé, je n’ai pas compris."
-            : "Sorry, I didn’t understand.";
-        await sendMessage(senderId, fallback, session);
-    }
-}
-
-
 
 async function chatOnlyOriginal(senderId, message, session) {
     // const session = context.session;

@@ -307,7 +307,7 @@ function getPromptForPropertyUsage(lang = 'fr') {
 function getPreamble(lang = 'fr')
 {
   return  lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier.
-Ma nature interactive permet aux usagers de me poser des questions et moi d'en poser.
+Ma nature interactive permet aux usagers de me poser des questions et moi de répondre et ou d'en poser.
 Avant de poursuivre, il serait utile de prendre connaissance de ce qui suit:\n\n
 📜 1 - *Termes d’utilisation*\n
 Pour ignorer mes questions, on peut répondre par "X" (sans guillemets)
@@ -327,7 +327,7 @@ Répondre aux questions est optionnel mais les réponses enregistrées revêtent
 ⚖️ *Répondre aux questions légales en immobilier (Québec)*\n
 ℹ️ *Détailler nos services*\n\n`
       : `Hello, I’m CasaNova, your AI real estate assistant.  
-My interactive nature allows users to ask me questions, and for me to ask questions in return.  
+My interactive nature allows users to ask me questions, and for me to reply and or ask questions in return.  
 Before we continue, please take note of the following:\n\n
 
 📜 1 - *Terms of Use*\n
