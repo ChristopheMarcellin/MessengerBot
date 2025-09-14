@@ -60,11 +60,31 @@ async function logQnA(senderId, message, type, session) {
 }
 
 async function getMaxQuestions(senderId) {
-  const url = `${webhookUrl}?senderId=${encodeURIComponent(senderId)}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  return data.value;
+    try {
+        const url = `${webhookUrl}?action=getMaxQuestions&senderId=${encodeURIComponent(senderId)}`;
+        console.log("[getMaxQuestions] URL =", url);
+
+        const res = await fetch(url);
+        if (!res.ok) {
+            console.error("[getMaxQuestions] HTTP error:", res.status, res.statusText);
+            return 25; // 🔄 valeur par défaut en cas d'erreur HTTP
+        }
+
+        const data = await res.json();
+        console.log("[getMaxQuestions] Response =", data);
+
+        if (data && typeof data.value !== "undefined") {
+            return data.value;
+        } else {
+            console.warn("[getMaxQuestions] Réponse inattendue, pas de champ 'value'");
+            return 25; // 🔄 valeur par défaut si format inattendu
+        }
+    } catch (err) {
+        console.error("[getMaxQuestions] Exception:", err.message);
+        return 25; // 🔄 valeur par défaut si exception
+    }
 }
+
 
 /**
  * Vérifie dans Google Sheets si un senderId existe déjà
