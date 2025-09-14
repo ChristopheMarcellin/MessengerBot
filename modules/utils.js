@@ -24,8 +24,8 @@ function buildContextualPrompt(senderId, currentMessage, lang = 'fr') {
     if (conversationHistory[senderId].length > 5) conversationHistory[senderId].shift(); // garde les 5 derniers
     const context = conversationHistory[senderId].slice(0, -1).join('\n');
     return (lang === 'fr'
-        ? `Voici le contexte des questions précédentes:\n${context}\n\nVoici la nouvelle question:\n${currentMessage}\n\nRéponds en tenant compte du contexte.`
-        : `Here is the context of previous questions:\n${context}\n\nHere is the new question:\n${currentMessage}\n\nAnswer considering the context.`);
+        ? `L'historique de la conversation:\n${context} ${currentMessage} \n `
+        : `The conversation history:\n${context}\n\nHere is the new question:\n${currentMessage} \n `);
 }
 
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
@@ -123,29 +123,34 @@ L'utilisateur peut envoyer soit une question, soit une affirmation.\n\n${faqExam
 Voici le message de l'utilisateur :\n"${message}"\n\n
 Catégories disponibles :
 - faq:<catégorie>
+- estimate
 - gpt (question immobilière hors FAQ)
 - declaration (affirmation liée à l'immobilier)
 - other (hors immobilier)\n\n
 Règles :
-1. Si le message correspond clairement à une FAQ, réponds par : faq:<catégorie>.
-2. Si c'est une question immobilière mais pas dans la FAQ → gpt.
-3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration.
-4. Si ça n'a aucun rapport avec l'immobilier → other.\n
+1. Si le message correspond clairement à une FAQ, réponds par : faq:<catégorie>
+2. Si c'est une question de prix, d'estimation → estimate
+3. Si c'est une question immobilière mais pas dans la FAQ → gpt
+4. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
+5. Si ça n'a aucun rapport avec l'immobilier → other
+
 Réponds uniquement par un mot : faq:<catégorie>, gpt, declaration ou other.`
         : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
 The user may send either a question or a statement.\n\n${faqExamples}\n
 Here is the user's message:\n"${message}"\n\n
 Available categories:
 - faq:<category>
+- estimate
 - gpt (real estate question not in FAQ)
 - declaration (real estate statement)
 - other (unrelated)\n\n
 Rules:
-1. If the message clearly matches one of our predefined FAQ topics → faq:<category>.
-2. If it is a real estate question but not in the FAQ → gpt.
-3. If it is a statement related to real estate (ex: "I want to buy a condo") → declaration.
-4. If it is unrelated to real estate → other.\n
-Respond with a single word: faq:<category>, gpt, declaration, or other.`;
+1. If the message clearly matches one of our predefined FAQ topics → faq:<category>
+2. if it is about a price or an estimate → estimate
+3. If it is a real estate question but not in the FAQ → gpt
+4. If it is a statement related to real estate (ex: "I want to buy a condo") → declaration
+5. If it is unrelated to real estate → other.\n
+Respond with a single word: faq:<category>, estimate, gpt, declaration, or other.`;
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -176,6 +181,7 @@ async function chatOnly(senderId, message, session) {
     if (!session.language) {
         if (message && isNaN(message)) { // exclure numériques simples
             session.language = detectLanguageFromText(message) || "fr";
+          
         } else {
             session.language = "fr"; // fallback dur
         }
@@ -215,27 +221,28 @@ async function chatOnly(senderId, message, session) {
             `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            contextualMessage
+            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. Tenez compte du contexte: ` +
+            contextualMessage + session.specSummary
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of Christophe Marcellin Broker. ` +
             `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
             `Give a direct and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `Never use phrases like "I'm here to help" or "feel free to ask." ` +
-            contextualMessage;
+            `Never use phrases like "I'm here to help" or "feel free to ask. Consider this context: " ` +
+            contextualMessage+session.specSummary;
 
         return await askGptAndSend(senderId, session, prompt, lang);
     }
 
     // Cas 4 : Declaration (affirmations)
     if (classification === "declaration") {
+        const contextualMessage = buildContextualPrompt(senderId, message, lang);
         const prompt = lang === "fr"
-            ? `L'utilisateur fait une affirmation: "${message}". 
+            ? `L'utilisateur fait une affirmation: "${message}" qui fait suite à "${contextualMessage}" et "${session.specSummary}". 
 Répondez naturellement et engagez la conversation comme un conseiller immobilier bienveillant. 
 Montrez de l'intérêt, sans donner de leçon, et relancez subtilement.`
-            : `The user made a statement: "${message}". 
-Respond naturally and engagingly, like a supportive real estate advisor. 
+            : `The user made a statement: "${message}" following those statements "${contextualMessage}" and "${session.specSummary}".
+Respond naturally and engagingly, like a supportive real estate advisor.
 Show interest, don’t lecture, and gently keep the conversation flowing.`;
 
         return await askGptAndSend(senderId, session, prompt, lang);
@@ -281,104 +288,6 @@ async function askGptAndSend(senderId, session, prompt, lang) {
     }
 }
 
-
-
-async function chatOnlyOriginal(senderId, message, session) {
-    // const session = context.session;
-
-    if (!session.language) {
-        if (message && isNaN(message)) { // exclure numériques simples
-            session.language = detectLanguageFromText(message) || "en";
-        } else {
-            session.language = "en"; // fallback dur
-        }
-    }
-
-    const lang = session.language || 'fr';
-    const intent = await classifyIntent(message, lang);
-    console.log(`Intent: ${intent}`);
-
-    // 🔎 Cas 1 : FAQ
-    if (intent?.startsWith("faq:")) {
-        const key = intent.split(":")[1];
-        const faqText = faqMapByKey[key]?.[lang];
-        if (faqText) {
-            console.log(`[CHAT] Réponse FAQ détectée via GPT → cat: ${key}`);
-            await sendMessage(senderId, faqText, session);
-            return;
-        }
-    }
-
-    if (intent === "estimate") {
-        const ok = await checkQuota(senderId, session);
-        if (!ok) return; // quota atteint → stop
-        await handlePriceEstimate(senderId, message, session); // ← passe maintenant context complet
-        return;
-    }
-
-    // 🤖 Cas 2 : GPT (libre) avec contexte
-    if (intent === "gpt") {
-        const ok = await checkQuota(senderId, session);
-        if (!ok) return; // quota atteint → stop
-
-        const contextualMessage = buildContextualPrompt(senderId, message, lang);
-        const prompt = lang === "fr"
-            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
-            `Vous parlez au nom des courtiers Carole Baillargeon et Christophe Marcellin. ` +
-            `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
-            `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
-            `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            contextualMessage
-            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
-            `You speak on behalf of brokers Carole Baillargeon and Christophe Marcellin. ` +
-            `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
-            `Give a direct and informative answer — no greetings, no restating the question. ` +
-            `You are allowed to give professional, legal, or strategic advice. ` +
-            `Never use phrases like "I'm here to help" or "feel free to ask." ` +
-            contextualMessage;
-
-        console.log(`[GPT] Mode: chatOnly | Lang: ${lang} | Prompt → ${prompt}`);
-
-        try {
-            const chatGptResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-                model: "gpt-4o",
-                messages: [{ role: "user", content: prompt }],
-                max_tokens: 200,
-                temperature: 0.6
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-                }
-            });
-
-            const gptReply = chatGptResponse.data.choices?.[0]?.message?.content?.trim();
-            const cleaned = gptReply ? stripGptSignature(gptReply) : null;
-            const fallback = cleaned || (lang === "fr"
-                ? "Désolé, je n’ai pas compris votre réponse en fonction de la question posée !"
-                : "Sorry, I didn’t understand your answer in relation to the question asked!");
-
-            await sendMessage(senderId, fallback, session);
-            return;
-
-        } catch (err) {
-            console.error(`[chatOnly] *** ERREUR GPT : ${err.message}`);
-            const fallback = lang === "fr"
-                ? "Désolé, je n’ai pas compris."
-                : "Sorry, I didn’t understand.";
-            await sendMessage(senderId, fallback, session);
-            return;
-        }
-    }
-
-    // 🙃 Cas 3 : autre
-    const fallback = lang === "fr"
-        ? "Désolé, cette question ne semble pas porter sur l'immobilier, peut-être une reformulation m'aiderait à mieux vous répondre !"
-        : "Sorry, this question seems unrelated to real estate, but perhaps rephrasing it could help me provide a better answer.";
-
-    await sendMessage(senderId, fallback, session);
-}
 
 async function handlePriceEstimate(senderId, message, session) {
     //const session = context.session;

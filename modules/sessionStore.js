@@ -49,7 +49,8 @@ function resetSession(context) {
         questionCount: 0,
         maxQuestions: 20,
         ProjectDate: new Date().toISOString(),
-        mode: "spec"
+        mode: "spec", 
+        specSummary: ""
 	
     });
 

@@ -171,7 +171,7 @@ function buildSpecSummary(session, lang = "fr") {
         `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction, how may I help you ?`;
 
     summary += `\n${footer}`;
-
+    session.specSummary = summary;
     return summary;
 }
 
@@ -282,7 +282,10 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
     }
 
     // 🎯 4. Champs numériques purs (price, bedrooms, etc.)
-
+    if (["price", "bedrooms", "bathrooms", "garage", "parking", "age"].includes(field)) {
+        const isValid = /^\d+$/.test(input); // uniquement chiffres
+        return isValid;
+    }
 
     // 🎯 5. phone
     if (field === "phone") {
@@ -343,7 +346,8 @@ function buildExportRecord(session) {
         mode: session.mode || "",
         questionCount: session.questionCount || 0,
         maxQuestions: session.maxQuestions || 40,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        ProjectDate: session.ProjectDate
     };
 
     // Log des champs fixes
