@@ -50,6 +50,7 @@ function resetSession(context) {
         maxQuestions: 20,
         ProjectDate: new Date().toISOString(),
         mode: "spec", 
+        conversationHistory: [],
         specSummary: ""
 	
     });

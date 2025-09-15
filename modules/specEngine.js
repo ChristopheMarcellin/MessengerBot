@@ -170,7 +170,7 @@ function buildSpecSummary(session, lang = "fr") {
         `It is always better to confirm with a qualified real estate professional from our team.\n\n` +
         `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction, how may I help you ?`;
 
-    summary += `\n${footer}`;
+    summary += `${footer}`;
     session.specSummary = summary;
     return summary;
 }

@@ -16,17 +16,28 @@ function stripGptSignature(text) {
 }
 
 // === 🆕 Historique des conversations par utilisateur ===
-const conversationHistory = {};
 
-function buildContextualPrompt(senderId, currentMessage, lang = 'fr') {
-    if (!conversationHistory[senderId]) conversationHistory[senderId] = [];
-    conversationHistory[senderId].push(currentMessage);
-    if (conversationHistory[senderId].length > 5) conversationHistory[senderId].shift(); // garde les 5 derniers
-    const context = conversationHistory[senderId].slice(0, -1).join('\n');
-    return (lang === 'fr'
-        ? `L'historique de la conversation:\n${context} ${currentMessage} \n `
-        : `The conversation history:\n${context}\n\nHere is the new question:\n${currentMessage} \n `);
+
+function buildContextualPrompt(senderId, currentMessage, session, lang = 'fr') {
+    if (!session.conversationHistory) session.conversationHistory = [];
+    session.conversationHistory.push(currentMessage);
+
+    // garder maximum 5 messages
+    if (session.conversationHistory.length > 5) {
+        session.conversationHistory.shift();
+    }
+
+    // Historique concaténé (sauf le message courant, qu’on remet devant)
+    const previous = session.conversationHistory.slice(0, -1).join(' ');
+    const history = previous.trim();
+
+    // Specs concaténées (formatées sur une ligne)
+    const specSummary = session?.specSummary ? session.specSummary.replace(/\n/g, ' ') : "";
+
+    // Tout en une seule ligne : message courant + historique + specs
+    return `${currentMessage} ${history} ${specSummary}`.trim();
 }
+
 
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
 const faqMapByKey = {
@@ -132,7 +143,7 @@ Règles :
 2. Si c'est une question de prix, d'estimation → estimate
 3. Si c'est une question immobilière mais pas dans la FAQ → gpt
 4. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
-5. Si ça n'a aucun rapport avec l'immobilier → other
+5. S'il n'y a rien qui fait référence à de l'immobilier → other
 
 Réponds uniquement par un mot : faq:<catégorie>, gpt, declaration ou other.`
         : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
@@ -149,7 +160,7 @@ Rules:
 2. if it is about a price or an estimate → estimate
 3. If it is a real estate question but not in the FAQ → gpt
 4. If it is a statement related to real estate (ex: "I want to buy a condo") → declaration
-5. If it is unrelated to real estate → other.\n
+5. If nothing ties with real estate → other.\n
 Respond with a single word: faq:<category>, estimate, gpt, declaration, or other.`;
 
     try {
@@ -215,7 +226,7 @@ async function chatOnly(senderId, message, session) {
 
     // Cas 3 : GPT (questions hors FAQ mais immo)
     if (classification === "gpt") {
-        const contextualMessage = buildContextualPrompt(senderId, message, lang);
+        const contextualMessage = buildContextualPrompt(senderId, message, session, lang);
         const prompt = lang === "fr"
             ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
             `Vous parlez au nom du courtier Christophe Marcellin. ` +
@@ -223,33 +234,36 @@ async function chatOnly(senderId, message, session) {
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
             `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. Tenez compte du contexte: ` +
-            contextualMessage + session.specSummary
+            contextualMessage
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of Christophe Marcellin Broker. ` +
             `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
             `Give a direct and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `Never use phrases like "I'm here to help" or "feel free to ask. Consider this context: " ` +
-            contextualMessage+session.specSummary;
-        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
-        console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
+            `Never use phrases like "I'm here to help" or "feel free to ask." Consider this context: ` +
+            contextualMessage;
+
+        console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
+        console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
         return await askGptAndSend(senderId, session, prompt, lang);
     }
 
     // Cas 4 : Declaration (affirmations)
     if (classification === "declaration") {
-        const contextualMessage = buildContextualPrompt(senderId, message, lang);
+        const contextualMessage = buildContextualPrompt(senderId, message, session, lang);
         const prompt = lang === "fr"
-            ? `L'utilisateur fait une affirmation: "${message}" qui fait suite à "${contextualMessage}" et "${session.specSummary}". 
+            ? `L'utilisateur vous a fait part de ceci "${contextualMessage}". 
 Répondez naturellement et engagez la conversation comme un conseiller immobilier bienveillant. 
 Montrez de l'intérêt, sans donner de leçon, et relancez subtilement.`
-            : `The user made a statement: "${message}" following those statements "${contextualMessage}" and "${session.specSummary}".
+            : `The user shares this message with you "${contextualMessage}".
 Respond naturally and engagingly, like a supportive real estate advisor.
 Show interest, don’t lecture, and gently keep the conversation flowing.`;
-        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
-        console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
+
+        console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
+        console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
         return await askGptAndSend(senderId, session, prompt, lang);
     }
+
 
     // Cas 5 : Other (hors sujet)
     if (classification === "other") {
