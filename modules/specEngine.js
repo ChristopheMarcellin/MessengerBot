@@ -2,6 +2,7 @@ const axios = require('axios');
 const questions = require('./questions');
 const displayMap = require('./displayMap');
 const { isNumeric } = require('./utils');
+const { propertyUsage } = require('./displayMap');
 
 function getPromptForSpec(projectType, specKey, lang = "en") {
     const questionSet = questions?.[projectType];
@@ -142,8 +143,8 @@ function buildSpecSummary(session, lang = "fr") {
     //  console.log("CM on entre dans specSummary");
 
     const summaryHeader = lang === "fr"
-        ? `*Récapitulatif de mes specs:*\n\n`
-        : `*My specs in short:*\n\n`;
+        ? `*Récapitulatif de mon objectif:*\n\n`
+        : `*My objective in short:*\n\n`;
 
     let summary = `${summaryHeader}`;
 
@@ -153,11 +154,17 @@ function buildSpecSummary(session, lang = "fr") {
         summary += `${translatedProjectType}\n`;
     }
 
+    if (session.propertyUsage && !["?", "E", "0"].includes(session.projectType)) {
+        const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
+        summary += `${translatedProjectType}\n`;
+    }
+
     // Afficher propertyUsage et toutes les autres specs, sauf si "?", "E" ou "0"
     for (const key in fields) {
         if (!fields[key] || ["?", "E", "0"].includes(fields[key])) continue;
+        if (field[key] === propertyUsage) continue;
         const display = getDisplayValue(key, fields[key], lang);
-        summary += `${display}\n\n`;
+        summary += `${display}\n`;
     }
 
     const footer = lang === "fr"
