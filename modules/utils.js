@@ -233,14 +233,14 @@ async function chatOnly(senderId, message, session) {
             `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. Tenez compte du contexte: ` +
+            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. Ne jamais demander les coordonnées et tenir compte de ce qui suit: ` +
             contextualMessage
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of Christophe Marcellin Broker. ` +
             `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
             `Give a direct and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `Never use phrases like "I'm here to help" or "feel free to ask." Consider this context: ` +
+            `Never use phrases like "I'm here to help" or "feel free to ask." Never ask for contact details and take into account the following : ` +
             contextualMessage;
 
         console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
@@ -254,10 +254,11 @@ async function chatOnly(senderId, message, session) {
         const prompt = lang === "fr"
             ? `L'utilisateur vous a fait part de ceci "${contextualMessage}". 
 Répondez naturellement et engagez la conversation comme un conseiller immobilier bienveillant. 
-Montrez de l'intérêt, sans donner de leçon, et relancez subtilement.`
+Montrez de l'intérêt, sans donner de leçon, et relancez subtilement. Ne jamais demander des coordonnées personnelles : `
+            
             : `The user shares this message with you "${contextualMessage}".
 Respond naturally and engagingly, like a supportive real estate advisor.
-Show interest, don’t lecture, and gently keep the conversation flowing.`;
+Show interest, don’t lecture, and gently keep the conversation flowing. Never ask for contact details `;
 
         console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
         console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);

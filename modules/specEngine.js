@@ -142,8 +142,8 @@ function buildSpecSummary(session, lang = "fr") {
     //  console.log("CM on entre dans specSummary");
 
     const summaryHeader = lang === "fr"
-        ? `Voici un récapitulatif, vous pouvez adresser vos questions par la suite:\n\n`
-        : `Here's a short summary of the information provided, you may ask your questions next:\n\n`;
+        ? `*Récapitulatif de mes specs:*\n\n`
+        : `*My specs in short:*\n\n`;
 
     let summary = `${summaryHeader}`;
 
