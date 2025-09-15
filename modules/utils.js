@@ -18,23 +18,31 @@ function stripGptSignature(text) {
 // === 🆕 Historique des conversations par utilisateur ===
 
 
-function buildContextualPrompt(senderId, currentMessage, session, lang = 'fr') {
-    if (!session.conversationHistory) session.conversationHistory = [];
-    session.conversationHistory.push(currentMessage);
-    if (session.conversationHistory.length > 5) {
-        session.conversationHistory.shift(); // garde les 5 derniers
+function buildContextualPrompt(session, lang = "fr") {
+    const history = session.conversationHistory || "";
+    const specs = session.specHistory || "";
+
+    if (lang === "fr") {
+        return `${history}. ${specs}`;
+    } else {
+        return `${history}. ${specs}`;
+    }
+}
+
+function buildHistory(session, message) {
+    if (!session.conversationHistory) {
+        session.conversationHistory = [];
     }
 
-    // Historique excluant le message courant
-    const previous = session.conversationHistory.slice(0, -1).join(' ');
-    const history = previous.trim();
+    // Ajouter le message courant
+    session.conversationHistory.push(message);
 
-    // Specs concaténées
-    const specSummary = session?.specSummary ? session.specSummary.replace(/\n/g, ' ') : "";
-
-    // Retourne juste contexte + specs, sans currentMessage
-    return `${history} ${specSummary}`.trim();
+    // Garder seulement les 5 derniers
+    if (session.conversationHistory.length > 5) {
+        session.conversationHistory = session.conversationHistory.slice(-5);
+    }
 }
+
 
 
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
@@ -90,7 +98,7 @@ const faqMapByKey = {
     }
 };
 
-async function classifyIntent(message, lang = 'fr') {
+async function classifyIntentV1(message, contextualMessage, lang = 'fr') {
     // Petits raccourcis directs
     if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
@@ -128,8 +136,8 @@ async function classifyIntent(message, lang = 'fr') {
 
     const prompt = lang === 'fr'
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
-L'utilisateur peut envoyer soit une question, soit une affirmation.\n\n${faqExamples}\n
-Voici le message de l'utilisateur :\n"${message}"\n\n
+L'utilisateur peut envoyer soit une question, soit une affirmation.\n\n${faqExamples}
+Voici le message de l'utilisateur :"${message}" et un historique de ses questions et affirmations: "${contextualMessage}"
 Catégories disponibles :
 - faq:<catégorie>
 - estimate
@@ -145,8 +153,8 @@ Règles :
 
 Réponds uniquement par un mot : faq:<catégorie>, gpt, declaration ou other.`
         : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
-The user may send either a question or a statement.\n\n${faqExamples}\n
-Here is the user's message:\n"${message}"\n\n
+The user may send either a question or a statement.${faqExamples}
+Here is the user's message "${message}" and a history of his quesstions or statements: "${contextualMessage}"
 Available categories:
 - faq:<category>
 - estimate
@@ -185,6 +193,89 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
         return 'other';
     }
 }
+async function classifyIntent(message, contextualMessage, lang = 'fr') {
+    const lower = message.toLowerCase();
+
+    // 🔎 Pré-filtrage regex pour éviter la confusion FAQ vs Estimate
+    // Cas 1 : FAQ méthodologie d'estimation
+    if (/comment.*estim/i.test(lower) || /méthodolog/i.test(lower) || /procéd/i.test(lower)) {
+        return "faq:consultation";
+    }
+
+    // Cas 2 : Demande de valeur/prix d'un bien
+    if (/combien|vale(u|ur)|prix|peux[- ]?tu estimer|évalue/i.test(lower)) {
+        return "estimate";
+    }
+
+    // Cas 3 : autres regex directes que tu avais déjà
+    if (/carole/i.test(lower)) return "faq:carole";
+    if (/christophe|marcellin/i.test(lower)) return "faq:christophe";
+
+    // Sinon → GPT fait la distinction
+    const prompt = lang === 'fr'
+        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
+Voici le message de l'utilisateur :"${message}" 
+Et un historique de ses messages: "${contextualMessage}"
+
+Catégories disponibles :
+- faq:<catégorie>
+- estimate
+- gpt
+- declaration
+- other
+
+Règles :
+1. FAQ connue → faq:<catégorie>
+2. Estimation/prix → estimate
+3. Question immo hors FAQ → gpt
+4. Affirmation immo → declaration
+5. Sinon → other
+
+Réponds uniquement par un mot : faq:<catégorie>, estimate, gpt, declaration ou other.`
+        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
+Here is the user's message :"${message}" 
+and a history of his questions or statements: "${contextualMessage}"
+
+Available categories:
+- faq:<category>
+- estimate
+- gpt
+- declaration
+- other
+
+Rules:
+1. Known FAQ → faq:<category>
+2. Price/evaluation → estimate
+3. Real estate question not in FAQ → gpt
+4. Real estate statement → declaration
+5. Otherwise → other
+
+Respond with a single word: faq:<category>, estimate, gpt, declaration, or other.`;
+
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4o',
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 20,
+            temperature: 0
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+
+        const raw = response.data.choices?.[0]?.message?.content?.trim();
+        const result = raw?.toLowerCase();
+        console.log(`[classifyIntent] 🔎 Réponse brute GPT = "${raw}"`);
+        console.log(`[FAQ CLASSIFIER] Message : "${message}" → Résultat GPT : ${result}`);
+        return result || 'other';
+
+    } catch (err) {
+        console.error(`[FAQ CLASSIFIER] *** ERREUR GPT : ${err.message}`);
+        return 'other';
+    }
+}
 
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
@@ -197,8 +288,8 @@ async function chatOnly(senderId, message, session) {
     }
 
     const lang = session.language || "fr";
-    const contextualMessage = buildContextualPrompt(senderId, message, session, lang);
-    const classification = await classifyIntent(message, lang);
+    const contextualMessage = buildContextualPrompt(session, lang);
+    const classification = await classifyIntent(message, contextualMessage, lang);
     console.log(`[chatOnly] classification = ${classification}`);
 
     // Cas 1 : FAQ → PAS de quota
@@ -229,21 +320,22 @@ async function chatOnly(senderId, message, session) {
         const prompt = lang === "fr"
             ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
             `Vous parlez au nom du courtier Christophe Marcellin. ` +
-            `Votre rôle est de répondre précisément et de façon concise à toute question liée à l’immobilier. ` +
-            `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
+            `Votre rôle est de répondre de façon précise et concise à toute question liée à l’immobilier. ` +
+            `Donnez une réponse directe, sans salutation, sans reformulation et sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
             `N’utilisez jamais de formules comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            `Ne demandez jamais les coordonnées. ` +
-            `L’historique suivant est fourni uniquement comme contexte: ${contextualMessage}. ` +
-            `Voici le dernier message de l’utilisateur, que vous devez traiter en priorité: ${message}`
+            `Ne demandez jamais les coordonnées.\n\n` +
+            `Répondez à ce message de l'usager:\n${message}\n\n` +
+            `Tenez compte de l'historique des messages:\n${contextualMessage}\n\n`
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
-            `You speak on behalf of Christophe Marcellin Broker. ` +
-            `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
-            `Give a direct and informative answer — no greetings, no restating the question. ` +
-            `You are allowed to give professional, legal, or strategic advice. ` +
-            `Never use phrases like "I'm here to help" or "feel free to ask." Never ask for contact details. ` +
-            `The following history is provided only as background: ${contextualMessage}. ` +
-            `Here is the user's most recent message, which you must address as the priority: ${message}`;
+            `You speak on behalf of broker Christophe Marcellin. ` +
+            `Your job is to answer precisely and concisely any real estate-related question. ` +
+            `Give a direct, informative answer — no greetings, no rephrasing, no fluff. ` +
+            `You may provide professional, legal, or strategic advice when relevant. ` +
+            `Never use phrases such as "I'm here to help" or "feel free to ask". ` +
+            `Never request contact details.\n\n` +
+            `Address this user message:\n${message}\n\n` +
+            `Take into account the message history:\n${contextualMessage}\n\n`;
 
         console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
         console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
@@ -252,28 +344,35 @@ async function chatOnly(senderId, message, session) {
 
     // Cas 4 : Declaration (affirmations)
     if (classification === "declaration") {
-        const contextualMessage = buildContextualPrompt(senderId, message, session, lang);
+        const contextualMessage = buildContextualPrompt(session, lang);
+
         const prompt = lang === "fr"
-            ? `L'utilisateur vous a précédemment partagé ce contexte: ${contextualMessage}. ` +
-            `Voici son dernier message, que vous devez traiter en priorité: "${message}". ` +
-            `Engagez le dialogue au nom du courtier Christophe Marcellin. ` +
+            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
+            `Vous parlez au nom du courtier Christophe Marcellin. ` +
+            `Votre rôle est d'engager un dialogue naturel avec l'utilisateur, en réagissant à ses affirmations liées à l'immobilier. ` +
+            `Soyez précis et concis, évitez toute reformulation inutile. ` +
             `Ne posez pas de questions dont la réponse est déjà présente dans le message ou dans le contexte. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon la nature du message. ` +
             `N’utilisez jamais de formules vides comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            `Vous pouvez poser des questions pour préciser le besoin de l'utilisateur mais ne demandez jamais de coordonnées.`
-            : `The user has previously shared this context: ${contextualMessage}. ` +
-            `Here is the most recent message, which you must address as the priority: "${message}". ` +
-            `Engage in dialogue on behalf of broker Christophe Marcellin. ` +
-            `Do not ask questions whose answers are already contained in the message or the context. ` +
-            `You may provide professional, legal, or strategic advice depending on the nature of the message. ` +
-            `Never use empty phrases such as “I am here to help” or “feel free to ask your questions.” ` +
-            `You may ask questions to clarify the user's needs, but never request contact details.`;
-
+            `Vous pouvez poser des questions pour préciser les besoins de l'utilisateur, mais ne demandez jamais de coordonnées.\n\n` +
+            `Dernier message de l'utilisateur:\n${message}\n\n` +
+            `Tenez compte de l'historique des messages et de ses besoins:\n${contextualMessage}\n\n`
+            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
+            `You speak on behalf of broker Christophe Marcellin. ` +
+            `Your role is to engage in a natural dialogue with the user, reacting to their real estate-related statements. ` +
+            `Be precise and concise, avoid unnecessary rephrasing. ` +
+            `Do not ask questions whose answers are already included in the message or the context. ` +
+            `You may provide professional, legal, or strategic advice depending on the nature of the statement. ` +
+            `Never use empty phrases such as "I'm here to help" or "feel free to ask your questions". ` +
+            `You may ask clarifying questions about the user's needs, but never request contact details.\n\n` +
+            `User's latest message:\n${message}\n\n` +
+            `Take into account the message history and their needs:\n${contextualMessage}\n\n`;
 
         console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
         console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
         return await askGptAndSend(senderId, session, prompt, lang);
     }
+
 
 
     // Cas 5 : Other (hors sujet)
@@ -287,6 +386,7 @@ Respond politely but redirect the conversation back to real estate or our servic
         console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
         return await askGptAndSend(senderId, session, prompt, lang);
     }
+    updateHistory(session, message);
 }
 
 // Fonction utilitaire réutilisée pour GPT/Declaration/Other
@@ -317,10 +417,9 @@ async function askGptAndSend(senderId, session, prompt, lang) {
     }
 }
 
-
 async function handlePriceEstimate(senderId, message, session) {
     //const session = context.session;
-    const lang = session?.lang || "fr";
+    const lang = session?.language || "fr";
 
     console.log("🔍 [PIPELINE] Demande d'estimation détectée");
 
@@ -378,7 +477,7 @@ async function handlePriceEstimate(senderId, message, session) {
           Ne jamais expliquer comment vous êtes arrivé à votre estimé ne jamais référe à la médiane haute. 
           N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. 
           Question: ${message}`
-        : 
+        :
         `You are a virtual assistant specialized in residential and commercial real estate in Quebec. 
         The user wants to obtain a price estimate. 
         Calculate the most recent high median value (if the most recent statistic is from 2023, add 4% per missing year, i.e., 8%). 
@@ -419,6 +518,7 @@ async function handlePriceEstimate(senderId, message, session) {
         await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(qualité statistique : basse)' : '(statistical sample quality : low)'}`, session);
     }
 }
+
 async function checkQuota(senderId, session) {
     const max = await getMaxQuestions(senderId);
     const quota = parseInt(max, 10) || 0;
