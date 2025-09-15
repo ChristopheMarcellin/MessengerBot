@@ -21,21 +21,19 @@ function stripGptSignature(text) {
 function buildContextualPrompt(senderId, currentMessage, session, lang = 'fr') {
     if (!session.conversationHistory) session.conversationHistory = [];
     session.conversationHistory.push(currentMessage);
-
-    // garder maximum 5 messages
     if (session.conversationHistory.length > 5) {
-        session.conversationHistory.shift();
+        session.conversationHistory.shift(); // garde les 5 derniers
     }
 
-    // Historique concaténé (sauf le message courant, qu’on remet devant)
+    // Historique excluant le message courant
     const previous = session.conversationHistory.slice(0, -1).join(' ');
     const history = previous.trim();
 
-    // Specs concaténées (formatées sur une ligne)
+    // Specs concaténées
     const specSummary = session?.specSummary ? session.specSummary.replace(/\n/g, ' ') : "";
 
-    // Tout en une seule ligne : message courant + historique + specs
-    return `${currentMessage} ${history} ${specSummary}`.trim();
+    // Retourne juste contexte + specs, sans currentMessage
+    return `${history} ${specSummary}`.trim();
 }
 
 
@@ -199,6 +197,7 @@ async function chatOnly(senderId, message, session) {
     }
 
     const lang = session.language || "fr";
+    const contextualMessage = buildContextualPrompt(senderId, message, session, lang);
     const classification = await classifyIntent(message, lang);
     console.log(`[chatOnly] classification = ${classification}`);
 
@@ -226,22 +225,25 @@ async function chatOnly(senderId, message, session) {
 
     // Cas 3 : GPT (questions hors FAQ mais immo)
     if (classification === "gpt") {
-        const contextualMessage = buildContextualPrompt(senderId, message, session, lang);
+
         const prompt = lang === "fr"
             ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
             `Vous parlez au nom du courtier Christophe Marcellin. ` +
-            `Votre rôle est de répondre immédiatement, précisément et de façon concise à toute question liée à l’immobilier. ` +
+            `Votre rôle est de répondre précisément et de façon concise à toute question liée à l’immobilier. ` +
             `Donnez une réponse directe, sans salutation, sans reformulation, sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `N’utilisez jamais de formule comme “je suis là pour vous aider” ou “posez-moi vos questions”. Ne jamais demander les coordonnées et tenir compte de ce qui suit: ` +
-            contextualMessage
+            `N’utilisez jamais de formules comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
+            `Ne demandez jamais les coordonnées. ` +
+            `L’historique suivant est fourni uniquement comme contexte: ${contextualMessage}. ` +
+            `Voici le dernier message de l’utilisateur, que vous devez traiter en priorité: ${message}`
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of Christophe Marcellin Broker. ` +
             `Your job is to immediately, precisely and concisely answer any real estate-related question. ` +
             `Give a direct and informative answer — no greetings, no restating the question. ` +
             `You are allowed to give professional, legal, or strategic advice. ` +
-            `Never use phrases like "I'm here to help" or "feel free to ask." Never ask for contact details and take into account the following : ` +
-            contextualMessage;
+            `Never use phrases like "I'm here to help" or "feel free to ask." Never ask for contact details. ` +
+            `The following history is provided only as background: ${contextualMessage}. ` +
+            `Here is the user's most recent message, which you must address as the priority: ${message}`;
 
         console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
         console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
@@ -252,13 +254,21 @@ async function chatOnly(senderId, message, session) {
     if (classification === "declaration") {
         const contextualMessage = buildContextualPrompt(senderId, message, session, lang);
         const prompt = lang === "fr"
-            ? `L'utilisateur vous a fait part de ceci "${contextualMessage}". 
-Répondez naturellement et engagez la conversation comme un conseiller immobilier bienveillant. 
-Montrez de l'intérêt, sans donner de leçon, et relancez subtilement. Ne jamais demander des coordonnées personnelles : `
-            
-            : `The user shares this message with you "${contextualMessage}".
-Respond naturally and engagingly, like a supportive real estate advisor.
-Show interest, don’t lecture, and gently keep the conversation flowing. Never ask for contact details `;
+            ? `L'utilisateur vous a précédemment partagé ce contexte: ${contextualMessage}. ` +
+            `Voici son dernier message, que vous devez traiter en priorité: "${message}". ` +
+            `Engagez le dialogue au nom du courtier Christophe Marcellin. ` +
+            `Ne posez pas de questions dont la réponse est déjà présente dans le message ou dans le contexte. ` +
+            `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon la nature du message. ` +
+            `N’utilisez jamais de formules vides comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
+            `Vous pouvez poser des questions pour préciser le besoin de l'utilisateur mais ne demandez jamais de coordonnées.`
+            : `The user has previously shared this context: ${contextualMessage}. ` +
+            `Here is the most recent message, which you must address as the priority: "${message}". ` +
+            `Engage in dialogue on behalf of broker Christophe Marcellin. ` +
+            `Do not ask questions whose answers are already contained in the message or the context. ` +
+            `You may provide professional, legal, or strategic advice depending on the nature of the message. ` +
+            `Never use empty phrases such as “I am here to help” or “feel free to ask your questions.” ` +
+            `You may ask questions to clarify the user's needs, but never request contact details.`;
+
 
         console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
         console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
