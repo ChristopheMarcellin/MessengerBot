@@ -208,6 +208,7 @@ async function chatOnly(senderId, message, session) {
 
     // Cas 2 : ESTIMATE
     if (classification === "estimate") {
+        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
         await handlePriceEstimate(senderId, message, session);
         return;
     }
@@ -230,7 +231,8 @@ async function chatOnly(senderId, message, session) {
             `You are allowed to give professional, legal, or strategic advice. ` +
             `Never use phrases like "I'm here to help" or "feel free to ask. Consider this context: " ` +
             contextualMessage+session.specSummary;
-
+        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
+        console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
         return await askGptAndSend(senderId, session, prompt, lang);
     }
 
@@ -244,7 +246,8 @@ Montrez de l'intérêt, sans donner de leçon, et relancez subtilement.`
             : `The user made a statement: "${message}" following those statements "${contextualMessage}" and "${session.specSummary}".
 Respond naturally and engagingly, like a supportive real estate advisor.
 Show interest, don’t lecture, and gently keep the conversation flowing.`;
-
+        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
+        console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
         return await askGptAndSend(senderId, session, prompt, lang);
     }
 
@@ -255,7 +258,8 @@ Show interest, don’t lecture, and gently keep the conversation flowing.`;
 Répondez poliment mais ramenez la conversation vers l'immobilier ou nos services.`
             : `The user's message seems unrelated to real estate: "${message}". 
 Respond politely but redirect the conversation back to real estate or our services.`;
-
+        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
+        console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
         return await askGptAndSend(senderId, session, prompt, lang);
     }
 }

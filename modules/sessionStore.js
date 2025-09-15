@@ -36,7 +36,7 @@ function resetSession(context) {
 
     Object.assign(session, {
         senderId: context.senderId,
-        language: "fr",
+        language: "",
 	    termsShown: false,
         projectType: "?",
         propertyUsage: "",
