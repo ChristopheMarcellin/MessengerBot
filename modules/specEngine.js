@@ -155,14 +155,14 @@ function buildSpecSummary(session, lang = "fr") {
     }
 
     if (session.propertyUsage && !["?", "E", "0"].includes(session.projectType)) {
-        const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
+        const translatedProjectType = getDisplayValue("propertyUsage", session.propertyUsage, lang);
         summary += `${translatedProjectType}\n`;
     }
 
     // Afficher propertyUsage et toutes les autres specs, sauf si "?", "E" ou "0"
     for (const key in fields) {
         if (!fields[key] || ["?", "E", "0"].includes(fields[key])) continue;
-        if (field[key] === propertyUsage) continue;
+        if (key === propertyUsage) continue;
         const display = getDisplayValue(key, fields[key], lang);
         summary += `${display}\n`;
     }
