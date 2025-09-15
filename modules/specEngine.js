@@ -347,24 +347,34 @@ function buildExportRecord(session) {
         questionCount: session.questionCount || 0,
         maxQuestions: session.maxQuestions || 40,
         timestamp: new Date().toISOString(),
-        ProjectDate: session.ProjectDate
+        ProjectDate: session.ProjectDate || ""
     };
 
-    // Log des champs fixes
-    Object.entries(flatRecord).forEach(([key, value]) => {
-    //    console.log(`[EXPORT] Champ: ${key} → Valeur: ${value}`);
-    });
+    // Mapping avec displayMap
+    const lang = session.language || "fr";
+    if (session.projectType && !["?", "0"].includes(session.projectType)) {
+        flatRecord.projectType = getDisplayValue("projectType", session.projectType, lang);
+    } else {
+        flatRecord.projectType = "";
+    }
 
-    // Ajoute toutes les specs enregistrées
+    if (session.specValues?.propertyUsage && !["?", "0"].includes(session.specValues.propertyUsage)) {
+        flatRecord.propertyUsage = getDisplayValue("propertyUsage", session.specValues.propertyUsage, lang);
+    } else {
+        flatRecord.propertyUsage = "";
+    }
+
+    // Ajoute toutes les autres specs (sauf propertyUsage)
     if (session.specValues && typeof session.specValues === 'object') {
         Object.entries(session.specValues).forEach(([key, value]) => {
+            if (key === "propertyUsage") return; // exclure pour éviter doublon
             flatRecord[key] = value;
-         //   console.log(`[EXPORT] Champ: ${key} (spec) → Valeur: ${value}`);
         });
     }
 
     return flatRecord;
 }
+
 
 
 
