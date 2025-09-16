@@ -194,61 +194,71 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
     }
 }
 async function classifyIntent(message, contextualMessage, lang = 'fr') {
-    const lower = message.toLowerCase();
+    // Petits raccourcis directs
+    if (/carole/i.test(message)) return "faq:carole";
+    if (/christophe|marcellin/i.test(message)) return "faq:christophe";
 
-    // 🔎 Pré-filtrage regex pour éviter la confusion FAQ vs Estimate
-    // Cas 1 : FAQ méthodologie d'estimation
-    if (/comment.*estim/i.test(lower) || /méthodolog/i.test(lower) || /procéd/i.test(lower)) {
-        return "faq:consultation";
-    }
+    const faqExamples = lang === 'fr'
+        ? `Exemples :\n` +
+        `"Quand êtes-vous ouverts ?" → faq:hours\n` +
+        `"Comment procédez-vous pour faire l'évaluation d'une propriété ?" → faq:assessment\n` +
+        `"Est-ce que vous aidez pour la location ?" → faq:rental\n` +
+        `"Puis-je vous appeler directement ?" → faq:contact\n` +
+        `"Qui est carole baillargeon, quelle est son expérience ?" → faq:carole\n` +
+        `"Qui est christophe marcellin, quelle est son expérience ?" → faq:christophe\n` +
+        `"Que pouvez-vous me dire de votre équipe ?" → faq:team\n` +
+        `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
+        `"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
+        `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
+        `"Faites-vous de la valorisation immobilière ou du home staging ?" → faq:homestaging\n` +
+        `"Parlez-moi de votre site web personnalisé" → faq:website\n`
+        : `Examples:\n` +
+        `"What are your business hours?" → faq:hours\n` +
+        `"How does a property assessment work?" → faq:assessment\n` +
+        `"Do you handle rentals?" → faq:rental\n` +
+        `"Can I call you directly?" → faq:contact\n` +
+        `"Who is Carole Baillargeon, what is her experience?" → faq:carole\n` +
+        `"Who is Christophe Marcellin, what is his experience?" → faq:christophe\n` +
+        `"What can you tell me about your team?" → faq:team\n` +
+        `"Do you work with commercial properties?" → faq:commercial\n` +
+        `"What is your address, where are your offices located?" → faq:office\n` +
+        `"Do you work on the South Shore or in Montreal?" → faq:territory\n` +
+        `"Do you do home staging?" → faq:homestaging\n` +
+        `"Tell me about your customized website" → faq:website\n`;
 
-    // Cas 2 : Demande de valeur/prix d'un bien
-    if (/combien|vale(u|ur)|prix|peux[- ]?tu estimer|évalue/i.test(lower)) {
-        return "estimate";
-    }
-
-    // Cas 3 : autres regex directes que tu avais déjà
-    if (/carole/i.test(lower)) return "faq:carole";
-    if (/christophe|marcellin/i.test(lower)) return "faq:christophe";
-
-    // Sinon → GPT fait la distinction
     const prompt = lang === 'fr'
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
-Voici le message de l'utilisateur :"${message}" 
-Et un historique de ses messages: "${contextualMessage}"
-
+L'utilisateur peut envoyer soit une question, soit une affirmation.\n\n${faqExamples}
+Voici le message de l'utilisateur :"${message}" et un historique de ses messages: "${contextualMessage}"
 Catégories disponibles :
 - faq:<catégorie>
 - estimate
-- gpt
-- declaration
-- other
-
+- gpt (question immobilière hors FAQ)
+- declaration (affirmation liée à l'immobilier)
+- other (hors immobilier)\n\n
 Règles :
-1. FAQ connue → faq:<catégorie>
-2. Estimation/prix → estimate
-3. Question immo hors FAQ → gpt
-4. Affirmation immo → declaration
-5. Sinon → other
+1. Si le message correspond clairement à une FAQ, réponds par : faq:<catégorie>
+2. Si c'est une question de prix, d'estimation → estimate
+3. Si c'est une question immobilière mais pas dans la FAQ → gpt
+4. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
+5. S'il n'y a rien qui fait référence à de l'immobilier → other
 
-Réponds uniquement par un mot : faq:<catégorie>, estimate, gpt, declaration ou other.`
+Réponds uniquement par un mot : faq:<catégorie>, gpt, declaration ou other.`
         : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
-Here is the user's message :"${message}" 
-and a history of his questions or statements: "${contextualMessage}"
-
+The user may send either a question or a statement.\n\n${faqExamples}
+Here is the user's message "${message}" and a history of his messages: "${contextualMessage}"
 Available categories:
 - faq:<category>
 - estimate
-- gpt
-- declaration
-- other
-
+- gpt (real estate question not in FAQ)
+- declaration (real estate statement)
+- other (unrelated)\n\n
 Rules:
-1. Known FAQ → faq:<category>
-2. Price/evaluation → estimate
-3. Real estate question not in FAQ → gpt
-4. Real estate statement → declaration
-5. Otherwise → other
+1. If the message clearly matches one of our predefined FAQ topics → faq:<category>
+2. If it is about a price or an estimate → estimate
+3. If it is a real estate question but not in the FAQ → gpt
+4. If it is a statement related to real estate (ex: "I want to buy a condo") → declaration
+5. If nothing ties with real estate → other.
 
 Respond with a single word: faq:<category>, estimate, gpt, declaration, or other.`;
 
@@ -267,15 +277,16 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const result = raw?.toLowerCase();
-        console.log(`[classifyIntent] 🔎 Réponse brute GPT = "${raw}"`);
-        console.log(`[FAQ CLASSIFIER] Message : "${message}" → Résultat GPT : ${result}`);
+        console.log(`[classifyIntentV2] 🔎 Réponse brute GPT = "${raw}"`);
+        console.log(`[FAQ CLASSIFIER V2] Message : "${message}" → Résultat GPT : ${result}`);
         return result || 'other';
 
     } catch (err) {
-        console.error(`[FAQ CLASSIFIER] *** ERREUR GPT : ${err.message}`);
+        console.error(`[FAQ CLASSIFIER V2] *** ERREUR GPT : ${err.message}`);
         return 'other';
     }
 }
+
 
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
