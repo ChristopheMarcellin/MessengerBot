@@ -193,6 +193,9 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
         return 'other';
     }
 }
+
+
+//////////////////////////////////////////////////
 async function classifyIntent(message, contextualMessage, lang = 'fr') {
     // Petits raccourcis directs
     if (/carole/i.test(message)) return "faq:carole";
@@ -277,8 +280,8 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const result = raw?.toLowerCase();
-        console.log(`[classifyIntentV2] 🔎 Réponse brute GPT = "${raw}"`);
-        console.log(`[FAQ CLASSIFIER V2] Message : "${message}" → Résultat GPT : ${result}`);
+        console.log(`[yyyy classifyIntentV2] 🔎 Réponse brute GPT = "${raw}"`);
+        console.log(`[yyyy FAQ CLASSIFIER V2] Message : "${message}" et "${contextualMessage}"→ Résultat GPT : ${result}`);
         return result || 'other';
 
     } catch (err) {
@@ -287,7 +290,7 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
     }
 }
 
-
+/////////////////////////////////////////////////
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
         if (message && isNaN(message)) { // exclure numériques simples
