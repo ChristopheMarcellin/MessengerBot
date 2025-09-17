@@ -98,7 +98,7 @@ const faqMapByKey = {
     }
 };
 
-async function classifyIntentV1(message, contextualMessage, lang = 'fr') {
+async function classifyIntent(message, contextualMessage, lang = 'fr') {
     // Petits raccourcis directs
     if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
@@ -281,12 +281,12 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const result = raw?.toLowerCase();
-        console.log(`[yyyy classifyIntentV2] 🔎 Réponse brute GPT = "${raw}"`);
-        console.log(`[yyyy FAQ CLASSIFIER V2] Message : "${message}" et "${contextualMessage}"→ Résultat GPT : ${result}`);
+        console.log(`[yyyy classifyIntent] 🔎 Réponse brute GPT = "${raw}"`);
+        console.log(`[yyyy FAQ CLASSIFIER] Message : "${message}" et "${contextualMessage}"→ Résultat GPT : ${result}`);
         return result || 'other';
 
     } catch (err) {
-        console.error(`[FAQ CLASSIFIER V2] *** ERREUR GPT : ${err.message}`);
+        console.error(`[FAQ CLASSIFIER] *** ERREUR GPT : ${err.message}`);
         return 'other';
     }
 }
