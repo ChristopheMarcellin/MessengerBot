@@ -275,6 +275,7 @@ Respond with a single word: faq:<category>, estimate, gpt, declaration, or other
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+
             }
         });
 
