@@ -18,17 +18,35 @@ function stripGptSignature(text) {
 // === 🆕 Historique des conversations par utilisateur ===
 
 
+//function buildContextualPrompt(session, lang = "fr") {
+//    const history = session.conversationHistory || "";
+//   // const history = (session.conversationHistory || []).map(m => `- ${m}`).join("\n");//version alternative
+//    const specs = session.specHistory || "";
+
+//    if (lang === "fr") {
+//        return `${history}. ${specs}`;
+//    } else {
+//        return `${history}. ${specs}`;
+//    }
+//}
+
 function buildContextualPrompt(session, lang = "fr") {
     const history = session.conversationHistory || "";
-   // const history = (session.conversationHistory || []).map(m => `- ${m}`).join("\n");//version alternative
     const specs = session.specHistory || "";
 
-    if (lang === "fr") {
-        return `${history}. ${specs}`;
-    } else {
-        return `${history}. ${specs}`;
-    }
+    console.log("[buildContextualPrompt] -------------------------");
+    console.log(`[buildContextualPrompt] Lang = ${lang}`);
+    console.log(`[buildContextualPrompt] conversationHistory =`, history);
+    console.log(`[buildContextualPrompt] specHistory =`, specs);
+
+    const result = `${history}. ${specs}`;
+    console.log(`[buildContextualPrompt] RESULT = "${result}"`);
+    console.log("[buildContextualPrompt] -------------------------");
+
+    return result;
 }
+
+
 
 function buildConversationHistory(session, message) {
     if (!session.conversationHistory) {
@@ -300,7 +318,7 @@ Répondez poliment mais ramenez la conversation vers l'immobilier ou nos service
             : `The user's message seems unrelated to real estate: "${message}". 
 Respond politely but redirect the conversation back to real estate or our services.`;
         console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
-        console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
+        console.log(`[YYYYYY CHATONLY INTENT: "${message}" and a history of his messages: "${contextualMessage}" `)
         return await askGptAndSend(senderId, session, prompt, lang);
     }
     buildConversationHistory(session, message);
