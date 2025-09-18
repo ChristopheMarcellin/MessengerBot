@@ -34,14 +34,14 @@ function buildContextualPrompt(session, lang = "fr") {
     const history = session.conversationHistory || "";
     const specs = session.specSummary || "";
 
-    console.log("[buildContextualPrompt] -------------------------");
-    console.log(`[buildContextualPrompt] Lang = ${lang}`);
-    console.log(`[buildContextualPrompt] conversationHistory =`, history);
-    console.log(`[buildContextualPrompt] specSummary =`, specs);
+    console.log("[zzzz buildContextualPrompt] -------------------------");
+    console.log(`[zzzz buildContextualPrompt] Lang = ${lang}`);
+    console.log(`[zzzz buildContextualPrompt] conversationHistory =`, history);
+    console.log(`[zzzz buildContextualPrompt] specSummary =`, specs);
 
     const result = `${history}. ${specs}`;
-    console.log(`[buildContextualPrompt] RESULT = "${result}"`);
-    console.log("[buildContextualPrompt] -------------------------");
+    console.log(`[zzzz buildContextualPrompt] RESULT = "${result}"`);
+    console.log("[zzzz buildContextualPrompt] -------------------------");
 
     return result;
 }
@@ -220,6 +220,14 @@ async function chatOnly(senderId, message, session) {
     }
 
     const lang = session.language || "fr";
+
+
+
+        dumpSession(session, "CHATONLY-START");
+
+
+
+
     const contextualMessage = buildContextualPrompt(session, lang);
     const classification = await classifyIntent(message, contextualMessage, lang);
     buildConversationHistory(session, message);

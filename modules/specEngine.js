@@ -183,7 +183,30 @@ function buildSpecSummaryBackup(session, lang = "fr") {
     session.specSummary = summary;
     return summary;
 }
+//////////////////////////////////
+function dumpSession(session, label = "DUMP") {
+    if (!session) {
+        console.log(`[${label}] Session = null/undefined`);
+        return;
+    }
 
+    let out = "";
+    for (const key in session) {
+        if (!Object.prototype.hasOwnProperty.call(session, key)) continue;
+        let val = session[key];
+        try {
+            if (typeof val === "object" && val !== null) {
+                val = JSON.stringify(val);
+            }
+        } catch (e) {
+            val = "[unstringifiable]";
+        }
+        out += `${key}:"${val}", `;
+    }
+
+    console.log(`[${label}] ${out}`);
+}
+//////////////////////////////////
 function buildSpecSummary(session, lang = "fr") {
     console.log("[SpecEngine] buildSpecSummary");
     const fields = session.specValues;
