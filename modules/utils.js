@@ -32,12 +32,12 @@ function stripGptSignature(text) {
 
 function buildContextualPrompt(session, lang = "fr") {
     const history = session.conversationHistory || "";
-    const specs = session.specHistory || "";
+    const specs = session.specSummary || "";
 
     console.log("[buildContextualPrompt] -------------------------");
     console.log(`[buildContextualPrompt] Lang = ${lang}`);
     console.log(`[buildContextualPrompt] conversationHistory =`, history);
-    console.log(`[buildContextualPrompt] specHistory =`, specs);
+    console.log(`[buildContextualPrompt] specSummary =`, specs);
 
     const result = `${history}. ${specs}`;
     console.log(`[buildContextualPrompt] RESULT = "${result}"`);
@@ -47,22 +47,19 @@ function buildContextualPrompt(session, lang = "fr") {
 }
 
 
-
 function buildConversationHistory(session, message) {
     if (!session.conversationHistory) {
         session.conversationHistory = [];
     }
 
-    // Ajouter le message courant
     session.conversationHistory.push(message);
 
-    // Garder seulement les 5 derniers
     if (session.conversationHistory.length > 5) {
         session.conversationHistory = session.conversationHistory.slice(-5);
     }
+
+    console.log(`[buildConversationHistory] ajout="${message}" → hist=${JSON.stringify(session.conversationHistory)}`);
 }
-
-
 
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
 const faqMapByKey = {
@@ -225,6 +222,8 @@ async function chatOnly(senderId, message, session) {
     const lang = session.language || "fr";
     const contextualMessage = buildContextualPrompt(session, lang);
     const classification = await classifyIntent(message, contextualMessage, lang);
+    buildConversationHistory(session, message);
+
     console.log(`[chatOnly] classification = ${classification}`);
 
     // Cas 1 : FAQ → PAS de quota
@@ -321,7 +320,7 @@ Respond politely but redirect the conversation back to real estate or our servic
         console.log(`[YYYYYY CHATONLY INTENT: "${message}" and a history of his messages: "${contextualMessage}" `)
         return await askGptAndSend(senderId, session, prompt, lang);
     }
-    buildConversationHistory(session, message);
+
 }
 
 // Fonction utilitaire réutilisée pour GPT/Declaration/Other
