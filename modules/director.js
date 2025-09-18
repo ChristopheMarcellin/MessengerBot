@@ -72,7 +72,7 @@ async function runDirector(context) {
     const nextSpec = getNextSpec(session);
 
 
- //   console.log(`[DIRECTOR] NextSpec recalculée = _${nextSpec}_`);
+    console.log(`[zzzz DIRECTOR is dealing with this spec] NextSpec recalculée = _${nextSpec}_`);
 
 
     //SOMMAIRE

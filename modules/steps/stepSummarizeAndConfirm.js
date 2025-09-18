@@ -3,6 +3,7 @@ const { sendMessage } = require('../messenger');
 const { exportToGoogleSheets } = require('../googleData');
 
 async function stepSummarizeAndConfirm(context) {
+    console.log("[stepSummarize] summarize and confirm");
     const { senderId } = context;
     let { session } = context;
     const lang = session?.language || 'fr';

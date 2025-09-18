@@ -185,6 +185,7 @@ function buildSpecSummaryBackup(session, lang = "fr") {
 }
 
 function buildSpecSummary(session, lang = "fr") {
+    console.log("[SpecEngine] buildSpecSummary");
     const fields = session.specValues;
     //  console.log("CM on entre dans specSummary");
 
