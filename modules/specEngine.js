@@ -138,7 +138,9 @@ function getDisplayValue(field, value, lang = "fr") {
     const map = displayMap[field]?.[lang];
     return map?.[value] ?? value;
 }
-function buildSpecSummary(session, lang = "fr") {
+
+//////////////////////////////////////////////////////////////////
+function buildSpecSummaryBackup(session, lang = "fr") {
     const fields = session.specValues;
     //  console.log("CM on entre dans specSummary");
 
@@ -162,7 +164,7 @@ function buildSpecSummary(session, lang = "fr") {
     // Afficher propertyUsage et toutes les autres specs, sauf si "?", "E" ou "0"
     for (const key in fields) {
         if (!fields[key] || ["?", "E", "0"].includes(fields[key])) continue;
-        if (key === "propertyUsage") continue;
+        if (key === propertyUsage) continue;
         const display = getDisplayValue(key, fields[key], lang);
         summary += `${display}\n`;
     }
@@ -182,6 +184,50 @@ function buildSpecSummary(session, lang = "fr") {
     return summary;
 }
 
+function buildSpecSummary(session, lang = "fr") {
+    const fields = session.specValues;
+    //  console.log("CM on entre dans specSummary");
+
+    const summaryHeader = lang === "fr"
+        ? `*Récapitulatif de mon objectif:*\n\n`
+        : `*My objective in short:*\n\n`;
+
+    let summary = `${summaryHeader}`;
+
+    // Toujours afficher le type de projet (projectType), sauf si "?", "E" ou "0"
+    if (session.projectType && !["?", "E", "0"].includes(session.projectType)) {
+        const translatedProjectType = getDisplayValue("projectType", session.projectType, lang);
+        summary += `${translatedProjectType}\n`;
+    }
+
+    // Afficher propertyUsage si défini
+    if (session.propertyUsage && !["?", "E", "0"].includes(session.propertyUsage)) {
+        const translatedPropertyUsage = getDisplayValue("propertyUsage", session.propertyUsage, lang);
+        summary += `${translatedPropertyUsage}\n`;
+    }
+
+    // Afficher toutes les autres specs sauf propertyUsage, si valides
+    for (const key in fields) {
+        if (!fields[key] || ["?", "E", "0"].includes(fields[key])) continue;
+        if (key === "propertyUsage") continue;
+        const display = getDisplayValue(key, fields[key], lang);
+        summary += `${display}\n`;
+    }
+
+    const footer = lang === "fr"
+        ? `Merci, je suis prêt à échanger et à répondre à vos questions en matière d'immobilier.\n\n` +
+        `Mes réponses sont à titre de référence seulement et peuvent contenir des erreurs.\n` +
+        `Mieux vaut toujours valider avec un professionnel qualifié de l'immobilier de notre équipe.\n\n` +
+        `Plus votre question est précise, plus ma réponse le sera, comment puis-je vous aider ?`
+        : `Thank you, I am ready to answer your real estate questions.\n\n` +
+        `My answers are for reference purposes only and may contain errors.\n` +
+        `It is always better to confirm with a qualified real estate professional from our team.\n\n` +
+        `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction, how may I help you ?`;
+
+    summary += `${footer}`;
+    session.specSummary = summary;
+    return summary;
+}
 
 //version précédente (original)
 //function buildSpecSummary(session, lang = "fr") {

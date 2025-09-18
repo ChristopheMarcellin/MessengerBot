@@ -30,7 +30,7 @@ function buildContextualPrompt(session, lang = "fr") {
     }
 }
 
-function buildHistory(session, message) {
+function buildConversationHistory(session, message) {
     if (!session.conversationHistory) {
         session.conversationHistory = [];
     }
@@ -303,7 +303,7 @@ Respond politely but redirect the conversation back to real estate or our servic
         console.log(`[YYYYYY CHATONLY INTENT: "${prompt}" `)
         return await askGptAndSend(senderId, session, prompt, lang);
     }
-    buildHistory(session, message);
+    buildConversationHistory(session, message);
 }
 
 // Fonction utilitaire réutilisée pour GPT/Declaration/Other
