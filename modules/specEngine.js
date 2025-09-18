@@ -162,7 +162,7 @@ function buildSpecSummary(session, lang = "fr") {
     // Afficher propertyUsage et toutes les autres specs, sauf si "?", "E" ou "0"
     for (const key in fields) {
         if (!fields[key] || ["?", "E", "0"].includes(fields[key])) continue;
-        if (key === propertyUsage) continue;
+        if (key === "propertyUsage") continue;
         const display = getDisplayValue(key, fields[key], lang);
         summary += `${display}\n`;
     }
