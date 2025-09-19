@@ -271,6 +271,8 @@ async function chatOnly(senderId, message, session) {
             `Never use phrases such as "I'm here to help" or "feel free to ask". ` +
             `Never request contact details.\n\n` +
             `Address this user message:\n${message} ${contextualMessage}\n\n`;
+        console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
+        return await askGptAndSend(senderId, session, prompt, lang);
 
     }
 
@@ -297,10 +299,13 @@ async function chatOnly(senderId, message, session) {
             `Never use empty phrases such as "I'm here to help" or "feel free to ask your questions". ` +
             `You may ask clarifying questions about the user's needs, but never request contact details.\n\n` +
             `User's latest message:\n${message}${contextualMessage}\n\n`;
-    }
 
     console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
     return await askGptAndSend(senderId, session, prompt, lang);
+
+    }
+
+
 
     // Cas 5 : Other (hors sujet)
     if (classification === "other") {
