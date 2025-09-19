@@ -37,10 +37,10 @@ Vous pouvez dire:
         },
 
         garage: {
-            en: `🚗 Do you need a garage - If so, how many minimum? 
+            en: `🅿️ Do you need a garage - If so, how many minimum? 
 
 (provide a number only please, 0 for none) ?`,
-            fr: `🚗 Avez-vous besoin d’un garage - Si oui, combien au minimum ? 
+            fr: `🅿️ Avez-vous besoin d’un garage - Si oui, combien au minimum ? 
 
 (le nombre SVP, 0 pour aucun)`,
         },
@@ -85,9 +85,9 @@ You may say:
         },
 
         garage: {
-            en: `🚗 How many garage spaces do you have? 
+            en: `🅿️ How many garage spaces do you have? 
 (a number only please)?`,
-            fr: `🚗 Combien d'espace garage avez-vous ? 
+            fr: `🅿️ Combien d'espace garage avez-vous ? 
 
 (un nombre seulement SVP)`,
         },
@@ -147,28 +147,35 @@ Vous pouvez dire:
         expectations: {
             fr: `✨ Dictez vos attentes: 
 
-Par exemple: 
+Par exemple si vous achetez: 
 
-🏊‍♂️ Je veux une piscine creusée (incontournable),  
+🏊‍♂️ Je veux une piscine creusée (incontournable)
 
-🔥 Je veux un foyer (souhaitable),  
+🔥 Je veux un foyer (souhaitable)
 
-⚖️ Je veux vendre sans garantie légale,  
+Si vous vendez:
 
-🎭 Je veux un service de "home staging"`,
+⚖️ Je veux vendre sans garantie légale
+
+🎭 Je veux un service de "home staging"
+
+Etc.`,
 
             en: `✨ State your expectations: 
 
-For example you may say: 
+For example if your buying you may say: 
 
-🏊‍♂️ Inground pool (a must),  
+🏊‍♂️ Inground pool (a must) 
 
-🔥 I'd like a Fireplace (nice to have),  
+🔥  A Fireplace (nice to have)
 
-⚖️ I want to sell without legal warranty,  
+If you're selling:
 
-🎭 I need a home staging service`
-      
+⚖️ I want to sell without legal warranty
+
+🎭 I need a home staging service
+
+Etc.`      
     }
 
 ,
@@ -246,13 +253,13 @@ Let’s start with your contact details — may I have your *first name* please?
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ Les alertes Web seulement SVP`,
+3️⃣ Des alertes Web (acheteurs seulement)`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
 1️⃣ Yes  
 2️⃣ No  
-3️⃣ Web Alerts only please`,
+3️⃣ Web Alerts (for buyers only)`,
     }
 ,
 
@@ -290,12 +297,12 @@ function getPromptForProjectType(lang = 'fr') {
 function getPromptForPropertyUsage(lang = 'fr') {
 
   return     lang === 'en'
-            ? `🏠 To be precise, please enter the option number that corresponds to the type of property you have in mind:\n
+            ? `🏠 To be precise, please enter the option number that corresponds to the type of property you are refering to:\n
 1️⃣ Single-family home  
 2️⃣ Condo  
 3️⃣ Apartment  
 4️⃣ Multiplex`
-            : `🏠 Veuillez me préciser le type de propriété qui vous intéresse, en m'indiquant le numéro correspondant :\n
+            : `🏠 Veuillez me préciser le type de propriété concerné, en m'indiquant le numéro correspondant :\n
 1️⃣ Unifamiliale  
 2️⃣ Condo  
 3️⃣ Logement  

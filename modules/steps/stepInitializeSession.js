@@ -15,12 +15,18 @@ async function stepInitializeSession(context) {
 
     // Manage end session call
     if (isEndSession) {
-
         session = resetSession(context);
+
+        // ✅ Détecter immédiatement la langue du prochain message
+        if (isText(message) && !isNumeric(message)) {
+            session.language = detectLanguageFromText(message);
+        }
+        if (!session.language) {
+            session.language = "fr";  // fallback
+        }
+
         context.session = session;
-       // context.session.mode = 'end session';
-        // DEBUG VERROU
-        console.log('[INIT end session] Session explicitement remise à null.');
+        console.log(`[INIT end session] Session reset, langue='${session.language}' pour '${message}'`);
         return false;
     }
 

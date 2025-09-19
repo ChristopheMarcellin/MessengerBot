@@ -321,8 +321,8 @@ async function chatOnly(senderId, message, session) {
         } else {
             // Cas 2: GPT n'a pas compris
             const reformulateMsg = lang === "fr"
-                ? "Pouvez-vous reformuler votre message ? Ma compréhension se limite à l'immobilier."
-                : "Could you rephrase your message? My understanding is limited to real estate.";
+                ? "Pouvez-vous reformuler votre message SVP ? Je n'arrive pas à faire un lien avec l'immobilier."
+                : "Could you rephrase your message please ? I'm unable to comprehend how it relates to real estate.";
             await sendMessage(senderId, reformulateMsg, session);
         }
         return true;
