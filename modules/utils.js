@@ -126,8 +126,11 @@ function buildConversationHistory(session, message) {
         session.conversationHistory = session.conversationHistory.slice(-5);
     }
 
-    console.log(`[ZZZZZ buildConversationHistory] ajout="${message}" → hist=${JSON.stringify(session.conversationHistory)}`);
+    console.log(
+        `[ZZZZZ buildConversationHistory] ajout="${message}" → hist=${JSON.stringify(session.conversationHistory)} | projectType="${session.projectType}"`
+    );
 }
+
 
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
 const faqMapByKey = {
