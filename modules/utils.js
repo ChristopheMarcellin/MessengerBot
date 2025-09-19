@@ -693,7 +693,7 @@ function detectLanguageFromText(text) {
 
     // ✅ Détection anglais
     const englishRegex =
-        /\b(the|house|hello|hi|property|buy|sell|good|morning|evening|you|your)\b/i.test(sample);
+        /\b(the|house|hello|hi|hey|yo|wassup|in|out|is|property|buy|sell|good|morning|evening|night|how|are|is|you|your)\b/i.test(sample);
 
     let detected = "fr"; // valeur par défaut
     if (frenchRegex && !englishRegex) {
@@ -702,8 +702,8 @@ function detectLanguageFromText(text) {
         detected = "en";
     } else if (englishRegex && frenchRegex) {
         // ⚖️ Cas mixte : on choisit selon la majorité des mots
-        const frMatches = sample.match(/\b(le|la|est|une|bonjour|salut|allo|propriété|acheter|vendre|maison|ça|vous|tu|j’|je)\b/gi) || [];
-        const enMatches = sample.match(/\b(the|house|hello|hi|property|buy|sell|good|morning|evening|you|your)\b/gi) || [];
+        const frMatches = sample.match(/\b(le|la|est|une|bonjour|salut|allo|propriété|acheter|vendre|maison|ça|vous|tu|j’|je|il|vous)\b/gi) || [];
+        const enMatches = sample.match(/\b(the|house|hello|hi|property|buy|sell|good|morning|evening|yo|you|your|are|is|was|were|in|so|it|and)\b/gi ) || [];
         detected = frMatches.length >= enMatches.length ? "fr" : "en";
     }
 
