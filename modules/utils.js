@@ -30,22 +30,90 @@ function stripGptSignature(text) {
 //    }
 //}
 
-function buildContextualPrompt(session, lang = "fr") {
-    const history = session.conversationHistory || "";
-    const specs = session.specSummary || "";
+function buildFAQPrompt(message, lang = "fr") {
+    const faqExamples = lang === "fr"
+        ? `Exemples :\n` +
+        `"Quand êtes-vous ouverts ?" → faq:hours\n` +
+        `"Comment procédez-vous pour faire l'évaluation d'une propriété ?" → faq:assessment\n` +
+        `"Est-ce que vous aidez pour la location ?" → faq:rental\n` +
+        `"Puis-je vous appeler directement ?" → faq:contact\n` +
+        `"Qui est Carole Baillargeon ?" → faq:carole\n` +
+        `"Qui est Christophe Marcellin ?" → faq:christophe\n` +
+        `"Que pouvez-vous me dire de votre équipe ?" → faq:team\n` +
+        `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
+        `"Quelle est votre adresse ?" → faq:office\n` +
+        `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
+        `"Faites-vous du home staging ?" → faq:homestaging\n` +
+        `"Parlez-moi de votre site web personnalisé" → faq:website\n`
+        : `Examples:\n` +
+        `"What are your business hours?" → faq:hours\n` +
+        `"How does a property assessment work?" → faq:assessment\n` +
+        `"Do you handle rentals?" → faq:rental\n` +
+        `"Can I call you directly?" → faq:contact\n` +
+        `"Who is Carole Baillargeon?" → faq:carole\n` +
+        `"Who is Christophe Marcellin?" → faq:christophe\n` +
+        `"What can you tell me about your team?" → faq:team\n` +
+        `"Do you work with commercial properties?" → faq:commercial\n` +
+        `"What is your address?" → faq:office\n` +
+        `"Do you work on the South Shore or in Montreal?" → faq:territory\n` +
+        `"Do you do home staging?" → faq:homestaging\n` +
+        `"Tell me about your customized website" → faq:website\n`;
 
-    console.log("[zzzz buildContextualPrompt] -------------------------");
-    console.log(`[zzzz buildContextualPrompt] Lang = ${lang}`);
-    console.log(`[zzzz buildContextualPrompt] conversationHistory =`, history);
-    console.log(`[zzzz buildContextualPrompt] specSummary =`, specs);
+    return lang === "fr"
+        ? `Tu es un assistant virtuel spécialisé en immobilier au Québec.\n\n${faqExamples}\nVoici le message de l'utilisateur : "${message}"\n\nRéponds uniquement par : faq:<catégorie> ou "none".`
+        : `You are a virtual assistant specialized in real estate in Quebec.\n\n${faqExamples}\nHere is the user's message: "${message}"\n\nRespond only with: faq:<category> or "none".`;
+}
+function buildPromptWithContextualPrompt(message, contextualMessage, lang = "fr") {
+    return lang === "fr"
+        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
+L'utilisateur peut envoyer soit une question, soit une affirmation.
 
-    const result = `${history}. ${specs}`;
-    console.log(`[zzzz buildContextualPrompt] RESULT = "${result}"`);
-    console.log("[zzzz buildContextualPrompt] -------------------------");
+Message de l'utilisateur : "${message}"
+${contextualMessage}
 
-    return result;
+Règles :
+1. Si c'est une question de prix, d'estimation → estimate
+2. Si c'est une question immobilière → gpt
+3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
+4. S'il n'y a rien qui fait référence à de l'immobilier → other
+
+Réponds uniquement par un mot : estimate, gpt, declaration ou other.`
+        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
+The user may send either a question or a statement.
+
+User's message: "${message}"
+${contextualMessage}
+
+Rules:
+1. If it is about a price or an estimate → estimate
+2. If it is a real estate question → gpt
+3. If it is a real estate statement (ex: "I want to buy a condo") → declaration
+4. If nothing ties to real estate → other
+
+Respond with a single word: estimate, gpt, declaration, or other.`;
 }
 
+//construit les 5 derniers messages avec les specs de l'usager
+function buildContextualPrompt(session, lang = "fr") {
+    const specs = session.specSummary || "";
+    const history = (session.conversationHistory || []).slice(-5);
+
+    let historyPart = "";
+    if (history.length > 0) {
+        const enumerated = history.map((m, i) => `${i + 1}. "${m}"`).join(" ");
+        historyPart = lang === "fr"
+            ? `et des messages passés numérotés du plus ancien au plus récent: ${enumerated}.`
+            : `and past messages numbered from oldest to newest: ${enumerated}.`;
+    } else {
+        historyPart = lang === "fr"
+            ? `et aucun message passé pertinent.`
+            : `and no relevant past messages.`;
+    }
+
+    return lang === "fr"
+        ? `Tiens compte de ceci: ${specs} ${historyPart}`
+        : `Take this into account: ${specs} ${historyPart}`;
+}
 
 function buildConversationHistory(session, message) {
     if (!session.conversationHistory) {
@@ -58,7 +126,7 @@ function buildConversationHistory(session, message) {
         session.conversationHistory = session.conversationHistory.slice(-5);
     }
 
-    console.log(`[buildConversationHistory] ajout="${message}" → hist=${JSON.stringify(session.conversationHistory)}`);
+    console.log(`[ZZZZZ buildConversationHistory] ajout="${message}" → hist=${JSON.stringify(session.conversationHistory)}`);
 }
 
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
@@ -114,100 +182,35 @@ const faqMapByKey = {
     }
 };
 
-async function classifyIntent(message, contextualMessage, lang = 'fr') {
-    // Petits raccourcis directs
+///////////////////////////////////////////////////////////////////////////////////////
+async function classifyIntent(message, contextualMessage, lang = "fr", ok = true) {
+    // 1️⃣ Raccourcis directs
     if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
 
-    const faqExamples = lang === 'fr'
-        ? `Exemples :\n` +
-        `"Quand êtes-vous ouverts ?" → faq:hours\n` +
-        `"Comment procédez-vous pour faire l'évaluation d'une propriété ?" → faq:assessment\n` +
-        `"Est-ce que vous aidez pour la location ?" → faq:rental\n` +
-        `"Puis-je vous appeler directement ?" → faq:contact\n` +
-        `"Qui est carole baillargeon, quelle est son expérience ?" → faq:carole\n` +
-        `"Qui est christophe marcellin, quelle est son expérience ?" → faq:christophe\n` +
-        `"Que pouvez-vous me dire de votre équipe ?" → faq:team\n` +
-        `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
-        `"Quelle est votre adresse, où sont situés vos bureaux ?" → faq:office\n` +
-        `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
-        `"Faites-vous de la valorisation immobilière ou du home staging ?" → faq:homestaging\n` +
-        `"Parlez-moi de votre site web personnalisé" → faq:website\n`
-        : `Examples:\n` +
-        `"What are your business hours?" → faq:hours\n` +
-        `"How does a property assessment work?" → faq:assessment\n` +
-        `"Do you handle rentals?" → faq:rental\n` +
-        `"Can I call you directly?" → faq:contact\n` +
-        `"Who is Carole Baillargeon, what is her experience?" → faq:carole\n` +
-        `"Who is Christophe Marcellin, what is his experience?" → faq:christophe\n` +
-        `"What can you tell me about your team?" → faq:team\n` +
-        `"Do you work with commercial properties?" → faq:commercial\n` +
-        `"What is your address, where are your offices located?" → faq:office\n` +
-        `"Do you work on the South Shore or in Montreal?" → faq:territory\n` +
-        `"Do you do home staging?" → faq:homestaging\n` +
-        `"Tell me about your customized website" → faq:website\n`;
+    // 2️⃣ Première passe → FAQ seulement
+    const faqPrompt = buildFAQPrompt(message, lang);
+    let intent = await askGptIntent(message, faqPrompt, lang);
 
-    const prompt = lang === 'fr'
-        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
-L'utilisateur peut envoyer soit une question, soit une affirmation.\n\n${faqExamples}
-Voici le message de l'utilisateur :"${message}" et un historique de ses messages: "${contextualMessage}"
-Catégories disponibles :
-- faq:<catégorie>
-- estimate
-- gpt (question immobilière hors FAQ)
-- declaration (affirmation liée à l'immobilier)
-- other (hors immobilier)\n\n
-Règles :
-1. Si le message correspond clairement à une FAQ, réponds par : faq:<catégorie>
-2. Si c'est une question de prix, d'estimation → estimate
-3. Si c'est une question immobilière mais pas dans la FAQ → gpt
-4. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
-5. S'il n'y a rien qui fait référence à de l'immobilier → other
-
-Réponds uniquement par un mot : faq:<catégorie>, gpt, declaration ou other.`
-        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
-The user may send either a question or a statement.\n\n${faqExamples}
-Here is the user's message "${message}" and a history of his messages: "${contextualMessage}"
-Available categories:
-- faq:<category>
-- estimate
-- gpt (real estate question not in FAQ)
-- declaration (real estate statement)
-- other (unrelated)\n\n
-Rules:
-1. If the message clearly matches one of our predefined FAQ topics → faq:<category>
-2. If it is about a price or an estimate → estimate
-3. If it is a real estate question but not in the FAQ → gpt
-4. If it is a statement related to real estate (ex: "I want to buy a condo") → declaration
-5. If nothing ties with real estate → other.
-
-Respond with a single word: faq:<category>, estimate, gpt, declaration, or other.`;
-
-    try {
-        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: 'gpt-4o',
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 20,
-            temperature: 0
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-
-            }
-        });
-
-        const raw = response.data.choices?.[0]?.message?.content?.trim();
-        const result = raw?.toLowerCase();
-        console.log(`[yyyy the intent] 🔎 Réponse brute GPT = "${raw}"`);
-        console.log(`[yyyy intent variables] Message : "${message}" et "${contextualMessage}"→ Résultat GPT : ${result}`);
-        return result || 'other';
-
-    } catch (err) {
-        console.error(`[FAQ CLASSIFIER] *** ERREUR GPT : ${err.message}`);
-        return 'other';
+    if (intent && intent.startsWith("faq:")) {
+        console.log(`[classifyIntent] ✅ FAQ détectée: ${intent}`);
+        return intent;
     }
+
+    // ⚠️ Si quota dépassé, on bloque ici → on ne monte pas à la 2e passe
+    if (!ok) {
+        console.log("[classifyIntent] ⛔ Quota dépassé → retour direct other");
+        return "other"; // ⚠️ chatOnly saura que c’est un "other quota"
+    }
+
+    // 3️⃣ Deuxième passe → avec specs + historique
+    const promptWithContextualPrompt = buildPromptWithContextualPrompt(message, contextualMessage, lang);
+    intent = await askGptIntent(message, promptWithContextualPrompt, lang);
+    return intent || "other";
 }
+
+
+
 /////////////////////////////////////////////////
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
@@ -221,38 +224,29 @@ async function chatOnly(senderId, message, session) {
 
     const lang = session.language || "fr";
 
-
-
-    dumpSession(session, "CHATONLY-START");
-    console.log("[DEBUG chatOnly] conversationHistory =", session.conversationHistory);
-
-
-
-
+    // 🚨 Vérification quota obligatoire pour tout le reste
+    const ok = await checkQuota(senderId, session);
     const contextualMessage = buildContextualPrompt(session, lang);
-    const classification = await classifyIntent(message, contextualMessage, lang);
-    buildConversationHistory(session, message);
+    console.log("[ZZZZZZ DEBUG chatOnly] conversationHistory =", session.conversationHistory);
+    const classification = await classifyIntent(message, contextualMessage, lang, ok);
+    console.log(`[ZZZZZZ chatOnly] classification = ${classification}`);
 
-    console.log(`[chatOnly] classification = ${classification}`);
+    buildConversationHistory(session, message);
 
     // Cas 1 : FAQ → PAS de quota
     if (classification?.startsWith("faq:")) {
         const key = classification.split(":")[1];
         const faqText = faqMapByKey[key]?.[lang];
         if (faqText) {
-            console.log(`[CHAT] FAQ détectée → ${key}`);
             await sendMessage(senderId, faqText, session);
             return;
         }
     }
 
-    // 🚨 Vérification quota obligatoire pour tout le reste
-    const ok = await checkQuota(senderId, session);
     if (!ok) return;
 
     // Cas 2 : ESTIMATE
     if (classification === "estimate") {
-        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
         await handlePriceEstimate(senderId, message, session);
         return;
     }
@@ -268,8 +262,7 @@ async function chatOnly(senderId, message, session) {
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
             `N’utilisez jamais de formules comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
             `Ne demandez jamais les coordonnées.\n\n` +
-            `Répondez à ce message de l'usager:\n${message}\n\n` +
-            `Tenez compte de l'historique des messages:\n${contextualMessage}\n\n`
+            `Répondez à ce message de l'usager:\n${message} ${contextualMessage}\n\n` 
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of broker Christophe Marcellin. ` +
             `Your job is to answer precisely and concisely any real estate-related question. ` +
@@ -277,12 +270,8 @@ async function chatOnly(senderId, message, session) {
             `You may provide professional, legal, or strategic advice when relevant. ` +
             `Never use phrases such as "I'm here to help" or "feel free to ask". ` +
             `Never request contact details.\n\n` +
-            `Address this user message:\n${message}\n\n` +
-            `Take into account the message history:\n${contextualMessage}\n\n`;
+            `Address this user message:\n${message} ${contextualMessage}\n\n`;
 
-        console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
-        console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
-        return await askGptAndSend(senderId, session, prompt, lang);
     }
 
     // Cas 4 : Declaration (affirmations)
@@ -298,8 +287,7 @@ async function chatOnly(senderId, message, session) {
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon la nature du message. ` +
             `N’utilisez jamais de formules vides comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
             `Vous pouvez poser des questions pour préciser les besoins de l'utilisateur, mais ne demandez jamais de coordonnées.\n\n` +
-            `Dernier message de l'utilisateur:\n${message}\n\n` +
-            `Tenez compte de l'historique des messages et de ses besoins:\n${contextualMessage}\n\n`
+            `Dernier message de l'utilisateur:\n${message}${contextualMessage}\n\n`
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of broker Christophe Marcellin. ` +
             `Your role is to engage in a natural dialogue with the user, reacting to their real estate-related statements. ` +
@@ -308,30 +296,70 @@ async function chatOnly(senderId, message, session) {
             `You may provide professional, legal, or strategic advice depending on the nature of the statement. ` +
             `Never use empty phrases such as "I'm here to help" or "feel free to ask your questions". ` +
             `You may ask clarifying questions about the user's needs, but never request contact details.\n\n` +
-            `User's latest message:\n${message}\n\n` +
-            `Take into account the message history and their needs:\n${contextualMessage}\n\n`;
-
-        console.log(`[YYYYYY CHATONLY INTENT: "${classification}"`);
-        console.log(`[YYYYYY CHATONLY PROMPT: "${prompt}"`);
-        return await askGptAndSend(senderId, session, prompt, lang);
+            `User's latest message:\n${message}${contextualMessage}\n\n`;
     }
 
-
+    console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
+    return await askGptAndSend(senderId, session, prompt, lang);
 
     // Cas 5 : Other (hors sujet)
     if (classification === "other") {
-        const prompt = lang === "fr"
-            ? `Le message de l'utilisateur semble hors sujet par rapport à l'immobilier: "${message}". 
-Répondez poliment mais ramenez la conversation vers l'immobilier ou nos services.`
-            : `The user's message seems unrelated to real estate: "${message}". 
-Respond politely but redirect the conversation back to real estate or our services.`;
-        console.log(`[YYYYYY CHATONLY INTENT: "${classification}" `)
-        console.log(`[YYYYYY CHATONLY INTENT: "${message}" and a history of his messages: "${contextualMessage}" `)
-        return await askGptAndSend(senderId, session, prompt, lang);
+        if (!ok) {
+            // Cas 1: quota dépassé
+            const quotaMsg = lang === "fr"
+                ? "Vous avez atteint le nombre maximum de questions autorisées."
+                : "You have reached the maximum number of allowed questions.";
+            await sendMessage(senderId, quotaMsg, session);
+        } else {
+            // Cas 2: GPT n'a pas compris
+            const reformulateMsg = lang === "fr"
+                ? "Pouvez-vous reformuler votre message ? Ma compréhension se limite à l'immobilier."
+                : "Could you rephrase your message? My understanding is limited to real estate.";
+            await sendMessage(senderId, reformulateMsg, session);
+        }
+        return true;
     }
+}
+//////////////////////////////////////////////////////////////////
 
+async function askGptIntent(message, prompt, lang = "fr") {
+    try {
+        const response = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+                model: "gpt-4o",
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 20,
+                temperature: 0,
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                },
+            }
+        );
+
+        const raw = response.data.choices?.[0]?.message?.content?.trim();
+        const intent = raw?.toLowerCase();
+
+        console.log(`[askGptIntentAndSend] 🔎 Réponse brute GPT = "${raw}"`);
+        console.log(`[askGptIntentAndSend] Normalisé = "${intent}"`);
+
+        // Vérification stricte → seuls ceux-ci sont autorisés
+        const allowed = ["estimate", "gpt", "declaration", "other"];
+        if (intent && (intent.startsWith("faq:") || allowed.includes(intent))) {
+            return intent;
+        }
+
+        return "other"; // 🚨 fallback robuste
+    } catch (err) {
+        console.error(`[askGptIntentAndSend] *** ERREUR GPT : ${err.message}`);
+        return "other";
+    }
 }
 
+///////////////////////////////////////////////////////////////////
 // Fonction utilitaire réutilisée pour GPT/Declaration/Other
 async function askGptAndSend(senderId, session, prompt, lang) {
     try {
