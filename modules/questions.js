@@ -189,7 +189,7 @@ Etc.`
 
 🤝 3 - De vous joindre lorsque vous le demandez.  
 
-ℹ️ 4 - D'avoir un minimum d'information lorsque vous décidez de nous contacter.  
+ℹ️ 4 - Connaître vos besoins lorsque vous décidez de nous contacter.  
 
 📊 5 - De compiler des statistiques.
 
@@ -202,15 +202,15 @@ Petit rappel:
 
 Commençons la prise de vos coordonnées par *votre prénom* SVP ?`,
 
-            en: `I am ready to chat with you, however I would like to collect some of your contact information, this allows us to::
+            en: `I am ready to chat with you, however I would like to collect some of your contact information, this allows us to:
 
-📢 1 - To provide you with a web page that alerts you when a property meets your requirements.  
+📢 1 - Provide you with a web page that alerts you when a property meets your requirements.  
 
 🏡 2 - Contact you about off-market properties or listings not shown on Centris (by choice or for confidentiality).  
 
 🤝 3 - Reach you when you request it.  
 
-ℹ️ 4 - Have a minimum of information when you decide to contact us.  
+ℹ️ 4 - Know a little about your needs when you decide to contact us.  
 
 📊 5 - Compile statistics.  
 

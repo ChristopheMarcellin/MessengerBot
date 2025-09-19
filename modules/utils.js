@@ -264,7 +264,7 @@ async function chatOnly(senderId, message, session) {
             `Donnez une réponse directe, sans salutation, sans reformulation et sans détour. ` +
             `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
             `N’utilisez jamais de formules comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            `Ne demandez jamais les coordonnées.\n\n` +
+            `Ne demandez jamais les coordonnées.Vous pouvez parlez l'usager en utilisant son prénom si vous le connaissez.\n\n` +
             `Répondez à ce message de l'usager:\n${message} ${contextualMessage}\n\n` 
             : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
             `You speak on behalf of broker Christophe Marcellin. ` +
@@ -272,7 +272,7 @@ async function chatOnly(senderId, message, session) {
             `Give a direct, informative answer — no greetings, no rephrasing, no fluff. ` +
             `You may provide professional, legal, or strategic advice when relevant. ` +
             `Never use phrases such as "I'm here to help" or "feel free to ask". ` +
-            `Never request contact details.\n\n` +
+            `Never request contact details. You may address the user by his first name if you know it.\n\n` +
             `Address this user message:\n${message} ${contextualMessage}\n\n`;
         console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
         return await askGptAndSend(senderId, session, prompt, lang);
@@ -693,7 +693,7 @@ function detectLanguageFromText(text) {
 
     // ✅ Détection anglais
     const englishRegex =
-        /\b(the|house|hello|hi|hey|yo|wassup|in|out|is|property|buy|sell|good|morning|evening|night|how|are|is|you|your)\b/i.test(sample);
+        /\b(the|house|hello|hi|hey|yo|what|dude|wassup|in|out|is|property|buy|sell|good|morning|evening|night|how|are|is|you|your)\b/i.test(sample);
 
     let detected = "fr"; // valeur par défaut
     if (frenchRegex && !englishRegex) {

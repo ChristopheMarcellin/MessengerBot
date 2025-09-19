@@ -118,8 +118,8 @@ function getDisplayValue(field, value, lang = "fr") {
 
     if (field === "age") {
         return lang === "fr"
-            ? `Âge : ${value} ans`
-            : `Age: ${value} years old`;
+            ? `Année de naissance : ${value}`
+            : `Year of birth: ${value}`;
     }
     if (field === "phone") {
         return lang === "fr" ? `Téléphone : ${value}` : `Phone: ${value}`;
@@ -192,8 +192,8 @@ function buildSpecSummary(session, lang = "fr") {
     //  console.log("CM on entre dans specSummary");
 
     const summaryHeader = lang === "fr"
-        ? `*Récapitulatif de mon objectif:*\n\n`
-        : `*My objective in short:*\n\n`;
+        ? `*Mes spécifications:*\n\n`
+        : `*My specications:*\n\n`;
 
     let summary = `${summaryHeader}`;
 
