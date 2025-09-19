@@ -223,7 +223,8 @@ async function chatOnly(senderId, message, session) {
 
 
 
-        dumpSession(session, "CHATONLY-START");
+    dumpSession(session, "CHATONLY-START");
+    console.log("[DEBUG chatOnly] conversationHistory =", session.conversationHistory);
 
 
 
