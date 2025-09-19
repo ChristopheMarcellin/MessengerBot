@@ -580,7 +580,31 @@ Reply with a single number only.`;
         return "?";
     }
 }
+//////////////////////////////////////////////////////////////////
+function dumpSession(session, label = "DUMP") {
+    if (!session) {
+        console.log(`[${label}] Session = null/undefined`);
+        return;
+    }
 
+    let out = "";
+    for (const key in session) {
+        if (!Object.prototype.hasOwnProperty.call(session, key)) continue;
+        let val = session[key];
+        try {
+            if (typeof val === "object" && val !== null) {
+                val = JSON.stringify(val);
+            }
+        } catch (e) {
+            val = "[unstringifiable]";
+        }
+        out += `${key}:"${val}", `;
+    }
+
+    console.log(`[${label}] ${out}`);
+}
+
+////////////////////////////////////////////////////////////////////////
 
 function isText(input) {
     if (typeof input !== 'string') return false;
