@@ -486,7 +486,7 @@ async function handlePriceEstimate(senderId, message, session) {
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.");
 
-        const reply = `${fallback} ${lang === 'fr' ? '(qualité statistique : basse)' : '(statistical sample quality: low)'}`;
+        const reply = `${fallback} ${lang === 'fr' ? '(fiabilité statistique : basse)' : '(statistical reliability: low)'}`;
         await sendMessage(senderId, reply, session);
 
     } catch (err) {
@@ -494,7 +494,7 @@ async function handlePriceEstimate(senderId, message, session) {
         const fallback = lang === "fr"
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.";
-        await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(qualité statistique : basse)' : '(statistical sample quality : low)'}`, session);
+        await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(fiabilité statistique : basse)' : '(statistical reliability : low)'}`, session);
     }
 }
 
@@ -526,15 +526,15 @@ I would like to be able to provide you with more information and I hope I have b
 function getPrecisionLabel(level, lang = 'fr') {
     if (lang === 'fr') {
         switch (level) {
-            case 3: return "élevé";
+            case 3: return "bon";
             case 2: return "moyen";
             case 1: return "bas";
             default: return "inconnu";
         }
     } else {
         switch (level) {
-            case 3: return "high";
-            case 2: return "fair";
+            case 3: return "fair";
+            case 2: return "average";
             case 1: return "low";
             default: return "unknown";
         }
@@ -554,7 +554,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
         return (
             `D’après nos données, la valeur estimative pour l'endroit ciblé est de ${valeur} $ le pied carré, ` +
             `ce qui signifie environ ${(valeur * 1000).toLocaleString('fr-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ pour 1000 pieds carrés. ` +
-            `(qualité de l'échantillonage statistique : ${confiance}). ` +
+            `(fiabilité statistique : ${confiance}). ` +
             `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
             `comme le positionnement de la propriété ou les rénovations faites. ` +
             `Vous devriez toujours vous fier à un professionnel de l'immobilier pour fournir un estimé fiable.`
@@ -563,7 +563,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
         return (
             `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
             `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square feet. ` +
-            `(statistical sample quality: ${confiance}). ` +
+            `(statistical reliability: ${confiance}). ` +
             `Obviously, several factors can influence the accuracy of this estimate, ` +
             `such as the property's positioning or renovations made. ` +
             `You should always rely on a real estate professional to provide a reliable estimate.`
