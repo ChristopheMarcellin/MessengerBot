@@ -110,9 +110,9 @@ function wait(ms) {
 
 module.exports = {
     sendMessage,
-    sendMarkSeen,
-    sendTypingOn,
-    acknowledgeAndRespond,
-    acknowledgeOnly,
-    sendGif
+    sendMarkSeen
+ //   sendTypingOn,
+   // acknowledgeAndRespond,
+//acknowledgeOnly,
+  //  sendGif
 };
