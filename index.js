@@ -1,11 +1,12 @@
 // === Load env 
 //+ dependencies ===
+// === Load env & dependencies ===
 require('dotenv').config();
 const express = require('express');
 const app = express();
 app.use(express.json());
 
-const { sendMessage, sendMarkSeen } = require('./modules/messenger');
+const { sendMarkSeen } = require('./modules/messenger');
 const { getSession } = require('./modules/sessionStore');
 const { runDirector } = require('./modules/director');
 const {
@@ -14,18 +15,26 @@ const {
     setLastPayload
 } = require('./filters');
 
-
+// === Vérification webhook ===
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
 
-// === Webhook Verification ===
+// Multi-pages : dictionnaire PageID → Token
+const PAGE_TOKENS = {
+    "663804066810317": process.env.PAGE_ACCESS_TOKEN_CC21,   // Page CC21
+    "214465451751956": process.env.PAGE_ACCESS_TOKEN_CMIMMO  // Page CM Immo
+};
+
+function getPageAccessToken(pageId) {
+    return PAGE_TOKENS[pageId];
+}
+
+// === Webhook Verification (GET) ===
 app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
     if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    //    console.log('[VERIFY] Webhook verified');
         res.status(200).send(challenge);
     } else {
         res.sendStatus(403);
@@ -35,45 +44,50 @@ app.get('/webhook', (req, res) => {
 // === Webhook POST ===
 app.post('/webhook', async (req, res) => {
     const botEnabled = (process.env.BOT_ENABLED || '').trim().toLowerCase() === 'true';
-//    console.log(`[DEBUG] BOT_ENABLED = ${process.env.BOT_ENABLED} → interpreted as ${botEnabled}`);
 
     if (!botEnabled) {
-  //      console.log('[SAFE MODE] Bot désactivé — traitement ignoré');
+        console.log('[SAFE MODE] Bot désactivé — traitement ignoré');
         return res.sendStatus(200);
     }
 
     try {
-        const messagingEvent = req.body.entry?.[0]?.messaging?.[0];
+        const entry = req.body.entry?.[0];
+        const pageId = entry?.id; // ID de la Page concernée
+        const messagingEvent = entry?.messaging?.[0];
         if (!messagingEvent) return res.sendStatus(200);
 
-        // 🔒 Protection centralisée
-        if (!isValidIncomingMessage(messagingEvent)) {
-        //    console.warn('[SKIP] Message ignoré : echo, vide, invalide ou système');
+        // ✅ Token spécifique à la page
+        const pageToken = getPageAccessToken(pageId);
+        if (!pageToken) {
+            console.error(`[ERROR] Aucun token configuré pour la page ${pageId}`);
             return res.sendStatus(200);
         }
 
-        const senderId = messagingEvent.sender?.id;
-        const receivedMessage = messagingEvent.message?.text?.trim();     
-        const timestamp = messagingEvent.timestamp;
-       
-     //   console.log(`[RECEIVED-RAW] From ${senderId} | Message: "${receivedMessage}" @ ${timestamp}`);
+        // ✅ Protection contre les messages invalides
+        if (!isValidIncomingMessage(messagingEvent)) {
+            return res.sendStatus(200);
+        }
 
-        // ✅ ACK systématique
-        await sendMarkSeen(senderId);
-     //   console.log(`[ACK] mark_seen → ${senderId}`);
-        // 3️⃣ Préparation du contexte
-        const cleanText = receivedMessage.toLowerCase().replace(/[^\w\s]/gi, '').trim();
+        // === Extraction message ===
+        const senderId = messagingEvent.sender?.id;
+        const receivedMessage = messagingEvent.message?.text?.trim();
+        const timestamp = messagingEvent.timestamp;
+
+        console.log(`[RECEIVED-RAW] Page=${pageId} From=${senderId} | "${receivedMessage}" @ ${timestamp}`);
+
+        // ✅ ACK "vu" (spécifique à la page)
+        await sendMarkSeen(senderId, pageToken);
+
+        // === Contexte session ===
+        const cleanText = (receivedMessage || "").toLowerCase().replace(/[^\w\s]/gi, '').trim();
         const session = getSession(senderId) || {};
         const isEndSession = cleanText === 'end session';
-
-        // 4️⃣ Mémorisation brute du message
 
         if (shouldSkipMessage(session, receivedMessage, timestamp)) {
             return res.sendStatus(200);
         }
 
         setLastPayload(session, receivedMessage, timestamp);
-
         session.lastUserMessage = receivedMessage;
 
         const context = {
@@ -81,14 +95,15 @@ app.post('/webhook', async (req, res) => {
             message: receivedMessage,
             timestamp,
             cleanText,
-            greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
-            timestamp,
-            res
+      //      greetings: ["bonjour", "salut", "hello", "hi", "comment ca va"],
+            res,
+            pageId,
+            pageToken,
+            session
         };
 
-        // 5️⃣ Exécution de la logique principale
-        console.log(`[RECEIVED] From: ${senderId} | Message: "${receivedMessage}"`);
-  //      console.log(`[DEBUG] Message transmis au directeur`);
+        // === Log + Direction ===
+        console.log(`[RECEIVED] Page=${pageId} From=${senderId} | Message="${receivedMessage}"`);
         await runDirector(context);
 
         return res.sendStatus(200);
@@ -101,5 +116,3 @@ app.post('/webhook', async (req, res) => {
 // === Start Server ===
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`[Index] Server running on port ${PORT}`));
-
-

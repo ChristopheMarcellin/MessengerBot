@@ -71,6 +71,7 @@ function evalPrix(codePostal) {
         { gran: "CP4", min: 3, fn: moyenne, label: "moyenne-CP4", precision: 2 },
         { gran: "CP3", min: 5, fn: medianeHaute, label: "mediane-haute-CP3", precision: 1},
         { gran: "CP3", min: 1, fn: moyenne, label: "moyenne-CP3", precision: 1 }
+
     ];
 
     for (const step of steps) {

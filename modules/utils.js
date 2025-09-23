@@ -1,6 +1,6 @@
 // modules/utils.js
 const axios = require('axios');
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+//const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const { sendMessage } = require('./messenger');
 const { questions } = require('./questions');
 const { getMaxQuestions } = require('./googleData');
@@ -131,7 +131,6 @@ function buildConversationHistory(session, message) {
     );
 }
 
-
 // ✅ Nouveau format centralisé de FAQ, indexé par catégorie
 const faqMapByKey = {
     hours: {
@@ -211,7 +210,6 @@ async function classifyIntent(message, contextualMessage, lang = "fr", ok = true
     intent = await askGptIntent(message, promptWithContextualPrompt, lang);
     return intent || "other";
 }
-
 
 
 /////////////////////////////////////////////////
@@ -345,14 +343,15 @@ async function askGptIntent(message, prompt, lang = "fr") {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
                 },
+                timeout: 5000 // ⏱️ 5 secondes max pour éviter un blocage
             }
         );
 
         const raw = response.data.choices?.[0]?.message?.content?.trim();
         const intent = raw?.toLowerCase();
 
-        console.log(`[askGptIntentAndSend] 🔎 Réponse brute GPT = "${raw}"`);
-        console.log(`[askGptIntentAndSend] Normalisé = "${intent}"`);
+        console.log(`[askGptIntent] 🔎 Réponse brute GPT = "${raw}"`);
+        console.log(`[askGptIntent] Normalisé = "${intent}"`);
 
         // Vérification stricte → seuls ceux-ci sont autorisés
         const allowed = ["estimate", "gpt", "declaration", "other"];
@@ -380,7 +379,8 @@ async function askGptAndSend(senderId, session, prompt, lang) {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-            }
+            },
+            timeout: 5000 // ⏱️ coupe au bout de 5 secondes
         });
 
         const gptReply = response.data.choices?.[0]?.message?.content?.trim();

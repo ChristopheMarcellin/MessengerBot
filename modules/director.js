@@ -19,8 +19,6 @@ async function runDirector(context) {
     // 🔄 Initialisation ou récupération de session valide
     const isReady = await stepInitializeSession(context);
 
-
-
     const session = context.session;
 
     //pas prêt pour enclencher les prochaines étapes
@@ -97,5 +95,4 @@ async function runDirector(context) {
     await stepWhatNext(context, nextSpec, spec);
     return true;
 }
-
 module.exports = { runDirector };

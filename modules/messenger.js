@@ -1,9 +1,8 @@
 const axios = require('axios');
-const PAGE_ACCESS_TOKEN = process.env.PAGE_ACCESS_TOKEN;
-const { logQnA } = require('./googleData'); 
+const { logQnA } = require('./googleData');
 
-async function sendMessage(senderId, text, session) {
- //   console.log(`[SEND] To: ${senderId} | Message: ${text}`);
+async function sendMessage(senderId, text, session, pageToken) {
+    //   console.log(`[SEND] To: ${senderId} | Message: ${text}`);
     console.log(`[SEND] To: ${senderId} | Message: ${text.substring(0, 20)}`);
 
     if (typeof text === 'string' && text.trim() === '4') {
@@ -21,7 +20,7 @@ async function sendMessage(senderId, text, session) {
     }
 
     await axios.post(
-        `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
+        `https://graph.facebook.com/v18.0/me/messages?access_token=${pageToken}`,
         {
             recipient: { id: senderId },
             message: { text }
@@ -32,17 +31,17 @@ async function sendMessage(senderId, text, session) {
     );
 
     if (session && session.mode !== 'spec') {
-     //   console.log(`Entré dans l'envoi de réponse: ${session ? session.mode : 'undefined'} | Message: ${text}`);
+        //   console.log(`Entré dans l'envoi de réponse: ${session ? session.mode : 'undefined'} | Message: ${text}`);
         await logQnA(senderId, text, "A", session);
     } else {
-       // console.log(`[SEND] pas de logQnA session mode: ${session ? session.mode : 'undefined'} | Message: ${text}`);
+        // console.log(`[SEND] pas de logQnA session mode: ${session ? session.mode : 'undefined'} | Message: ${text}`);
     }
 }
 
-async function sendMarkSeen(senderId) {
-  //  console.log(`[ACK] mark_seen → ${senderId}`);
+async function sendMarkSeen(senderId, pageToken) {
+    //  console.log(`[ACK] mark_seen → ${senderId}`);
     await axios.post(
-        `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
+        `https://graph.facebook.com/v18.0/me/messages?access_token=${pageToken}`,
         {
             recipient: { id: senderId },
             sender_action: 'mark_seen'
@@ -53,10 +52,10 @@ async function sendMarkSeen(senderId) {
     );
 }
 
-async function sendTypingOn(senderId) {
-   // console.log(`[TYPING] typing_on → ${senderId}`);
+async function sendTypingOn(senderId, pageToken) {
+    // console.log(`[TYPING] typing_on → ${senderId}`);
     await axios.post(
-        `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
+        `https://graph.facebook.com/v18.0/me/messages?access_token=${pageToken}`,
         {
             recipient: { id: senderId },
             sender_action: 'typing_on'
@@ -67,28 +66,28 @@ async function sendTypingOn(senderId) {
     );
 }
 
-async function acknowledgeAndRespond(senderId, text, session, delayMs = 1200) {
- //   console.log(`[RESPOND] ACK + typing + reply → ${senderId}`);
-    await sendMarkSeen(senderId);
-    await sendTypingOn(senderId);
+async function acknowledgeAndRespond(senderId, text, session, pageToken, delayMs = 1200) {
+    //   console.log(`[RESPOND] ACK + typing + reply → ${senderId}`);
+    await sendMarkSeen(senderId, pageToken);
+    await sendTypingOn(senderId, pageToken);
     await wait(delayMs);
-    await sendMessage(senderId, text, session);
+    await sendMessage(senderId, text, session, pageToken);
 }
 
-async function acknowledgeOnly(senderId) {
-   // console.log(`[ACK-ONLY] mark_seen → ${senderId}`);
-    await sendMarkSeen(senderId);
+async function acknowledgeOnly(senderId, pageToken) {
+    // console.log(`[ACK-ONLY] mark_seen → ${senderId}`);
+    await sendMarkSeen(senderId, pageToken);
 }
 
 function wait(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function sendGif(senderId, gifUrl) {
- //   console.log(`[SEND] To: ${senderId} | GIF: ${gifUrl}`);
+async function sendGif(senderId, gifUrl, pageToken) {
+    //   console.log(`[SEND] To: ${senderId} | GIF: ${gifUrl}`);
 
     await axios.post(
-        `https://graph.facebook.com/v18.0/me/messages?access_token=${PAGE_ACCESS_TOKEN}`,
+        `https://graph.facebook.com/v18.0/me/messages?access_token=${pageToken}`,
         {
             recipient: { id: senderId },
             message: {
@@ -115,4 +114,3 @@ module.exports = {
     acknowledgeOnly,
     sendGif
 };
-
