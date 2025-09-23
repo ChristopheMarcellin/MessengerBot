@@ -53,6 +53,7 @@ app.post('/webhook', async (req, res) => {
     try {
         const entry = req.body.entry?.[0];
         const pageId = entry?.id; // ID de la Page concernée
+        console.log(`[DEBUG PAGEID] entry.id reçu = ${pageId}`);
         const messagingEvent = entry?.messaging?.[0];
         if (!messagingEvent) return res.sendStatus(200);
 
