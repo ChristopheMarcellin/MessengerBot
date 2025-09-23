@@ -50,27 +50,10 @@ async function stepInitializeSession(context) {
     } else {
         // Utiliser la session existante si elle correspond à l'utilisateur
         session = context.session;
+        session.currentPageId = context.pageId;
+        session.currentPageToken = context.pageToken;
         return true;
     }
-
-
-    // 🧠 Affectation obligatoire avant traitement
-    if (isText(message) && typeof session.language !== 'string') {
-        session.language = detectLanguageFromText(message);  // ✅ détecte immédiatement
-        console.log(`[INIT] Langue détectée:'${session.language}' pour '${message}'`);
-    }
-
-    context.session = session;
-
-    // ✅ Si déjà initialisée, rien à faire
-    if (session.specValues && session.askedSpecs) {
-        //   logSessionState("***[INIT session déjà initialisée]", session);
-        //    console.log('[INIT] Session déjà initialisée → aucune action requise');
-        console.log(`[INIT] *** Session re-créée car manquante langue détectée:'${session.language}' pour '${message}'`);
-        return true;
-    }
-
-    return true;
 }
 
 module.exports = { stepInitializeSession };

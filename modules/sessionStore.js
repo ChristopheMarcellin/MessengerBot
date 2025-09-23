@@ -25,11 +25,6 @@ function getAllSessions() {
 
 // ✅ Fusion : reset enrichi sans effet de bord
 function resetSession(context) {
-
-  //  const err = new Error();
-
-//    console.log(err.stack); // affiche la pile complète
-
     console.log(`[RESET] resetSession déclenché pour senderId=${context.senderId}`);
 
     const session = {};  // 🔥 purge complète
@@ -37,7 +32,7 @@ function resetSession(context) {
     Object.assign(session, {
         senderId: context.senderId,
         language: "",
-	    termsShown: false,
+        termsShown: false,
         projectType: "?",
         propertyUsage: "",
         specValues: {},
@@ -49,10 +44,13 @@ function resetSession(context) {
         questionCount: 0,
         maxQuestions: 20,
         ProjectDate: new Date().toISOString(),
-        mode: "spec", 
+        mode: "spec",
         conversationHistory: [],
-        specSummary: ""
-	
+        specSummary: "",
+
+        // 🔑 Ajout multi-pages
+        currentPageId: context.pageId || null,
+        currentPageToken: context.pageToken || null
     });
 
     context.session = session;         // 🧠 mise à jour immédiate

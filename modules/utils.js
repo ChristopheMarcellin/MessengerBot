@@ -515,7 +515,7 @@ J'aimerais pouvoir vous fournir davantage d'informations et j'espère vous avoir
 I would like to be able to provide you with more information and I hope I have been helpful so far. However, for technical reasons or due to terms of use, I am unable to answer questions other than those related to our service.  
 👉 You may contact Christophe Marcellin at 514-231-6370 for further information.`;
 
-        await sendMessage(senderId, limitMsg);
+        await sendMessage(senderId, limitMsg, session);
         return false; // 🚫 stop: quota dépassé
     }
 
