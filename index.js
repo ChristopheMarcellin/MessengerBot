@@ -15,8 +15,14 @@ const {
     setLastPayload
 } = require('./filters');
 
+
+
 // === Vérification webhook ===
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+console.log("ENV CHECK:", {
+    CC21: process.env.PAGE_ACCESS_TOKEN_CC21 ? "OK" : "MISSING",
+    CMIMMO: process.env.PAGE_ACCESS_TOKEN_CMIMMO ? "OK" : "MISSING",
+});
 
 // Multi-pages : dictionnaire PageID → Token
 const PAGE_TOKENS = {
