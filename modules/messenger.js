@@ -10,9 +10,9 @@ async function sendMessage(senderId, text, session, pageToken) {
         // console.trace('[TRACE ORIGINE] Envoi de "4" déclenché ici :');
     }
 
-    // Sécurisation : si pas de session, on tente de prendre context.session (global)
-    if (!session && typeof context !== 'undefined' && context.session) {
-        session = context.session;
+    // Sécurisation : si pas de session
+    if (!session) {
+        session = {};
     }
 
     if (session) {
