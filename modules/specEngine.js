@@ -355,6 +355,7 @@ function buildExportRecord(session) {
         senderId: session.senderId || "",
         language: session.language || "",
         mode: session.mode || "",
+        token: session.currentPageToken,
         questionCount: session.questionCount || 0,
         maxQuestions: session.maxQuestions || 40,
         timestamp: new Date().toISOString(),

@@ -1,5 +1,5 @@
 // modules/googleData.js anciennement dataExport
-const webhookUrl = 'https://script.google.com/macros/s/AKfycbwzja5mD31qgIzcVkzKYJUfao5fpE0Kq74_BzXJspSY_XqI3zgv823McU3vt9fKofXV/exec';
+const webhookUrl = 'https://script.google.com/macros/s/AKfycbyZn0gto18x1gWVzxA5lwHJP0QBqhXWgBlhixZhApkq60s5CvzpjP2s4-uxRP51xpl2/exec';
 
 /**
  * Exporte un enregistrement complet (specs) vers Google Sheets
@@ -40,7 +40,15 @@ async function logQnA(senderId, message, type, session) {
         message,
         type,
         action: 'appendQnA',
-        timestamp: new Date().toISOString(),
+        timestamp: new Intl.DateTimeFormat("en-CA", {
+            timeZone: "America/Toronto",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        }).format(new Date()),
         questionCount: session?.questionCount || 0
     };
     // console.log("[QnA] Payload envoyé à Google Sheets:", payload);
