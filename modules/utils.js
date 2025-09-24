@@ -44,7 +44,7 @@ function buildFAQPrompt(message, lang = "fr") {
         `"Quelle est votre adresse ?" → faq:office\n` +
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Faites-vous du home staging ?" → faq:homestaging\n` +
-        `"Parlez-moi de votre site web personnalisé" → faq:website\n`
+        `"Parlez moi de votre site web, d'alerte(s) → faq:website\n`
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
         `"How does a property assessment work?" → faq:assessment\n` +
@@ -57,7 +57,7 @@ function buildFAQPrompt(message, lang = "fr") {
         `"What is your address?" → faq:office\n` +
         `"Do you work on the South Shore or in Montreal?" → faq:territory\n` +
         `"Do you do home staging?" → faq:homestaging\n` +
-        `"Tell me about your customized website" → faq:website\n`;
+        `"Tell me about your website website, your alert(s)" → faq:website\n`;
 
     return lang === "fr"
         ? `Tu es un assistant virtuel spécialisé en immobilier au Québec.\n\n${faqExamples}\nVoici le message de l'utilisateur : "${message}"\n\nRéponds uniquement par : faq:<catégorie> ou "none".`
