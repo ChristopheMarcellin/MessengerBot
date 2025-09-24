@@ -274,7 +274,6 @@ async function chatOnly(senderId, message, session) {
         const contextualMessage = buildContextualPrompt(session, lang);
 
         const prompt = lang === "fr"
-        const prompt = lang === "fr"
             ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
             `Engagez la conversation, sans salutation, reformulation ou détour. ` +
             `Informez-vous pour savoir si l'usager a une question` +
