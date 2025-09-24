@@ -63,17 +63,16 @@ function buildFAQPrompt(message, lang = "fr") {
         ? `Tu es un assistant virtuel spécialisé en immobilier au Québec.\n\n${faqExamples}\nVoici le message de l'utilisateur : "${message}"\n\nRéponds uniquement par : faq:<catégorie> ou "none".`
         : `You are a virtual assistant specialized in real estate in Quebec.\n\n${faqExamples}\nHere is the user's message: "${message}"\n\nRespond only with: faq:<category> or "none".`;
 }
-function buildPromptWithContextualPrompt(message, contextualMessage, lang = "fr") {
+function buildIntentPrompt(message, lang = "fr") {
     return lang === "fr"
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
 L'utilisateur peut envoyer soit une question, soit une affirmation.
 
 Message de l'utilisateur : "${message}"
-${contextualMessage}
 
 Règles :
-1. Si c'est une question de prix, d'estimation → estimate
-2. Si c'est une question immobilière → gpt
+1. Si c'est une question de prix, ou fournir une estimation → estimate
+2. Si c'est une question → gpt
 3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
 4. S'il n'y a rien qui fait référence à de l'immobilier → other
 
@@ -82,10 +81,9 @@ Réponds uniquement par un mot : estimate, gpt, declaration ou other.`
 The user may send either a question or a statement.
 
 User's message: "${message}"
-${contextualMessage}
 
 Rules:
-1. If it is about a price or an estimate → estimate
+1. If it is about a price or providing an estimate → estimate
 2. If it is a real estate question → gpt
 3. If it is a real estate statement (ex: "I want to buy a condo") → declaration
 4. If nothing ties to real estate → other
@@ -190,7 +188,7 @@ async function classifyIntent(message, contextualMessage, lang = "fr", ok = true
     if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
 
-    // 2️⃣ Première passe → FAQ seulement
+    // 2️⃣ Première passe → FAQ seulement (pas de quota)
     const faqPrompt = buildFAQPrompt(message, lang);
     let intent = await askGptIntent(message, faqPrompt, lang);
 
@@ -205,9 +203,9 @@ async function classifyIntent(message, contextualMessage, lang = "fr", ok = true
         return "other"; // ⚠️ chatOnly saura que c’est un "other quota"
     }
 
-    // 3️⃣ Deuxième passe → avec specs + historique
-    const promptWithContextualPrompt = buildPromptWithContextualPrompt(message, contextualMessage, lang);
-    intent = await askGptIntent(message, promptWithContextualPrompt, lang);
+    // 3️⃣ Deuxième passe → avec specs + historique (quota)
+    const intentPrompt = buildIntentPrompt(message, lang);
+    intent = await askGptIntent(intentPrompt, lang);
     return intent || "other";
 }
 
@@ -256,22 +254,16 @@ async function chatOnly(senderId, message, session) {
     if (classification === "gpt") {
 
         const prompt = lang === "fr"
-            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
-            `Vous parlez au nom du courtier Christophe Marcellin. ` +
-            `Votre rôle est de répondre de façon précise et concise à toute question liée à l’immobilier. ` +
-            `Donnez une réponse directe, sans salutation, sans reformulation et sans détour. ` +
-            `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon les cas. ` +
-            `N’utilisez jamais de formules comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            `Ne demandez jamais les coordonnées.Vous pouvez parlez l'usager en utilisant son prénom si vous le connaissez.\n\n` +
-            `Répondez à ce message de l'usager:\n${message} ${contextualMessage}\n\n` 
-            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
-            `You speak on behalf of broker Christophe Marcellin. ` +
-            `Your job is to answer precisely and concisely any real estate-related question. ` +
-            `Give a direct, informative answer — no greetings, no rephrasing, no fluff. ` +
-            `You may provide professional, legal, or strategic advice when relevant. ` +
-            `Never use phrases such as "I'm here to help" or "feel free to ask". ` +
-            `Never request contact details. You may address the user by his first name if you know it.\n\n` +
-            `Address this user message:\n${message} ${contextualMessage}\n\n`;
+            ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
+            `Répondez aux questions immobilières avec précision : soyez bref, sans salutation, reformulation ou détour. ` +
+            `Autorisé à donner des avis professionnels, juridiques ou stratégiques. ` +
+            `Ne demandez jamais de coordonnées.\n\n` +
+            `Répondez à ce message : ${message}\nContexte : ${contextualMessage}\n\n`
+            : `Real estate assistant (residential and commercial) in Quebec, speaking on behalf of broker Christophe. ` +
+            `Answer real estate questions with precision: be brief, no greetings, no rephrasing, no detours. ` +
+            `Authorized to give professional, legal or strategic advice. ` +
+            `Never ask for contact details.\n\n` +
+            `Answer this message: ${message}\nContext: ${contextualMessage}\n\n`;
         console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
         return await askGptAndSend(senderId, session, prompt, lang);
 
@@ -282,24 +274,17 @@ async function chatOnly(senderId, message, session) {
         const contextualMessage = buildContextualPrompt(session, lang);
 
         const prompt = lang === "fr"
-            ? `Vous êtes un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec. ` +
-            `Vous parlez au nom du courtier Christophe Marcellin. ` +
-            `Votre rôle est d'engager un dialogue naturel avec l'utilisateur, en réagissant à ses affirmations liées à l'immobilier. ` +
-            `Soyez précis et concis, évitez toute reformulation inutile. ` +
-            `Ne posez pas de questions dont la réponse est déjà présente dans le message ou dans le contexte. ` +
-            `Vous pouvez donner des avis professionnels, juridiques ou stratégiques selon la nature du message. ` +
-            `N’utilisez jamais de formules vides comme “je suis là pour vous aider” ou “posez-moi vos questions”. ` +
-            `Vous pouvez poser des questions pour préciser les besoins de l'utilisateur, mais ne demandez jamais de coordonnées.\n\n` +
-            `Dernier message de l'utilisateur:\n${message}${contextualMessage}\n\n`
-            : `You are a virtual assistant specialized in residential and commercial real estate in Quebec. ` +
-            `You speak on behalf of broker Christophe Marcellin. ` +
-            `Your role is to engage in a natural dialogue with the user, reacting to their real estate-related statements. ` +
-            `Be precise and concise, avoid unnecessary rephrasing. ` +
-            `Do not ask questions whose answers are already included in the message or the context. ` +
-            `You may provide professional, legal, or strategic advice depending on the nature of the statement. ` +
-            `Never use empty phrases such as "I'm here to help" or "feel free to ask your questions". ` +
-            `You may ask clarifying questions about the user's needs, but never request contact details.\n\n` +
-            `User's latest message:\n${message}${contextualMessage}\n\n`;
+        const prompt = lang === "fr"
+            ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
+            `Engagez la conversation, sans salutation, reformulation ou détour. ` +
+            `Informez-vous pour savoir si l'usager a une question` +
+            `Ne demandez jamais de coordonnées.\n\n` +
+            `Réagissez à ce message: ${message}\nContexte : ${contextualMessage}\n\n`
+            : `Real estate assistant (residential and commercial) in Quebec, speaking on behalf of broker Christophe. ` +
+            `Engage in conversation ` +
+            `Verify if the user has a question ` +
+            `Never ask for contact details.\n\n` +
+            `React to this message: ${message}\nContext: ${contextualMessage}\n\n`;
 
     console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
     return await askGptAndSend(senderId, session, prompt, lang);
@@ -328,7 +313,7 @@ async function chatOnly(senderId, message, session) {
 }
 //////////////////////////////////////////////////////////////////
 
-async function askGptIntent(message, prompt, lang = "fr") {
+async function askGptIntent(prompt, lang = "fr") {
     try {
         const response = await axios.post(
             "https://api.openai.com/v1/chat/completions",
