@@ -4,18 +4,10 @@ const questions = {
         price: {
             en: `💰 Do you have a budget in mind ? 
 
-You may say: 
-
-350 (for $350 000), 
-600 (for $600 000) or 
-1200 (for $1 200 000) etc.`,
+Please enter a valid aproximate amount: `,
             fr: `💰 Avez-vous un budget en tête ? 
 
-Vous pouvez dire: 
-
-350 (pour $350 000), 
-600 (pour $600 000) ou 
-1200 (pour $1 200 000) etc.`,
+Entrer un montant approximatif valide`,
         },
 
         bedrooms: {

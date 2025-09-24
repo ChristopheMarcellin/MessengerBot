@@ -91,8 +91,8 @@ function getDisplayValue(field, value, lang = "fr") {
         const numericValue = Number(value);
         if (!isNaN(numericValue)) {
             return lang === "fr"
-                ? `Prix cible : ${numericValue} milles`
-                : `Target price: ${numericValue} thousands`;
+                ? `Prix cible $: ${numericValue} `
+                : `Target price $: ${numericValue} `;
         }
     }
 
@@ -294,7 +294,9 @@ async function isValidAnswer(context, projectType, field, lang = "fr") {
 
     // 🎯 4. Champs numériques purs (price, bedrooms, etc.)
     if (["price", "bedrooms", "bathrooms", "garage", "parking", "age"].includes(field)) {
-        const isValid = /^\d+$/.test(input); // uniquement chiffres
+        // On accepte chiffres, espaces ou virgules
+        const cleaned = input.replace(/[\s,]/g, ""); // supprime espaces et virgules
+        const isValid = /^\d+$/.test(cleaned);       // valide uniquement si le reste = chiffres
         return isValid;
     }
 
