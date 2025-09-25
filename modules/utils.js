@@ -57,7 +57,7 @@ function buildFAQPrompt(message, lang = "fr") {
         `"What is your address?" → faq:office\n` +
         `"Do you work on the South Shore or in Montreal?" → faq:territory\n` +
         `"Do you do home staging?" → faq:homestaging\n` +
-        `"Tell me about your website website, your alert(s)" → faq:website\n`;
+        `"Tell me about your website, your alert(s)" → faq:website\n`;
 
     return lang === "fr"
         ? `Tu es un assistant virtuel spécialisé en immobilier au Québec.\n\n${faqExamples}\nVoici le message de l'utilisateur : "${message}"\n\nRéponds uniquement par : faq:<catégorie> ou "none".`
@@ -156,8 +156,8 @@ const faqMapByKey = {
         en: "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
     },
     carole: {
-        fr: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix. Désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2024 et Prix Centurion 2003 à 2013 (2010 exclus) et membre du temple de la Renommée Canada 2007.",
-        en: "Carole has been a real estate broker for over 25 years and has won numerous awards. She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2024 and received the Centurion Award from 2003 to 2013 (except 2010), and is a member of the Century 21 Canada Hall of Fame since 2007."
+        fr: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix. Désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2025 et Prix Centurion 2003 à 2013 (2010 exclus) et membre du temple de la Renommée Canada 2007.",
+        en: "Carole has been a real estate broker for over 25 years and has won numerous awards. She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2025 and received the Centurion Award from 2003 to 2013 (except 2010), and is a member of the Century 21 Canada Hall of Fame since 2007."
     },
     christophe: {
         fr: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre rapidement. Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service.",
@@ -662,6 +662,26 @@ function isNumeric(input) {
 
 //    return detected;
 //}
+
+function setLanguage(message, session) {
+    // Si déjà défini → ne rien faire
+    if (session.language && session.language.trim() !== "") {
+        return;
+    }
+
+    // Ignorer si numérique
+    if (isNumeric(message)) {
+        return;
+    }
+
+    // Détecter via regex
+    const detected = detectLanguageFromText(message);
+
+    // Affecter directement
+    session.language = detected || "fr";
+
+}
+
 function detectLanguageFromText(text) {
     if (typeof text !== "string" || text.trim() === "") {
         console.log(`[LANG DETECT] Texte vide ou invalide: forcé à 'fr'`);
@@ -956,6 +976,7 @@ module.exports = {
     gptClassifyProject,
     chatOnly,
     detectLanguageFromText,
+    setLanguage,
     isText,
     isNumeric    
 };

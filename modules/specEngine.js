@@ -2,7 +2,7 @@ const axios = require('axios');
 const questions = require('./questions');
 const displayMap = require('./displayMap');
 const { isNumeric } = require('./utils');
-const { propertyUsage } = require('./displayMap');
+//const { propertyUsage } = require('./displayMap');
 
 function getPromptForSpec(projectType, specKey, lang = "en") {
     const questionSet = questions?.[projectType];

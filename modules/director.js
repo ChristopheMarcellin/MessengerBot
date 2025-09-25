@@ -1,9 +1,11 @@
-const { isValidAnswer, getProjectTypeFromNumber, buildSpecSummary } = require('./specEngine');
-const { getSession, resetSession, saveSession, logSessionState } = require('./sessionStore');
-const { setProjectType, initializeSpecFields, setSpecValue, gptClassifyProject, chatOnly, getNextSpec, setAskedSpec } = require('./utils');
+//const { isValidAnswer, getProjectTypeFromNumber, buildSpecSummary } = require('./specEngine');
+const { isValidAnswer } = require('./specEngine');
+//const { getSession, resetSession, saveSession, logSessionState } = require('./sessionStore');
+//const { setLanguage, initializeSpecFields, setSpecValue, gptClassifyProject, chatOnly, getNextSpec, setAskedSpec } = require('./utils');
+const { setLanguage, chatOnly, getNextSpec } = require('./utils');
 const { stepInitializeSession } = require('./steps/index');
 const { stepWhatNext, stepHandleProjectType, stepHandleSpecAnswer, stepSummarizeAndConfirm } = require('./steps');
-const { projectType } = require('./displayMap');
+//const { projectType } = require('./displayMap');
 const { logQnA } = require('./googleData');  
 
 //const { propertyUsage, projectType } = require('./displayMap');
@@ -25,6 +27,8 @@ async function runDirector(context) {
     if (!isReady) {
         return false;
     }
+
+    setLanguage(message, session);
 
     //troubleshooter
     console.log(`[DIRECTOR] MODE MODE MODE MODE MODE MODE MODE = _${context.session.mode}_`);
