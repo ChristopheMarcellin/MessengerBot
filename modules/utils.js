@@ -44,7 +44,8 @@ function buildFAQPrompt(message, lang = "fr") {
         `"Quelle est votre adresse ?" → faq:office\n` +
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Faites-vous du home staging ?" → faq:homestaging\n` +
-        `"Parlez moi de votre site web, d'alerte(s) → faq:website\n`
+        `"Parlez moi de votre site web immobilier" → faq:website\n`
+         `"Parlez moi de vos alerte(s) en immobilier" → faq:website\n`
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
         `"How does a property assessment work?" → faq:assessment\n` +
@@ -183,15 +184,16 @@ const faqMapByKey = {
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
-async function classifyIntent(message, contextualMessage, lang = "fr", ok = true) {
+async function classifyIntent(message, lang = "fr", ok = true) {
     // 1️⃣ Raccourcis directs
     if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
 
     // 2️⃣ Première passe → FAQ seulement (pas de quota)
     const faqPrompt = buildFAQPrompt(message, lang);
-    let intent = await askGptIntent(message, faqPrompt, lang);
 
+    let intent = await askGptIntent(faqPrompt, lang);
+    console.log(`[classifyIntent] ✅ FAQ détectée: ${intent}`);
     if (intent && intent.startsWith("faq:")) {
         console.log(`[classifyIntent] ✅ FAQ détectée: ${intent}`);
         return intent;
