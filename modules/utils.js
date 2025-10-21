@@ -137,13 +137,10 @@ const faqMapByKey = {
         en: "If you would like to know our working hours, please note that we are flexible. Feel free to contact us for more details."
     },
     contact: {
-        fr: "Pour nous joindre rapidement ou consulter nos offres, contacter le 514-231-6370 (Christophe Marcellin) ou le (514) 912-5343 (Carole Baillargeon), par courriel christophe.marcellin@century21 carole.baillargeon@century21.ca, pour nos offres en ligne et notre site: www.carolebaillargeon.com ou www.christophe-marcellin.c21.ca",
-        en: "To contact us quickly or browse our listings, call 514-231-6370 (Christophe Marcellin) or (514) 912-5343 (Carole Baillargeon), or email christophe.marcellin@century21 and carole.baillargeon@century21.ca. For our online offers and websites: www.carolebaillargeon.com or www.christophe-marcellin.c21.ca"
+        fr: "Pour nous joindre rapidement, contacter Christophe Marcellin au 514-231-6370, par courriel christophe.marcellin@century21, pour consulter nos offres en ligne et notre site: www.christophe-marcellin.c21.ca",
+        en: "To contact us quickly, call Christophe Marcellin at 514-231-6370 or email christophe.marcellin@century21. For our online offers and website: www.christophe-marcellin.c21.ca"
     },
-    consultation: {
-        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seuls Carole ou Christophe peuvent vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
-        en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away for your your address. However, only Carole or Christophe can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
-    },
+
     rental: {
         fr: "Dans le domaine de la location, nous pouvons vous aider à promouvoir votre offre de location et trouver votre prochain locataire.",
         en: "In rental services, we can help you market your property and find your next tenant."
@@ -177,9 +174,13 @@ const faqMapByKey = {
         fr: "Bien entendu, nous vous aidons à montrer votre propriété sous son meilleur jour en vous fournissant les services conseils appropriés.",
         en: "Of course, we help you homestage your property at its best by providing the appropriate advisory services."
     },
+    assessment: {
+        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seuls Carole ou Christophe peuvent vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
+        en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away for your your address. However, only Carole or Christophe can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
+    },
     website: {
-        fr: "En plus de nos sites Web respectifs www.carolebaillargeon.com et https://christophe-marcellin.c21.ca/ pour consulter nos propriétés en vente, nous pouvons concevoir rapidement un site qui présente les propriétés qui se concentrent sur vos attentes.",
-        en: "In addition to our respective websites www.carolebaillargeon.com and https://christophe-marcellin.c21.ca/ to view our properties for sale, we can quickly design a website that showcases properties precisely matching your expectations."
+        fr: "En plus du site https://christophe-marcellin.c21.ca/ pour consulter nos propriétés en vente, nous pouvons concevoir rapidement un site qui présente les propriétés qui se concentrent sur vos attentes.",
+        en: "In addition to our website https://christophe-marcellin.c21.ca/ listing properties for sale, we can quickly design a website that showcases properties precisely matching your expectations."
     }
 };
 
@@ -494,11 +495,9 @@ async function checkQuota(senderId, session) {
     if (session.questionCount > quota) {
         const lang = session.language || "fr";
         const limitMsg = (lang === "fr")
-            ? `Nb de questions : ${session.questionCount}, Quota : ${quota}.  
-J'aimerais pouvoir vous fournir davantage d'informations et j'espère vous avoir été utile jusqu'ici. Toutefois, pour des raisons techniques ou parce que les conditions d'utilisation l'imposent, il m'est impossible de répondre à des questions autres que celles portant sur notre service.  
+            ? `J'aimerais pouvoir vous fournir davantage d'informations et j'espère vous avoir été utile jusqu'ici. Toutefois, pour des raisons techniques ou parce que les conditions d'utilisation l'imposent, il m'est impossible de répondre à des questions autres que celles portant sur notre service.  
 👉 Vous pouvez communiquer avec Christophe Marcellin au 514-231-6370 pour de plus amples renseignements.`
-            : `Number of questions: ${session.questionCount}, Quota: ${quota}.  
-I would like to be able to provide you with more information and I hope I have been helpful so far. However, for technical reasons or due to terms of use, I am unable to answer questions other than those related to our service.  
+            : `I would like to be able to provide you with more information and I hope I have been helpful so far. However, for technical reasons or due to terms of use, I am unable to answer questions other than those related to our service.  
 👉 You may contact Christophe Marcellin at 514-231-6370 for further information.`;
 
         await sendMessage(senderId, limitMsg, session);

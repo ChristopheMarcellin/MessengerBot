@@ -4,10 +4,22 @@ const questions = {
         price: {
             en: `💰 Do you have a budget in mind ? 
 
-Please enter a valid aproximate amount: `,
+For a rental, specify the monthly amount; for a purchase, specify the total amount.
+
+Examples of accepted formats:
+2000
+2 000
+600 000
+2 500 000`,
             fr: `💰 Avez-vous un budget en tête ? 
 
-Entrer un montant approximatif valide`,
+Pour une location préciser le montant par mois, pour un achat un montant total.
+
+Exemples de formats acceptés:
+2000
+2 000
+600 000
+2 500 000`,
         },
 
         bedrooms: {
@@ -273,12 +285,12 @@ function getPromptForProjectType(lang = 'fr') {
 
      return  lang === 'en'
          ? `To better assist you, from 1 to 4, which intention best describes your goal here?\n
-1️⃣ Buying  
+1️⃣ Buying / Renting 
 2️⃣ Selling  
 3️⃣ Renting out  
 4️⃣ Let's talk Real Estate`
             : `Pour bien vous assister, de 1 à 4, quelle intention décrit le mieux votre objectif ici:\n
-1️⃣ Acheter  
+1️⃣ Acheter / Louer
 2️⃣ Vendre  
 3️⃣ Offrir en location  
 4️⃣ J'aimerais parler d'immobilier`
@@ -294,7 +306,7 @@ function getPromptForPropertyUsage(lang = 'fr') {
 2️⃣ Condo  
 3️⃣ Apartment  
 4️⃣ Multiplex`
-            : `🏠 Veuillez me préciser le type de propriété concerné, en m'indiquant le numéro correspondant :\n
+            : `🏠 Veuillez me préciser le type de propriété visé, en m'indiquant le numéro correspondant :\n
 1️⃣ Unifamiliale  
 2️⃣ Condo  
 3️⃣ Logement  
