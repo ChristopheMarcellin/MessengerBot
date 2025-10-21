@@ -4,18 +4,23 @@ const questions = {
         price: {
             en: `💰 Do you have a budget in mind ? 
 
-For a rental, specify the monthly amount; for a purchase, specify the total amount.
+For a rental, specify a monthly amount; for a purchase, the property amount.
 
-Examples of accepted formats:
+Examples of valid numeric formats:
+
 2000
 2 000
-600 000
-2 500 000`,
+2,000
+1100000
+1 100 000
+1,100,000
+`,
             fr: `💰 Avez-vous un budget en tête ? 
 
-Pour une location préciser le montant par mois, pour un achat un montant total.
+Pour une location préciser un montant par mois, pour un achat le montant de la propriété.
 
-Exemples de formats acceptés:
+Exemples de formats numériques valides:
+
 2000
 2 000
 600 000
