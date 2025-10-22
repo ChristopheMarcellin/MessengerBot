@@ -198,20 +198,21 @@ Etc.`
 ,
 
         firstName: {
-            fr: `Je suis prêt à échanger avec vous, toutefois j'aimerais recueillir certaines de vos coordonnées, ceci nous permet:
+            fr: `Je suis prêt à échanger avec vous, toutefois j'aimerais adresser quelques questions, ceci peut aider à:
 
-📢 1 - De vous offrir une page Web qui vous alerte lorsqu'une propriété rencontre vos besoins.  
+ℹ️ 1 - Comprendre vos besoins.  
 
-🏡 2 - De vous contacter lorsqu'une propriété est hors marché ou ailleurs que sur Centris® par choix ou pour confidentialité.  
+📢 2 - Offrir une page Web qui vous alerte lorsqu'une propriété rencontre vos besoins.  
 
-🤝 3 - De vous joindre lorsque vous le demandez.  
+🏡 3 - Vous contacter lorsqu'une propriété est hors marché ou ailleurs que sur Centris® 
 
-ℹ️ 4 - Connaître vos besoins lorsque vous décidez de nous contacter.  
+🤝 4 - Vous joindre lorsque vous le demandez.  
 
-📊 5 - De compiler des statistiques.
+📊 5 - Compiler des statistiques.
 
 
-Petit rappel: 
+Petit rappel:
+
 1 - *Vous n'êtes pas tenu de répondre aux questions*
 2 - *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)
 
@@ -219,20 +220,21 @@ Petit rappel:
 
 Commençons la prise de vos coordonnées par *votre prénom* SVP ?`,
 
-            en: `I am ready to chat with you, however I would like to collect some of your contact information, this allows us to:
+            en: `I am ready to chat with you, however I would like to ask a few questions, this may help to:
 
-📢 1 - Provide you with a web page that alerts you when a property meets your requirements.  
+ℹ️ 1 - Better understand your needs.  
 
-🏡 2 - Contact you about off-market properties or listings not shown on Centris (by choice or for confidentiality).  
+📢 2 - Provide you with a web page alerting you when a property meets your requirements.  
 
-🤝 3 - Reach you when you request it.  
+🏡 3 - Contact you about off-market properties or listings not shown on Centris® 
 
-ℹ️ 4 - Know a little about your needs when you decide to contact us.  
+🤝 4 - Know how to reach you when you request it.  
 
 📊 5 - Compile statistics.  
 
 
 Reminder:
+
 1 - *You are not required to answer these questions*
 2 - *Your information is confidential* (no advertising or sharing with third parties). [View our privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)
 
