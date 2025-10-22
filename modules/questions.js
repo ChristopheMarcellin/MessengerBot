@@ -23,8 +23,10 @@ Exemples de formats numériques valides:
 
 2000
 2 000
-600 000
-2 500 000`,
+2,000
+1100000
+1 100 000
+1,100,000`,
         },
 
         bedrooms: {
@@ -63,16 +65,18 @@ Exemples de formats numériques valides:
     S: {
         price: {
             en: `💰 Do you have an approximate selling price in mind? 
-You may say:
 
-(350 for $350 000, 
-600 for $600 000 or 
-1200 for $1 200 000)`,
+Use valid numeric formats such as:
+
+(750000, 
+750 000 or
+750,000)`,
             fr: `💰 Avez-vous un prix de vente approximatif en tête ? 
 
-(dites 350 pour 350 000, 
-600 pour 600 000 ou 
-1200 pour 1 200 000)`,
+Utiliser un format numérique valide, par exemple:
+(750000, 
+750 000 ou 
+750,000)`,
         },
 
         bedrooms: {
@@ -109,12 +113,16 @@ You may say:
 
     R: {
         price: {
-            en: `💰 What rental price target do you have in mind? 
-You may say:
-(2000 for 2000/month)?`,
-            fr: `💰 Quel montant avez vous en tête? 
-Vous pouvez dire:
-(2000 pour 2000/mois) ?`,
+            en: `💰 What rental price target per month do you have in mind? 
+
+Use valid numeric formats such as:
+
+(2000, 2 000 or 2,000)`,
+            fr: `💰 Quel montant par mois avez vous en tête?
+
+Utiliser un format de réponse valide, par exemple:
+
+(2000, 2 000 ou 2,000)`,
         },
 
         bedrooms: {
