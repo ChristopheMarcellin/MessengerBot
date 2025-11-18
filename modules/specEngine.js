@@ -148,7 +148,7 @@ function buildSpecSummary(session, lang = "fr") {
 
     const summaryHeader = lang === "fr"
         ? `*Mes spécifications:*\n\n`
-        : `*My specications:*\n\n`;
+        : `*My specifications:*\n\n`;
 
     let summary = `${summaryHeader}`;
 

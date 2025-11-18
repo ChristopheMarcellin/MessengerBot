@@ -198,27 +198,11 @@ Etc.`
 ,
 
         firstName: {
-            fr: `Je suis prêt à échanger avec vous, toutefois j'aimerais adresser quelques questions, ceci peut aider à:
+            fr: `J'aimerais en apprendre davantage sur vous personnellement, vous n'êtes pas tenu de répondre, toutefois la qualité
+de notre service dépend de la qualité de vos réponses dans bien des cas !
 
-ℹ️ 1 - Comprendre vos besoins.  
-
-📢 2 - Offrir une page Web qui vous alerte lorsqu'une propriété rencontre vos besoins.  
-
-🏡 3 - Vous contacter lorsqu'une propriété est hors marché ou ailleurs que sur Centris® 
-
-🤝 4 - Vous joindre lorsque vous le demandez.  
-
-📊 5 - Compiler des statistiques.
-
-
-Petit rappel:
-
-1 - *Vous n'êtes pas tenu de répondre aux questions*
-2 - *Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)
-
-*Simplement répondre "X" (sans les guillemets) pour ne pas répondre plutôt que de donner une fausse information.*  
-
-Commençons la prise de vos coordonnées par *votre prénom* SVP ?`,
+*Quel est *votre prénom* SVP ?
+(Répondez par "X" (sans guillemets) pour ignorer cette question, faites de même pour toutes autres à venir si vous le préférez.)`,
 
             en: `I am ready to chat with you, however I would like to ask a few questions, this may help to:
 
@@ -332,26 +316,24 @@ function getPromptForPropertyUsage(lang = 'fr') {
 
 function getPreamble(lang = 'fr')
 {
-  return  lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier.
-Ma nature interactive permet aux usagers de me poser des questions et moi de répondre et ou d'en poser.
-Avant de poursuivre, il serait utile de prendre connaissance de ce qui suit:\n\n
-📜 1 - *Termes d’utilisation*\n
-Pour ignorer mes questions, on peut répondre par "X" (sans guillemets)
-Ne pas répondre à une question est encouragé plutôt que de fournir une fausse information. 
-*Toutefois, la qualité de cette expérience et mon niveau de service sont directement liés à l'exactitude des réponses fournies et à la pertinence des propos.*
-Répondre aux questions est optionnel mais les réponses enregistrées revêtent un caractère permanent, surtout si on ne peut joindre l'usager.
-Évidemment, ne pas répondre peut être justifié et n'entraîne pas automatiquement une baisse de service.\n\n
-🔒 2 - "Politique de confidentialité"\n
-*Vos informations sont confidentielles* (aucune publicité ni partage à des tiers). [Consulter notre politique de confidentialité](https://christophe-marcellin.c21.ca/contact/#politique)\n
+    return lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier pour le Québec.
 
-🛎️ 3 - Aperçu des services de CasaNova:\n
-*Je peux rendre de précieux services dans le domaine de l'immobilier au Québec, par exemple :*\n
-📊 *Estimer la valeur d'une propriété dans un quartier ou pour une adresse spécifique avec un niveau de confiance (nos estimés sont plus précis pour notre territoire)*\n
-📢 *Publier un site Web personnalisé qui alerte d'une propriété trouvée selon vos critères: https://tinyurl.com/yvyu75p7*\n
+*Je peux vous rendre de précieux services, par exemple :*\n
+📊 *Estimer la valeur approximative d'une propriété pour un quartier ou une adresse spécifique *\n
+📢 *Créer un site web pour faciliter vos recherches: (exemple) https://tinyurl.com/yvyu75p7*\n
 🔢 *Faire un calcul hypothécaire*\n
 💬 *Donner une opinion éclairée en immobilier*\n
 ⚖️ *Répondre aux questions légales en immobilier (Québec)*\n
-ℹ️ *Détailler nos services*\n\n`
+ℹ️ *Expliquer nos services*\n\n
+
+Il m'arrive de poser des questions pour mieux vous aider.\n\n
+Libre à vous d'y répondre, un X comme réponse nous signifie votre refus.
+
+Vos données et réponses sont confidentielles, voyez notre politique:\n
+(https://christophe-marcellin.c21.ca/contact/#politique)\n\n
+`
+
+
       : `Hello, I’m CasaNova, your AI real estate assistant.  
 My interactive nature allows users to ask me questions, and for me to reply and or ask questions in return.  
 Before we continue, please take note of the following:\n\n

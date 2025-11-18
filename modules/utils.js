@@ -547,7 +547,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
     } else {
         return (
             `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
-            `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square feet. ` +
+            `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square foot. ` +
             `(statistical reliability: ${confiance}). ` +
             `Obviously, several factors can influence the accuracy of this estimate, ` +
             `such as the property's positioning or renovations made. ` +
