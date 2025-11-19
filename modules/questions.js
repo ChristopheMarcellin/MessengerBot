@@ -200,7 +200,7 @@ Etc.`
 //firstName désigne un nom complet, le nom du champ a été conservé pour préserver la mécanique du code
         firstName: {
             fr: `Quel est *votre nom* SVP ?
-Notez que la disponibilité de mes services dépend de l'exactitude de vos réponses. Répondre *X* est préférable si vous jugez une question confidentielle !
+La qualité/disponibilité de mes services et suivis dépendent de la justesse de vos réponses. Répondre *X* est préférable à une information fausse et non réversible !
 (Voir notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).
 `,
 
@@ -250,13 +250,16 @@ Let’s start with your contact details — may I have your *first name* please?
         fr: `✉️ Quelle est votre adresse courriel SVP ?`,
         en: `✉️ What is your email address please?`,
     },
-
+//changes
     wantsContact: {
-        fr: `👥 Souhaitez-vous qu’un membre de notre équipe vous contacte ? Spécifier le no. d'option :  
+        fr: `👥 Désirez-vous qu'on fasse un suivi ? Spécifier le no. d'option :  
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ Des alertes Web (acheteurs seulement)`,
+3️⃣ Je désire un site Web,
+   comme celui-ci: https://tinyurl.com/yvyu75p7
+   pour trouver une propriété
+   selon les spécifications données.`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
@@ -283,12 +286,12 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 function getPromptForProjectType(lang = 'fr') {
 
      return  lang === 'en'
-         ? `To better assist you, from 1 to 4, which intention best describes your goal here?\n
+         ? `Before we discuss and to better assist you, from 1 to 4, which intention best describes your goal here?\n
 1️⃣ Buying / Renting 
 2️⃣ Selling  
 3️⃣ Renting out  
 4️⃣ Let's talk Real Estate`
-            : `Pour bien vous assister, de 1 à 4, quel est votre but ici:\n
+            : `Avant d'échanger et pour bien vous assister, de 1 à 4, quel est votre but ici:\n
 1️⃣ Acheter / Louer
 2️⃣ Vendre  
 3️⃣ Offrir en location  
