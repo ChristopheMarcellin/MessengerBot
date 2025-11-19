@@ -197,11 +197,12 @@ Etc.`
 
 ,
 //changes
+//firstName désigne un nom complet, le nom du champ a été conservé pour préserver la mécanique du code
         firstName: {
-            fr: `Permettez-moi quelques questions avant d'adresser les votres.
-La justesse de vos réponses assure une qualité optimale de nos services. Il est préférable taper *X* pour ne pas répondre si tel est votre souhait.
-(Notre politique de confidentialité est disponible au: https://christophe-marcellin.c21.ca/contact/#politique).
-Quel est *votre prénom* SVP`,
+            fr: `Quel est *votre nom* SVP ?
+Notez que la disponibilité de mes services dépendent de l'exactitude de vos réponses. Répondre par un *X* à toutes questions que vous jugez confidentielle est préférable.
+(Voir notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).
+`,
 
             en: `I am ready to chat with you, however I would like to ask a few questions, this may help to:
 
@@ -229,16 +230,16 @@ Let’s start with your contact details — may I have your *first name* please?
 
 ,
 
-    lastName: {
-        fr: `👤 Nom de famille ?`,
-        en: `👤 Your last name?`,
-    },
+    //lastName: {
+    //    fr: `👤 Nom de famille ?`,
+    //    en: `👤 Your last name?`,
+    //},
 
-    age: {
-        fr: `🎂 Quelle est votre année de naissance ?  
-(chiffres seulement ex.: 84 pour 1984, toujours *X* pour ne pas répondre)`,
-        en: `🎂 For our statistics, may I have your year of birth please? (numbers only e.g.: 84 for 1984)`,
-    },
+//    age: {
+//        fr: `🎂 Quelle est votre année de naissance ?  
+//(chiffres seulement ex.: 84 pour 1984, toujours *X* pour ne pas répondre)`,
+//        en: `🎂 For our statistics, may I have your year of birth please? (numbers only e.g.: 84 for 1984)`,
+//    },
 
     phone: {
         fr: `📞 À quel numéro de téléphone pouvons-nous vous joindre (format 999-999-9999) ?`,
