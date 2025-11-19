@@ -181,7 +181,7 @@ Utiliser un format de réponse valide, par exemple:
     }
 
 ,
-//changes
+
 //firstName désigne un nom complet, le nom du champ a été conservé pour préserver la mécanique du code
         firstName: {
             fr: `Quel est *votre nom* SVP ?
@@ -216,19 +216,19 @@ The quality/availability of my services and follow-ups depends on the accuracy o
         fr: `✉️ Quelle est votre adresse courriel SVP ?`,
         en: `✉️ What is your email address please?`,
     },
-//changes
+
     wantsContact: {
         fr: `👥 Désirez-vous qu'on fasse un suivi ? Spécifier le no. d'option :  
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ Je désire un site Web pour trouver une propriété selon mes spécifications (Exemple: https://tinyurl.com/yvyu75p7)`,
+3️⃣ Je désire un site Web comme https://tinyurl.com/yvyu75p7 pour trouver une propriété selon mes spécifications que j'ai fournies`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
 1️⃣ Yes  
 2️⃣ No  
-3️⃣ Web Alerts (for buyers only)`,
+3️⃣ I would like a website like https://tinyurl.com/yvyu75p7 to find a property based on the specifications I provided.`
     }
 ,
 
@@ -279,34 +279,12 @@ function getPromptForPropertyUsage(lang = 'fr') {
     ;
 }
 
-//changes
+
 function getPreamble(lang = 'fr')
 {
     return lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier pour le Québec.`
 
-      : `Hello, I’m CasaNova, your AI real estate assistant.  
-My interactive nature allows users to ask me questions, and for me to reply and or ask questions in return.  
-Before we continue, please take note of the following:\n\n
-
-📜 1 - *Terms of Use*\n
-To skip any of my questions, you may reply with "X" (without quotes).  
-Not answering a question is preferable to providing false information.  
-*However, the quality of this experience and the level of service I can provide are directly linked to the accuracy of your answers and the relevance of your comments.*  
-Answering is optional, but your responses are recorded and may be permanent, especially if we have no way to contact you.  
-Of course, choosing not to answer may be justified and does not automatically reduce the level of service.\n\n
-
-🔒 2 - *Privacy Policy*\n
-*Your information is confidential* (no advertising or sharing with third parties). [View our privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)\n\n
-
-🛎️ 3 - Overview of CasaNova’s Services:\n
-*I can provide valuable services in the field of real estate in Québec, for example:*\n
-📊 *Estimate the value of a property in a neighborhood or for a specific address with a confidence level (our estimates are more accurate within our territory)*\n
-📢 *Publish a personalized website that alerts you when a property matching your criteria is found: https://tinyurl.com/yvyu75p7*\n
-🔢 *Perform a mortgage calculation*\n
-💬 *Provide an informed real estate opinion*\n
-⚖️ *Answer legal real estate questions (Québec)*\n
-ℹ️ *Detail our services*\n\n
-`
+      : `Hello, I’m CasaNova, your AI real estate assistant in Quebec.`
 };
 
 
