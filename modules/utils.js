@@ -181,6 +181,11 @@ const faqMapByKey = {
     website: {
         fr: "En plus du site https://christophe-marcellin.c21.ca/ pour consulter nos propriétés en vente, nous pouvons concevoir rapidement un site qui présente les propriétés qui se concentrent sur vos attentes.",
         en: "In addition to our website https://christophe-marcellin.c21.ca/ listing properties for sale, we can quickly design a website that showcases properties precisely matching your expectations."
+    },
+
+    commission: {
+        fr: "Nos taux sont compétitifs mais varient selon le cas, il est mieux de vous informer auprès de Christophe pour plus de précision",
+        en: "Our rates are competitive but may vary depending on the situation. It’s best to check with Christophe for accurate information."
     }
 };
 

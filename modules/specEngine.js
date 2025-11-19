@@ -181,12 +181,28 @@ function buildSpecSummary(session, lang = "fr") {
     }
 
     const footer = lang === "fr"
-        ? `\nPrêt pour vos questions !\n\n` +
-        `Des questions précises améliorent la qualité de mes réponses. Il peut m'arriver de faire erreur, donc il est toujours préférable de valider avec un courtier professionnel !`
-        : `\nThank you, I am ready to answer your real estate questions.\n\n` +
-        `My answers are for reference purposes only and may contain errors.\n` +
-        `It is always better to confirm with a qualified real estate professional from our team.\n\n` +
-        `The more precise your question is, the more precise my answer will be, hoping to provide you with satisfaction, how may I help you ?`;
+        ? `\n*Prêt pour vos questions !*\n\n` +
+        `La précision de vos questions améliore la qualité de mes réponses. Il peut m'arriver de faire erreur, il est toujours préférable de valider avec un courtier professionnel !
+
+Voici quelques exemples de ce que je peux adresser:
+
+💬 *Donner des conseils en immobilier*\n
+⚖️ *Répondre aux questions légales en immobilier (Québec)*\n
+📊 *Estimer la valeur très approximative d'une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
+🔢 *Faire un calcul hypothécaire*\n
+ℹ️ *Détailler nos services et bien d'autres n\n`
+
+
+        : `\n*Ready for your questions!*\n\n
+The precision of your questions improves the quality of my answers. I may occasionally make mistakes, so it is always best to double-check with a professional real-estate broker!
+
+Here are a few examples of what I can help you with:
+
+💬 *Provide real-estate advice*\n
+⚖️ *Answer legal real-estate questions (Quebec)*\n
+📊 *Estimate the very approximate value of a property in a neighborhood or for a specific address (our estimates are more accurate within our territory)*\n
+🔢 *Perform a mortgage calculation*\n
+ℹ️ *Explain our services and much more*\n`;
 
     summary += `${footer}`;
     session.specSummary = summary;

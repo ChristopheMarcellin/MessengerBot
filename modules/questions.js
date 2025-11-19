@@ -162,37 +162,22 @@ Utiliser un format de réponse valide, par exemple:
 
     generic: {
         expectations: {
-            fr: `✨ Dictez vos attentes: 
+            fr: `✨ Dictez vos attentes particulières:
 
-Par exemple si vous achetez: 
-
-🏊‍♂️ Je veux une piscine creusée (incontournable)
-
+🏊‍ Je veux une piscine creusée (incontournable)
 🔥 Je veux un foyer (souhaitable)
-
-Si vous vendez:
-
 ⚖️ Je veux vendre sans garantie légale
-
 🎭 Je veux un service de "home staging"
+...`
+,
 
-Etc.`,
+            en: `✨ State any of your expectations: 
 
-            en: `✨ State your expectations: 
-
-For example if your buying you may say: 
-
-🏊‍♂️ Inground pool (a must) 
-
-🔥  A Fireplace (nice to have)
-
-If you're selling:
-
+🏊‍ Inground pool (a must) 
+🔥 A Fireplace (nice to have)
 ⚖️ I want to sell without legal warranty
-
 🎭 I need a home staging service
-
-Etc.`      
+...`      
     }
 
 ,
@@ -201,30 +186,11 @@ Etc.`
         firstName: {
             fr: `Quel est *votre nom* SVP ?
 La qualité/disponibilité de mes services et suivis dépendent de la justesse de vos réponses. Répondre *X* est préférable à une information fausse et non réversible !
-(Voir notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).
-`,
+(Voir notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).`,
 
-            en: `I am ready to chat with you, however I would like to ask a few questions, this may help to:
-
-ℹ️ 1 - Better understand your needs.  
-
-📢 2 - Provide you with a web page alerting you when a property meets your requirements.  
-
-🏡 3 - Contact you about off-market properties or listings not shown on Centris® 
-
-🤝 4 - Know how to reach you when you request it.  
-
-📊 5 - Compile statistics.  
-
-
-Reminder:
-
-1 - *You are not required to answer these questions*
-2 - *Your information is confidential* (no advertising or sharing with third parties). [View our privacy policy](https://christophe-marcellin.c21.ca/en/contact/#policy)
-
-*Simply reply with "X" (without quotes) to skip a question rather than providing false information.*  
-
-Let’s start with your contact details — may I have your *first name* please?`,
+            en: `What is *your name*, please?
+The quality/availability of my services and follow-ups depends on the accuracy of your answers. Replying with *X* is better than giving false and irreversible information!
+(See our privacy policy at: https://christophe-marcellin.c21.ca/en/contact/#policy).`
         }
 
 
@@ -256,10 +222,7 @@ Let’s start with your contact details — may I have your *first name* please?
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ Je désire un site Web,
-   comme celui-ci: https://tinyurl.com/yvyu75p7
-   pour trouver une propriété
-   selon les spécifications données.`,
+3️⃣ Je désire un site Web pour trouver une propriété selon mes spécifications (Exemple: https://tinyurl.com/yvyu75p7)`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
