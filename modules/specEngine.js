@@ -25,7 +25,6 @@ const projectTypeMap = {
     "3": "R",
     "4": "E", // projet autre
     "5": "?"  // réponse incomprise
-
 };
 
 function getProjectTypeFromNumber(input) {
@@ -173,10 +172,10 @@ function buildSpecSummary(session, lang = "fr") {
     }
 
     const footer = lang === "fr"
-        ? `\nMerci, je suis prêt à échanger et à répondre à vos questions en matière d'immobilier.\n\n` +
-        `Mes réponses sont à titre de référence seulement et peuvent contenir des erreurs.\n` +
-        `Mieux vaut toujours valider avec un professionnel qualifié de l'immobilier de notre équipe.\n\n` +
-        `Plus votre question est précise, plus ma réponse le sera, comment puis-je vous aider ?`
+        ? `\nAllons-y, comment puis-je vous aider ?\n\n` +
+        `Plus vos questions sont précises, plus mes réponses le sont ! \n` +
+        `Toutefois, il m'arrive de faire erreur, donc il est toujours préférable de valider\n\n` +
+        `avec un courtier professionnel !`
         : `\nThank you, I am ready to answer your real estate questions.\n\n` +
         `My answers are for reference purposes only and may contain errors.\n` +
         `It is always better to confirm with a qualified real estate professional from our team.\n\n` +

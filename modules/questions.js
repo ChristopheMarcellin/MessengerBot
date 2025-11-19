@@ -196,13 +196,12 @@ Etc.`
     }
 
 ,
-
+//changes
         firstName: {
-            fr: `J'aimerais en apprendre davantage sur vous personnellement, vous n'êtes pas tenu de répondre, toutefois la qualité
-de notre service dépend de la qualité de vos réponses dans bien des cas !
-
-*Quel est *votre prénom* SVP ?
-(Répondez par "X" (sans guillemets) pour ignorer cette question, faites de même pour toutes autres à venir si vous le préférez.)`,
+            fr: `Permettez-moi quelques questions avant d'adresser les votres.
+La justesse de vos réponses assure une qualité optimale de nos services. Il est préférable taper *X* pour ne pas répondre si tel est votre souhait.
+(Notre politique de confidentialité est disponible au: https://christophe-marcellin.c21.ca/contact/#politique).
+Quel est *votre prénom* SVP`,
 
             en: `I am ready to chat with you, however I would like to ask a few questions, this may help to:
 
@@ -236,14 +235,14 @@ Let’s start with your contact details — may I have your *first name* please?
     },
 
     age: {
-        fr: `🎂 Pour nos statistiques, votre année de naissance SVP ?  
-(chiffres seulement ex.: 84 pour 1984)`,
+        fr: `🎂 Quelle est votre année de naissance ?  
+(chiffres seulement ex.: 84 pour 1984, toujours *X* pour ne pas répondre)`,
         en: `🎂 For our statistics, may I have your year of birth please? (numbers only e.g.: 84 for 1984)`,
     },
 
     phone: {
-        fr: `📞 À quel numéro de téléphone pouvons-nous vous joindre (format xxx-xxx-xxxx) ?`,
-        en: `📞 What is your phone number (format xxx-xxx-xxxx)?`,
+        fr: `📞 À quel numéro de téléphone pouvons-nous vous joindre (format 999-999-9999) ?`,
+        en: `📞 What is your phone number (format 999-999-9999)?`,
     },
 
     email: {
@@ -288,11 +287,11 @@ function getPromptForProjectType(lang = 'fr') {
 2️⃣ Selling  
 3️⃣ Renting out  
 4️⃣ Let's talk Real Estate`
-            : `Pour bien vous assister, de 1 à 4, quelle intention décrit le mieux votre objectif ici:\n
+            : `Pour bien vous assister, de 1 à 4, quel est votre but ici:\n
 1️⃣ Acheter / Louer
 2️⃣ Vendre  
 3️⃣ Offrir en location  
-4️⃣ J'aimerais parler d'immobilier`
+4️⃣ Parler immobilier`
    ;
 }
 
@@ -313,26 +312,10 @@ function getPromptForPropertyUsage(lang = 'fr') {
     ;
 }
 
-
+//changes
 function getPreamble(lang = 'fr')
 {
-    return lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier pour le Québec.
-
-*Je peux vous rendre de précieux services, par exemple :*\n
-📊 *Estimer la valeur approximative d'une propriété pour un quartier ou une adresse spécifique *\n
-📢 *Créer un site web pour faciliter vos recherches: (exemple) https://tinyurl.com/yvyu75p7*\n
-🔢 *Faire un calcul hypothécaire*\n
-💬 *Donner une opinion éclairée en immobilier*\n
-⚖️ *Répondre aux questions légales en immobilier (Québec)*\n
-ℹ️ *Expliquer nos services*\n\n
-
-Il m'arrive de poser des questions pour mieux vous aider.\n\n
-Libre à vous d'y répondre, un X comme réponse nous signifie votre refus.
-
-Vos données et réponses sont confidentielles, voyez notre politique:\n
-(https://christophe-marcellin.c21.ca/contact/#politique)\n\n
-`
-
+    return lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier pour le Québec.`
 
       : `Hello, I’m CasaNova, your AI real estate assistant.  
 My interactive nature allows users to ask me questions, and for me to reply and or ask questions in return.  
