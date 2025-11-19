@@ -107,8 +107,12 @@ function getDisplayValue(field, value, lang = "fr") {
             : `Other specifications: ${value}`;
     }
 
+    //if (field === "firstName") {
+    //    return lang === "fr" ? `Prénom : ${value}` : `First name: ${value}`;
+    //}
+
     if (field === "firstName") {
-        return lang === "fr" ? `Prénom : ${value}` : `First name: ${value}`;
+        return lang === "fr" ? `Nom : ${value}` : `Name: ${value}`;
     }
 
     if (field === "lastName") {
@@ -139,15 +143,20 @@ function getDisplayValue(field, value, lang = "fr") {
 }
 
 //////////////////////////////////////////////////////////////////
+//changes footer
 
 function buildSpecSummary(session, lang = "fr") {
     console.log("[SpecEngine] buildSpecSummary");
     const fields = session.specValues;
     //  console.log("CM on entre dans specSummary");
 
+    //const summaryHeader = lang === "fr"
+    //    ? `*Mes spécifications:*\n\n`
+    //    : `*My specifications:*\n\n`;
+
     const summaryHeader = lang === "fr"
-        ? `*Mes spécifications:*\n\n`
-        : `*My specifications:*\n\n`;
+        ? `*Récapitulatif:*\n\n`
+        : `*Recap:*\n\n`;
 
     let summary = `${summaryHeader}`;
 
@@ -172,10 +181,8 @@ function buildSpecSummary(session, lang = "fr") {
     }
 
     const footer = lang === "fr"
-        ? `\nAllons-y, comment puis-je vous aider ?\n\n` +
-        `Plus vos questions sont précises, plus mes réponses le sont ! \n` +
-        `Toutefois, il m'arrive de faire erreur, donc il est toujours préférable de valider\n\n` +
-        `avec un courtier professionnel !`
+        ? `\nPrêt pour vos questions !\n\n` +
+        `Des questions précises améliorent la qualité de mes réponses. Il peut m'arriver de faire erreur, donc il est toujours préférable de valider avec un courtier professionnel !`
         : `\nThank you, I am ready to answer your real estate questions.\n\n` +
         `My answers are for reference purposes only and may contain errors.\n` +
         `It is always better to confirm with a qualified real estate professional from our team.\n\n` +

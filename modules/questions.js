@@ -200,7 +200,7 @@ Etc.`
 //firstName désigne un nom complet, le nom du champ a été conservé pour préserver la mécanique du code
         firstName: {
             fr: `Quel est *votre nom* SVP ?
-Notez que la disponibilité de mes services dépendent de l'exactitude de vos réponses. Répondre par un *X* à toutes questions que vous jugez confidentielle est préférable.
+Notez que la disponibilité de mes services dépend de l'exactitude de vos réponses. Répondre *X* est préférable si vous jugez une question confidentielle !
 (Voir notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).
 `,
 
