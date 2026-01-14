@@ -185,12 +185,12 @@ Utiliser un format de réponse valide, par exemple:
 //firstName désigne un nom complet, le nom du champ a été conservé pour préserver la mécanique du code
         firstName: {
             fr: `Quel est *votre nom* SVP ?
-La qualité/disponibilité de mes services et suivis dépendent de la justesse de vos réponses. Répondre *X* est préférable à une information fausse et non réversible !
-(Voir notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).`,
+(Vos réponses nous aident à offrir un meilleur service) Répondez X pour préserver votre confidentialité!
+(Notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).`,
 
-            en: `What is *your name*, please?
-The quality/availability of my services and follow-ups depends on the accuracy of your answers. Replying with *X* is better than giving false and irreversible information!
-(See our privacy policy at: https://christophe-marcellin.c21.ca/en/contact/#policy).`
+            en: `*Your name*, please?
+(Your answers help us provide better support) Reply *X* for privacy!
+(Our privacy policy at: https://christophe-marcellin.c21.ca/en/contact/#policy).`
         }
 
 
@@ -207,7 +207,7 @@ The quality/availability of my services and follow-ups depends on the accuracy o
 //        en: `🎂 For our statistics, may I have your year of birth please? (numbers only e.g.: 84 for 1984)`,
 //    },
 
-    phone: {
+        phone: {
         fr: `📞 À quel numéro de téléphone pouvons-nous vous joindre (format 999-999-9999) ?`,
         en: `📞 What is your phone number (format 999-999-9999)?`,
     },
@@ -222,13 +222,13 @@ The quality/availability of my services and follow-ups depends on the accuracy o
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ Je désire un site Web comme https://tinyurl.com/yvyu75p7 pour trouver une propriété selon mes spécifications que j'ai fournies`,
+3️⃣ Je désire un site Web comme https://tinyurl.com/45fskxav pour trouver une propriété selon mes spécifications que j'ai fournies`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
 1️⃣ Yes  
 2️⃣ No  
-3️⃣ I would like a website like https://tinyurl.com/yvyu75p7 to find a property based on the specifications I provided.`
+3️⃣ I would like a website like https://tinyurl.com/45fskxav to find a property based on the specifications I provided.`
     }
 ,
 
@@ -249,12 +249,12 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 function getPromptForProjectType(lang = 'fr') {
 
      return  lang === 'en'
-         ? `Before we discuss and to better assist you, from 1 to 4, which intention best describes your goal here?\n
+         ? `To better assist you, which number best describes your goal here?\n
 1️⃣ Buying / Renting 
 2️⃣ Selling  
 3️⃣ Renting out  
 4️⃣ Let's talk Real Estate`
-            : `Avant d'échanger et pour bien vous assister, de 1 à 4, quel est votre but ici:\n
+            : `Pour bien vous assister, votre but correspond à quel numéro:\n
 1️⃣ Acheter / Louer
 2️⃣ Vendre  
 3️⃣ Offrir en location  
@@ -266,12 +266,12 @@ function getPromptForProjectType(lang = 'fr') {
 function getPromptForPropertyUsage(lang = 'fr') {
 
   return     lang === 'en'
-            ? `🏠 To be precise, please enter the option number that corresponds to the type of property you are refering to:\n
+            ? `🏠 To be precise, which nbr corresponds to the type of property you are refering to:\n
 1️⃣ Single-family home  
 2️⃣ Condo  
 3️⃣ Apartment  
 4️⃣ Multiplex`
-            : `🏠 Veuillez me préciser le type de propriété visé, en m'indiquant le numéro correspondant :\n
+            : `🏠 Veuillez indiquer le no. correspondant à la propriété ciblée:\n
 1️⃣ Unifamiliale  
 2️⃣ Condo  
 3️⃣ Logement  
@@ -282,9 +282,9 @@ function getPromptForPropertyUsage(lang = 'fr') {
 
 function getPreamble(lang = 'fr')
 {
-    return lang === 'fr' ? `Bonjour, je suis CasaNova, votre IA de l'immobilier pour le Québec.`
+    return lang === 'fr' ? `Bonjour, je suis CasaNova, une IA qui offre plus de donnée que ChatGpt en immobilier pour le secteur sud de Montréal (détails du secteur sur www.christophemarcellin.com).`
 
-      : `Hello, I’m CasaNova, your AI real estate assistant in Quebec.`
+      : `Hello, I’m CasaNova, your real estate AI offering more knowledge than ChatGpt for the south of Montreal (target area at www.christophemarcellin.com`
 };
 
 

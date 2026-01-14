@@ -72,7 +72,7 @@ L'utilisateur peut envoyer soit une question, soit une affirmation.
 Message de l'utilisateur : "${message}"
 
 Règles :
-1. Si c'est une question de prix, ou fournir une estimation → estimate
+1. Si c'est une question visant à estimer la valeur d'un bien immobilier ou d'un terrain dans un lieu donné  → estimate
 2. Si c'est une question → gpt
 3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
 4. S'il n'y a rien qui fait référence à de l'immobilier → other
@@ -84,7 +84,7 @@ The user may send either a question or a statement.
 User's message: "${message}"
 
 Rules:
-1. If it is about a price or providing an estimate → estimate
+1. If the question aims to estimate the market value of a property or land in a given location → estimate
 2. If it is a real estate question → gpt
 3. If it is a real estate statement (ex: "I want to buy a condo") → declaration
 4. If nothing ties to real estate → other

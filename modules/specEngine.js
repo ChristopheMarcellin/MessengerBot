@@ -187,10 +187,10 @@ Voici quelques exemples de ce que je peux adresser:
 
 🚥 *Donner des conseils en immobilier*\n
 ⚖️ *Répondre aux questions légales en immobilier (Québec)*\n
-📊 *Estimer la valeur très approximative d'une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire)*\n
+📊 *Estimer la valeur très approximative d'une propriété dans un quartier ou pour une adresse spécifique (nos estimés sont plus précis pour notre territoire voir www.christophemarcellin.com)*\n
 🔢 *Faire un calcul hypothécaire*\n
 ℹ️ *Détailler nos services*\n
-💬 *Bien plus encore\n\n
+💬 *Bien plus encore*\n\n
 
 Qu'aimeriez-vous savoir ? (SVP lire ce msg attentivement du début)`
 
@@ -202,10 +202,10 @@ Here are a few examples of what I can help you with:
 
 🚥  *Provide real-estate advice*\n
 ⚖️ *Answer legal real-estate questions (Quebec)*\n
-📊 *Estimate the very approximate value of a property in a neighborhood or for a specific address (our estimates are more accurate within our territory)*\n
+📊 *Estimate the approximate value of a property in a neighborhood or for a specific address (our estimates are more accurate within our territory see www.christophemarcellin.com)*\n
 🔢 *Perform a mortgage calculation*\n
 ℹ️ *Explain our services*\n
-💬 *And much more\n\n
+💬 *And much more*\n\n
 
 What would you like to ask? (Please carefully read this msg from the start)`;
 
