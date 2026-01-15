@@ -22,12 +22,14 @@ const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 console.log("ENV CHECK:", {
     CC21: process.env.PAGE_ACCESS_TOKEN_CC21 ? "OK" : "MISSING",
     CMIMMO: process.env.PAGE_ACCESS_TOKEN_CMIMMO ? "OK" : "MISSING",
+    CASANOVA: process.env.PAGE_ACCESS_TOKEN_CASANOVA
 });
 
 // Multi-pages : dictionnaire PageID → Token
 const PAGE_TOKENS = {
-    "663804066810317": process.env.PAGE_ACCESS_TOKEN_CC21,   // Page CC21
-    "214465451751956": process.env.PAGE_ACCESS_TOKEN_CMIMMO  // Page CM Immo
+    "663804066810317": process.env.PAGE_ACCESS_TOKEN_CC21,   // Page Condo Montréal
+    "214465451751956": process.env.PAGE_ACCESS_TOKEN_CMIMMO,  // Page CM Immo
+    "932819363252702": process.env.PAGE_ACCESS_TOKEN_CASANOVA // Page Casanova
 };
 
 function getPageAccessToken(pageId) {
