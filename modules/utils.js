@@ -37,7 +37,6 @@ function buildFAQPrompt(message, lang = "fr") {
         `"Comment procédez-vous pour faire l'évaluation d'une propriété ?" → faq:assessment\n` +
         `"Est-ce que vous aidez pour la location ?" → faq:rental\n` +
         `"Puis-je vous appeler directement ?" → faq:contact\n` +
-        `"Qui est Carole Baillargeon ?" → faq:carole\n` +
         `"Qui est Christophe Marcellin ?" → faq:christophe\n` +
         `"Que pouvez-vous me dire de votre équipe ?" → faq:team\n` +
         `"Faites-vous des propriétés commerciales ?" → faq:commercial\n` +
@@ -51,7 +50,6 @@ function buildFAQPrompt(message, lang = "fr") {
         `"How does a property assessment work?" → faq:assessment\n` +
         `"Do you handle rentals?" → faq:rental\n` +
         `"Can I call you directly?" → faq:contact\n` +
-        `"Who is Carole Baillargeon?" → faq:carole\n` +
         `"Who is Christophe Marcellin?" → faq:christophe\n` +
         `"What can you tell me about your team?" → faq:team\n` +
         `"Do you work with commercial properties?" → faq:commercial\n` +
@@ -150,13 +148,13 @@ const faqMapByKey = {
         en: "We are accredited to assist with both commercial and residential real estate."
     },
     territory: {
-        fr: "Nous sommes très actifs dans les secteurs du Vieux Montréal, l'Ile des Soeurs, Griffintown et Saint-Lambert.",
-        en: "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, and Saint-Lambert."
+        fr: "Nous sommes très actifs dans les secteurs du Vieux Montréal, l'Ile des Soeurs, Griffintown, Saint-Henri, Pointe-Saint-Charles et Saint-Lambert.",
+        en: "We are very active in the areas of Old Montreal, Nuns’ Island, Griffintown, Saint-Henri, Pointe-Saint-Charles and Saint-Lambert."
     },
-    carole: {
-        fr: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix. Désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2025 et Prix Centurion 2003 à 2013 (2010 exclus) et membre du temple de la Renommée Canada 2007.",
-        en: "Carole has been a real estate broker for over 25 years and has won numerous awards. She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2025 and received the Centurion Award from 2003 to 2013 (except 2010), and is a member of the Century 21 Canada Hall of Fame since 2007."
-    },
+    //carole: {
+    //    fr: "Carole pratique le courtage immobilier depuis plus de 25 ans et a remporté de nombreux prix. Désignée Maître Vendeur en 2000, 2001, 2002, 2010, 2014 à 2025 et Prix Centurion 2003 à 2013 (2010 exclus) et membre du temple de la Renommée Canada 2007.",
+    //    en: "Carole has been a real estate broker for over 25 years and has won numerous awards. She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2025 and received the Centurion Award from 2003 to 2013 (except 2010), and is a member of the Century 21 Canada Hall of Fame since 2007."
+    //},
     christophe: {
         fr: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre rapidement. Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service.",
         en: "Christophe has been a broker for 2 years and brings 25 years of technology experience to help his clients sell efficiently. This virtual assistant is a great example of technology working for you."
@@ -166,10 +164,10 @@ const faqMapByKey = {
         fr: "Notre bureau Century 21 est situé au 1980 Rue Notre-Dame Ouest. Montréal, QC H3J1M8. Contact. Principal: (514) 933-1221",
         en: "Our Century 21 office is located at 1980 Rue Notre-Dame Ouest. Montréal, QC H3J1M8. Contact. Principal: (514) 933-1221"
     },
-    team: {
-        fr: "Carole et Christophe font équipe pour mieux vous servir. Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix. Christophe met à votre service son expérience de courtier et 25 ans d'expérience en technologie pour vous aider à vendre rapidement ou acheter.",
-        en: "Carole and Christophe work together to better serve you. Carole brings over 25 years of brokerage experience and many awards, while Christophe offers his brokerage expertise combined with 25 years in tech to help you sell or buy quickly."
-    },
+    //team: {
+    //    fr: "Carole et Christophe font équipe pour mieux vous servir. Carole apporte plus de 25 ans d'expérience en courtage et est gagnante de nombreux prix. Christophe met à votre service son expérience de courtier et 25 ans d'expérience en technologie pour vous aider à vendre rapidement ou acheter.",
+    //    en: "Carole and Christophe work together to better serve you. Carole brings over 25 years of brokerage experience and many awards, while Christophe offers his brokerage expertise combined with 25 years in tech to help you sell or buy quickly."
+    //},
     homestaging: {
         fr: "Bien entendu, nous vous aidons à montrer votre propriété sous son meilleur jour en vous fournissant les services conseils appropriés.",
         en: "Of course, we help you homestage your property at its best by providing the appropriate advisory services."
@@ -543,7 +541,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
     if (lang === 'fr') {
         return (
             `D’après nos données, la valeur estimative pour l'endroit ciblé est de ${valeur} $ le pied carré, ` +
-            `ce qui signifie environ ${(valeur * 1000).toLocaleString('fr-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ pour 1000 pieds carrés. ` +
+            `ce qui signifie environ ${(valeur * 1000).toLocaleString('fr-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ pour 1000 pieds carrés, à vous d'ajuster pour votre dimension exacte ` +
             `(fiabilité statistique : ${confiance}). ` +
             `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
             `comme le positionnement de la propriété ou les rénovations faites. ` +
@@ -552,7 +550,7 @@ function buildEstimateMessage(valeur, precision, lang = 'fr') {
     } else {
         return (
             `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
-            `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square foot. ` +
+            `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square foot, please adjust for your exact dimension ` +
             `(statistical reliability: ${confiance}). ` +
             `Obviously, several factors can influence the accuracy of this estimate, ` +
             `such as the property's positioning or renovations made. ` +
