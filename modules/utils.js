@@ -62,34 +62,78 @@ function buildFAQPrompt(message, lang = "fr") {
         ? `Tu es un assistant virtuel spécialisé en immobilier au Québec.\n\n${faqExamples}\nVoici le message de l'utilisateur : "${message}"\n\nRéponds uniquement par : faq:<catégorie> ou "none".`
         : `You are a virtual assistant specialized in real estate in Quebec.\n\n${faqExamples}\nHere is the user's message: "${message}"\n\nRespond only with: faq:<category> or "none".`;
 }
+//function buildIntentPrompt(message, lang = "fr") {
+//    return lang === "fr"
+//        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
+//L'utilisateur peut envoyer soit une question, soit une affirmation.
+
+//Message de l'utilisateur : "${message}"
+
+//Règles :
+//1. Si c'est une question visant à estimer la valeur d'un bien immobilier ou d'un terrain dans un lieu donné  → estimate
+//2. Si c'est une question → gpt
+//3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
+//4. S'il n'y a rien qui fait référence à de l'immobilier → other
+
+//Réponds uniquement par un mot : estimate, gpt, declaration ou other.`
+//        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
+//The user may send either a question or a statement.
+
+//User's message: "${message}"
+
+//Rules:
+//1. If the question aims to estimate the market value of a property or land in a given location → estimate
+//2. If it is a real estate question → gpt
+//3. If it is a real estate statement (ex: "I want to buy a condo") → declaration
+//4. If nothing ties to real estate → other
+
+//Respond with a single word: estimate, gpt, declaration, or other.`;
+//}
 function buildIntentPrompt(message, lang = "fr") {
     return lang === "fr"
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
 L'utilisateur peut envoyer soit une question, soit une affirmation.
 
+⚠️ Tu dois tenir compte du CONTEXTE et de l’HISTORIQUE fournis.
+Un message court ou ambigu peut être lié à l’immobilier si le contexte précédent l’est.
+
 Message de l'utilisateur : "${message}"
 
 Règles :
-1. Si c'est une question visant à estimer la valeur d'un bien immobilier ou d'un terrain dans un lieu donné  → estimate
-2. Si c'est une question → gpt
-3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
-4. S'il n'y a rien qui fait référence à de l'immobilier → other
+1. Si le message demande d’évaluer un prix, une valeur ou une estimation immobilière → estimate
+2. Si le message est une question OU un commentaire lié à l’immobilier → gpt
+3. Si c'est une intention de réaliser une transaction immobilière (ex: "je veux acheter ou vendre ou louer une propriété") → declaration
+4. Si c'est une affirmation qui ne concerne pas l'immobilier (ex. merci, bonsoir, il fait beau) → affirmation
+5. Si le message est une question ou une demande qui ne concerne pas l’immobilier → other
+
+Règles importantes :
+- Ne classe JAMAIS une affirmation humaine simple comme other.
+- Si le message est ambigu mais que le contexte est immobilier → gpt.
+- Utilise other uniquement pour un vrai hors-domaine.
 
 Réponds uniquement par un mot : estimate, gpt, declaration ou other.`
         : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
 The user may send either a question or a statement.
 
+⚠️ You must take CONTEXT and HISTORY into account.
+A short or ambiguous message may relate to real estate if the previous context does.
+
 User's message: "${message}"
 
 Rules:
-1. If the question aims to estimate the market value of a property or land in a given location → estimate
-2. If it is a real estate question → gpt
-3. If it is a real estate statement (ex: "I want to buy a condo") → declaration
-4. If nothing ties to real estate → other
+1. If the message asks to estimate a price or value → estimate
+2. If the message is a question OR a statement related to real estate → gpt
+3. If the message is a human statement not related to real estate
+   (e.g. ok, thanks, understood) → declaration
+4. If the message is a question or request not related to real estate → other
+
+Important rules:
+- Never classify a simple human statement as other.
+- If the message is ambiguous but the context is real estate → gpt.
+- Use other only for true out-of-domain messages.
 
 Respond with a single word: estimate, gpt, declaration, or other.`;
 }
-
 //construit les 5 derniers messages avec les specs de l'usager
 function buildContextualPrompt(session, lang = "fr") {
     const specs = session.specSummary || "";
@@ -296,9 +340,30 @@ async function chatOnly(senderId, message, session) {
 
     }
 
+    // Cas 5 : Declaration (affirmations)
+    if (classification === "affirmation") {
+        const contextualMessage = buildContextualPrompt(session, lang);
+
+        const prompt = lang === "fr"
+            ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
+            `Engagez la conversation, sans reformulation ou détour. ` +
+            `Informez-vous pour savoir si l'usager a une question` +
+            `Ne demandez jamais de coordonnées.\n\n` +
+            `Réagissez à ce message: ${message}\nContexte : ${contextualMessage}\n\n`
+            : `Real estate assistant (residential and commercial) in Quebec, speaking on behalf of broker Christophe. ` +
+            `Engage in conversation ` +
+            `Verify if the user has a question ` +
+            `Never ask for contact details.\n\n` +
+            `React to this message: ${message}\nContext: ${contextualMessage}\n\n`;
+
+        console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
+        return await askGptAndSend(senderId, session, prompt, lang);
+
+    }
 
 
-    // Cas 5 : Other (hors sujet)
+
+    // Cas 6 : Other (hors sujet)
     if (classification === "other") {
         if (!ok) {
             // Cas 1: quota dépassé
