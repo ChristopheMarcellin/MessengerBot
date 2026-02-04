@@ -346,7 +346,7 @@ async function chatOnly(senderId, message, session) {
 
         const prompt = lang === "fr"
             ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
-            `Engagez la conversation, sans reformulation ou détour. ` +
+            `Engagez la conversation, sans reformulation ou détour. S'il vous fait des salutations, retournez poliment ses salutations` +
             `Informez-vous pour savoir si l'usager a une question` +
             `Ne demandez jamais de coordonnées.\n\n` +
             `Réagissez à ce message: ${message}\nContexte : ${contextualMessage}\n\n`
