@@ -217,8 +217,8 @@ const faqMapByKey = {
         en: "Of course, we help you homestage your property at its best by providing the appropriate advisory services."
     },
     assessment: {
-        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seuls Carole ou Christophe peuvent vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
-        en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away for your your address. However, only Carole or Christophe can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
+        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seul un professionnel peut vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
+        en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away for your your address. However, only a professional can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
     },
     website: {
         fr: "En plus du site https://christophe-marcellin.c21.ca/ pour consulter nos propriétés en vente, nous pouvons concevoir rapidement un site qui présente les propriétés qui se concentrent sur vos attentes.",
@@ -325,13 +325,15 @@ async function chatOnly(senderId, message, session) {
 
         const prompt = lang === "fr"
             ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
-            `Engagez la conversation, sans salutation, reformulation ou détour. ` +
-            `Informez-vous pour savoir si l'usager a une question` +
+            `Engagez la conversation sans reformulation ni détour. ` +
+            `S'il vous fait des salutations, retournez poliment ses salutations. ` +
+            `Vérifiez si l'usager a une question. ` +
             `Ne demandez jamais de coordonnées.\n\n` +
             `Réagissez à ce message: ${message}\nContexte : ${contextualMessage}\n\n`
             : `Real estate assistant (residential and commercial) in Quebec, speaking on behalf of broker Christophe. ` +
-            `Engage in conversation ` +
-            `Verify if the user has a question ` +
+            `Engage in conversation without rephrasing or detours. ` +
+            `If the user greets you, politely return the greeting. ` +
+            `Verify whether the user has a question. ` +
             `Never ask for contact details.\n\n` +
             `React to this message: ${message}\nContext: ${contextualMessage}\n\n`;
 
@@ -340,26 +342,26 @@ async function chatOnly(senderId, message, session) {
 
     }
 
-    // Cas 5 : Declaration (affirmations)
-    if (classification === "affirmation") {
-        const contextualMessage = buildContextualPrompt(session, lang);
+    //// Cas 5 : Declaration (affirmations)
+    //if (classification === "affirmation") {
+    //    const contextualMessage = buildContextualPrompt(session, lang);
 
-        const prompt = lang === "fr"
-            ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
-            `Engagez la conversation, sans reformulation ou détour. S'il vous fait des salutations, retournez poliment ses salutations` +
-            `Informez-vous pour savoir si l'usager a une question` +
-            `Ne demandez jamais de coordonnées.\n\n` +
-            `Réagissez à ce message: ${message}\nContexte : ${contextualMessage}\n\n`
-            : `Real estate assistant (residential and commercial) in Quebec, speaking on behalf of broker Christophe. ` +
-            `Engage in conversation ` +
-            `Verify if the user has a question ` +
-            `Never ask for contact details.\n\n` +
-            `React to this message: ${message}\nContext: ${contextualMessage}\n\n`;
+    //    const prompt = lang === "fr"
+    //        ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
+    //        `Engagez la conversation, sans reformulation ou détour. S'il vous fait des salutations, retournez poliment ses salutations` +
+    //        `Informez-vous pour savoir si l'usager a une question` +
+    //        `Ne demandez jamais de coordonnées.\n\n` +
+    //        `Réagissez à ce message: ${message}\nContexte : ${contextualMessage}\n\n`
+    //        : `Real estate assistant (residential and commercial) in Quebec, speaking on behalf of broker Christophe. ` +
+    //        `Engage in conversation ` +
+    //        `Verify if the user has a question ` +
+    //        `Never ask for contact details.\n\n` +
+    //        `React to this message: ${message}\nContext: ${contextualMessage}\n\n`;
 
-        console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
-        return await askGptAndSend(senderId, session, prompt, lang);
+    //    console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
+    //    return await askGptAndSend(senderId, session, prompt, lang);
 
-    }
+    //}
 
 
 
