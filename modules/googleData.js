@@ -1,5 +1,5 @@
 // modules/googleData.js anciennement dataExport
-const webhookUrl = 'https://script.google.com/macros/s/AKfycbxFexdBK0vDziO6Jb8IxZFKHrfnezFbFyiH8UBV_tT5E1k2UJ9qCdsHdg76kWKpEkEN/exec';
+const webhookUrl = 'https://script.google.com/macros/s/AKfycbxfCkhKf_FaFlD3DgyNGv1S9hY3PrbWWENvg98kLXkVgZlqIYJ6lwaxSmOFsq5xz1fX/exec';
 
 /**
  * Exporte un enregistrement complet (specs) vers Google Sheets
