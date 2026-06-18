@@ -8,12 +8,6 @@ const evalPrix = require('./evalPrix');
 
 console.log("🧩 [utils.js] **************************** Chargé — typeof isNumeric =", typeof isNumeric);
 
-function stripGptSignature(text) {
-    return text
-        .replace(/\[.*?\]/g, '')        // Supprime les blocs comme [Votre Nom], [Coordonnées], etc.
-        .replace(/\n{2,}/g, '\n')       // Réduit les doubles sauts de ligne
-        .trim();
-}
 
 // === 🆕 Historique des conversations par utilisateur ===
 
@@ -696,6 +690,12 @@ function dumpSession(session, label = "DUMP") {
 }
 
 ////////////////////////////////////////////////////////////////////////
+function stripGptSignature(text) {
+    return text
+        .replace(/\[.*?\]/g, '')        // Supprime les blocs comme [Votre Nom], [Coordonnées], etc.
+        .replace(/\n{2,}/g, '\n')       // Réduit les doubles sauts de ligne
+        .trim();
+}
 
 function isText(input) {
     if (typeof input !== 'string') return false;
