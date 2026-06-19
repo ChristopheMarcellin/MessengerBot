@@ -11,86 +11,94 @@ const sheetName = "Prix"; // onglet
 function loadData() {
     const workbook = xlsx.readFile(filePath);
     const sheet = workbook.Sheets[sheetName];
-    if (!sheet) throw new Error(`Onglet '${sheetName}' introuvable.`);
+
+    if (!sheet) {
+        throw new Error(`Onglet '${sheetName}' introuvable.`);
+    }
+
     const json = xlsx.utils.sheet_to_json(sheet, { defval: "" });
 
-    // Nettoyage et structuration
     const data = json.map(row => ({
-        PC: parseFloat((row["$PC"] || "").toString().replace(/[^\d.,]/g, "").replace(",", ".")),
-        CP6: (row["Code Postal"] || "").toString().toUpperCase().replace(/[^A-Z0-9]/g, ""),
-        CP4: (row["CP4"] || "").toString().toUpperCase(),
-        CP3: (row["CP3"] || "").toString().toUpperCase()
-    })).filter(r => !isNaN(r.PC));
- //   console.log(`Données chargées : ${data.length} lignes valides.`);
+        SearchCode: (row["SearchCode"] || "")
+            .toString()
+            .trim()
+            .toUpperCase(),
+
+        PrixComparables: parseFloat(
+            (row["PrixComparables"] || "")
+                .toString()
+                .replace(/[^\d.,]/g, "")
+                .replace(",", ".")
+        )
+    }))
+        .filter(r =>
+            r.SearchCode &&
+            !isNaN(r.PrixComparables)
+        );
+
     return data;
 }
 
 // === NORMALISER LE CODE POSTAL ===
 function normalizePostalCode(cp) {
-    if (!cp) return { cp6: null, cp4: null, cp3: null };
-    const clean = cp.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    return {
-        cp6: clean.slice(0, 6),
-        cp4: clean.slice(0, 4),
-        cp3: clean.slice(0, 3)
-    };
+    if (!cp) return null;
+
+    return cp
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "")
+        .slice(0, 3);
 }
 
-// === CALCULS ===
-function medianeClassique(values) {
-    values.sort((a, b) => a - b);
-    const mid = Math.floor(values.length / 2);
-    return values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
-}
-function medianeHaute(values) {
-    values.sort((a, b) => a - b);
-    const mid = Math.floor(values.length / 2);
-    const mediane = values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
-    const upper = values.filter(v => v >= mediane);
-    return upper.reduce((a, b) => a + b, 0) / upper.length;
-}
-function moyenne(values) {
-    return values.reduce((a, b) => a + b, 0) / values.length;
-}
-function getValues(data, cp, gran) {
-    const val = gran === "CP6" ? cp.cp6 : gran === "CP4" ? cp.cp4 : cp.cp3;
-    return data.filter(r => r[gran] === val).map(r => r.PC);
-}
 
 // === EVALUATION ===
-function evalPrix(codePostal) {
+function evalPrix(
+    codePostal,
+    knownSpecs = "S:M-P:1-V:0-B:1"
+) {
     const data = loadData();
-    const cp = normalizePostalCode(codePostal);
-    console.log(`Code postal saisi: ${codePostal} (normalisé: ${cp.cp6})`);
 
-    const steps = [
-        { gran: "CP6", min: 11, fn: medianeClassique, label: "mediane-classique-CP6", precision: 3},
-        { gran: "CP6", min: 5, fn: medianeHaute, label: "mediane-haute-CP6", precision: 3},
-        { gran: "CP6", min: 3, fn: moyenne, label: "moyenne-CP6", precision: 2},
-        { gran: "CP4", min: 5, fn: medianeHaute, label: "mediane-haute-CP4", precision: 2},
-        { gran: "CP4", min: 3, fn: moyenne, label: "moyenne-CP4", precision: 2 },
-        { gran: "CP3", min: 5, fn: medianeHaute, label: "mediane-haute-CP3", precision: 1},
-        { gran: "CP3", min: 1, fn: moyenne, label: "moyenne-CP3", precision: 1 }
+    const postalPrefix = normalizePostalCode(codePostal);
 
-    ];
+    console.log(`[evalPrix] Code postal: ${codePostal}`);
+    console.log(`[evalPrix] Préfixe postal: ${postalPrefix}`);
 
-    for (const step of steps) {
-        const values = getValues(data, cp, step.gran);
-     //   console.log(`[DEBUG] ${step.label}: ${values.length} valeurs`);
-        if (values.length >= step.min) {
-            const val = step.fn(values);
-      //      console.log(`[INFO] Utilisé: ${step.label} (${values.length} valeurs) → ${val.toFixed(2)} $/pc`);
-            return { 
-                valeur: +val.toFixed(2), 
-                type: step.label,        // méthode utilisée (pour les logs)
-                nbValeurs: values.length,
-                precision: step.precision // 1, 2, 3 pour la fiabilité
-            };
-        }
+    if (!postalPrefix) {
+        console.log("[evalPrix] Code postal invalide.");
+        return {
+            valeur: 0,
+            type: "aucune donnée",
+            nbValeurs: 0,
+            precision: 0
+        };
     }
 
-    console.log("[INFO] Aucune donnée suffisante trouvée.");
-    return { valeur: 0, type: "aucune donnée", nbValeurs: 0, precision: 0 };
+    const searchCode = `${postalPrefix}-${knownSpecs}`;
+
+    console.log(`[evalPrix] SearchCode recherché: ${searchCode}`);
+
+    const matches = data.filter(r => r.SearchCode === searchCode);
+
+    if (matches.length > 0) {
+        const prix = matches[0].PrixComparables;
+
+        console.log(`[evalPrix] Match trouvé (${matches.length}) → ${prix} $/pc`);
+
+        return {
+            valeur: +prix.toFixed(2),
+            type: "searchcode-exact",
+            nbValeurs: matches.length,
+            precision: 3
+        };
+    }
+
+    console.log(`[evalPrix] Aucune donnée pour ${searchCode}`);
+
+    return {
+        valeur: 0,
+        type: "aucune donnée",
+        nbValeurs: 0,
+        precision: 0
+    };
 }
 
 // === MODE INTERACTIF ===
