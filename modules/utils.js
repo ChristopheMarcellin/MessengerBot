@@ -56,34 +56,8 @@ function buildFAQPrompt(message, lang = "fr") {
         ? `Tu es un assistant virtuel spécialisé en immobilier au Québec.\n\n${faqExamples}\nVoici le message de l'utilisateur : "${message}"\n\nRéponds uniquement par : faq:<catégorie> ou "none".`
         : `You are a virtual assistant specialized in real estate in Quebec.\n\n${faqExamples}\nHere is the user's message: "${message}"\n\nRespond only with: faq:<category> or "none".`;
 }
-//function buildIntentPrompt(message, lang = "fr") {
-//    return lang === "fr"
-//        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
-//L'utilisateur peut envoyer soit une question, soit une affirmation.
 
-//Message de l'utilisateur : "${message}"
-
-//Règles :
-//1. Si c'est une question visant à estimer la valeur d'un bien immobilier ou d'un terrain dans un lieu donné  → estimate
-//2. Si c'est une question → gpt
-//3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
-//4. S'il n'y a rien qui fait référence à de l'immobilier → other
-
-//Réponds uniquement par un mot : estimate, gpt, declaration ou other.`
-//        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
-//The user may send either a question or a statement.
-
-//User's message: "${message}"
-
-//Rules:
-//1. If the question aims to estimate the market value of a property or land in a given location → estimate
-//2. If it is a real estate question → gpt
-//3. If it is a real estate statement (ex: "I want to buy a condo") → declaration
-//4. If nothing ties to real estate → other
-
-//Respond with a single word: estimate, gpt, declaration, or other.`;
-//}
-function buildIntentPrompt(message, lang = "fr") {
+function buildIntentPrompt(message, context, lang = "fr") {
     return lang === "fr"
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
 L'utilisateur peut envoyer soit une question, soit une affirmation.
@@ -92,6 +66,7 @@ L'utilisateur peut envoyer soit une question, soit une affirmation.
 Un message court ou ambigu peut être lié à l’immobilier si le contexte précédent l’est.
 
 Message de l'utilisateur : "${message}"
+Contexte : "${context}"
 
 Règles :
 1. Si le message demande d’évaluer un prix, une valeur ou une estimation immobilière → estimate
@@ -113,6 +88,7 @@ The user may send either a question or a statement.
 A short or ambiguous message may relate to real estate if the previous context does.
 
 User's message: "${message}"
+Context : "${context}"
 
 Rules:
 1. If the message asks to estimate a price or value → estimate
@@ -226,9 +202,12 @@ const faqMapByKey = {
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
-async function classifyIntent(message, lang = "fr", ok = true) {
+async function classifyIntent(message, context, lang = "fr", ok = true) {
     // 1️⃣ Raccourcis directs
-    if (/carole/i.test(message)) return "faq:carole";
+    // if (/carole/i.test(message)) return "faq:carole";
+
+
+
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
 
     // 2️⃣ Première passe → FAQ seulement (pas de quota)
@@ -248,7 +227,13 @@ async function classifyIntent(message, lang = "fr", ok = true) {
     }
 
     // 3️⃣ Deuxième passe → avec specs + historique (quota)
-    const intentPrompt = buildIntentPrompt(message, lang);
+    const intentPrompt = buildIntentPrompt(message, context, lang);
+
+
+    console.log("\n================ INTENT PROMPT ================\n");
+    console.log(intentPrompt);
+    console.log("\n===============================================\n");
+
     intent = await askGptIntent(intentPrompt, lang);
     return intent || "other";
 }
@@ -271,7 +256,13 @@ async function chatOnly(senderId, message, session) {
     const ok = await checkQuota(senderId, session);
     const contextualMessage = buildContextualPrompt(session, lang);
     console.log("[ZZZZZZ DEBUG chatOnly] conversationHistory =", session.conversationHistory);
-    const classification = await classifyIntent(message, contextualMessage, lang, ok);
+    const classification =
+        await classifyIntent(
+            message,
+            contextualMessage,
+            lang,
+            ok
+        );
     console.log(`[ZZZZZZ chatOnly] classification = ${classification}`);
 
     buildConversationHistory(session, message);
