@@ -38,7 +38,7 @@ function buildFAQPrompt(message, lang = "fr") {
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Faites-vous du home staging ?" → faq:homestaging\n` +
         `"Parlez moi de votre site web immobilier" → faq:website\n`
-         `"Parlez moi de vos alerte(s) en immobilier" → faq:website\n`
+            `"Parlez moi de vos alerte(s) en immobilier" → faq:website\n`
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
         `"How does a property assessment work?" → faq:assessment\n` +
@@ -56,8 +56,34 @@ function buildFAQPrompt(message, lang = "fr") {
         ? `Tu es un assistant virtuel spécialisé en immobilier au Québec.\n\n${faqExamples}\nVoici le message de l'utilisateur : "${message}"\n\nRéponds uniquement par : faq:<catégorie> ou "none".`
         : `You are a virtual assistant specialized in real estate in Quebec.\n\n${faqExamples}\nHere is the user's message: "${message}"\n\nRespond only with: faq:<category> or "none".`;
 }
+//function buildIntentPrompt(message, lang = "fr") {
+//    return lang === "fr"
+//        ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
+//L'utilisateur peut envoyer soit une question, soit une affirmation.
 
-function buildIntentPrompt(message, context, lang = "fr") {
+//Message de l'utilisateur : "${message}"
+
+//Règles :
+//1. Si c'est une question visant à estimer la valeur d'un bien immobilier ou d'un terrain dans un lieu donné  → estimate
+//2. Si c'est une question → gpt
+//3. Si c'est une affirmation (ex: "je veux acheter un condo") → declaration
+//4. S'il n'y a rien qui fait référence à de l'immobilier → other
+
+//Réponds uniquement par un mot : estimate, gpt, declaration ou other.`
+//        : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
+//The user may send either a question or a statement.
+
+//User's message: "${message}"
+
+//Rules:
+//1. If the question aims to estimate the market value of a property or land in a given location → estimate
+//2. If it is a real estate question → gpt
+//3. If it is a real estate statement (ex: "I want to buy a condo") → declaration
+//4. If nothing ties to real estate → other
+
+//Respond with a single word: estimate, gpt, declaration, or other.`;
+//}
+function buildIntentPrompt(message, lang = "fr") {
     return lang === "fr"
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
 L'utilisateur peut envoyer soit une question, soit une affirmation.
@@ -66,7 +92,6 @@ L'utilisateur peut envoyer soit une question, soit une affirmation.
 Un message court ou ambigu peut être lié à l’immobilier si le contexte précédent l’est.
 
 Message de l'utilisateur : "${message}"
-Contexte : "${context}"
 
 Règles :
 1. Si le message demande d’évaluer un prix, une valeur ou une estimation immobilière → estimate
@@ -88,7 +113,6 @@ The user may send either a question or a statement.
 A short or ambiguous message may relate to real estate if the previous context does.
 
 User's message: "${message}"
-Context : "${context}"
 
 Rules:
 1. If the message asks to estimate a price or value → estimate
@@ -202,12 +226,9 @@ const faqMapByKey = {
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
-async function classifyIntent(message, context, lang = "fr", ok = true) {
+async function classifyIntent(message, lang = "fr", ok = true) {
     // 1️⃣ Raccourcis directs
-    // if (/carole/i.test(message)) return "faq:carole";
-
-
-
+    if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
 
     // 2️⃣ Première passe → FAQ seulement (pas de quota)
@@ -227,13 +248,7 @@ async function classifyIntent(message, context, lang = "fr", ok = true) {
     }
 
     // 3️⃣ Deuxième passe → avec specs + historique (quota)
-    const intentPrompt = buildIntentPrompt(message, context, lang);
-
-
-    console.log("\n================ INTENT PROMPT ================\n");
-    console.log(intentPrompt);
-    console.log("\n===============================================\n");
-
+    const intentPrompt = buildIntentPrompt(message, lang);
     intent = await askGptIntent(intentPrompt, lang);
     return intent || "other";
 }
@@ -244,7 +259,7 @@ async function chatOnly(senderId, message, session) {
     if (!session.language) {
         if (message && isNaN(message)) { // exclure numériques simples
             session.language = detectLanguageFromText(message) || "fr";
-          
+
         } else {
             session.language = "fr"; // fallback dur
         }
@@ -256,13 +271,7 @@ async function chatOnly(senderId, message, session) {
     const ok = await checkQuota(senderId, session);
     const contextualMessage = buildContextualPrompt(session, lang);
     console.log("[ZZZZZZ DEBUG chatOnly] conversationHistory =", session.conversationHistory);
-    const classification =
-        await classifyIntent(
-            message,
-            contextualMessage,
-            lang,
-            ok
-        );
+    const classification = await classifyIntent(message, contextualMessage, lang, ok);
     console.log(`[ZZZZZZ chatOnly] classification = ${classification}`);
 
     buildConversationHistory(session, message);
@@ -322,8 +331,8 @@ async function chatOnly(senderId, message, session) {
             `Never ask for contact details.\n\n` +
             `React to this message: ${message}\nContext: ${contextualMessage}\n\n`;
 
-    console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
-    return await askGptAndSend(senderId, session, prompt, lang);
+        console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
+        return await askGptAndSend(senderId, session, prompt, lang);
 
     }
 
@@ -769,7 +778,7 @@ function detectLanguageFromText(text) {
     } else if (englishRegex && frenchRegex) {
         // ⚖️ Cas mixte : on choisit selon la majorité des mots
         const frMatches = sample.match(/\b(le|la|est|une|bonjour|salut|allo|propriété|acheter|vendre|maison|ça|vous|tu|j’|je|il|vous)\b/gi) || [];
-        const enMatches = sample.match(/\b(the|house|hello|hi|property|buy|sell|good|morning|evening|yo|you|your|are|is|was|were|in|so|it|and)\b/gi ) || [];
+        const enMatches = sample.match(/\b(the|house|hello|hi|property|buy|sell|good|morning|evening|yo|you|your|are|is|was|were|in|so|it|and)\b/gi) || [];
         detected = frMatches.length >= enMatches.length ? "fr" : "en";
     }
 
@@ -781,8 +790,8 @@ function detectLanguageFromText(text) {
 function traceCaller(label) {
     const stack = new Error().stack;
     const line = stack.split('\n')[3] || 'inconnu';
-   // console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
- }
+    // console.log(`[UTILS traceCaller] ${label} ← ${line.trim()}`);
+}
 
 function getNextSpec(session) {
     const { projectType, specValues = {}, askedSpecs = {} } = session;
@@ -837,7 +846,7 @@ function getNextSpec(session) {
             //    continue;
             //}
 
-            if (specValues[field] === '?' ||specValues[field] === undefined || specValues[field] === null) {
+            if (specValues[field] === '?' || specValues[field] === undefined || specValues[field] === null) {
                 return field;
             }
         }
@@ -876,7 +885,7 @@ function getCurrentSpec(session) {
 }
 
 function initializeSpecFields(session, projectType) {
-   // traceCaller('initializeSpecFields');
+    // traceCaller('initializeSpecFields');
     const fields = {
         B: ['price', 'bedrooms', 'bathrooms', 'garage', 'location'],
         S: ['price', 'bedrooms', 'bathrooms', 'garage', 'location'],
@@ -911,7 +920,7 @@ function setProjectType(session, interpreted, caller = 'unknown') {
             return;
         }
         if (old === interpreted) {
-           // console.log(`[UTILS setProjectType] Caller = "${caller}", projectType déjà égal à "${value}" — aucune modification`);
+            // console.log(`[UTILS setProjectType] Caller = "${caller}", projectType déjà égal à "${value}" — aucune modification`);
             return;
         }
     }
@@ -929,7 +938,7 @@ function setProjectType(session, interpreted, caller = 'unknown') {
 
         initializeSpecFields(session, interpreted);
     }
- //   console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
+    //   console.log(`[UTILS setProjectType] ... specs: _${JSON.stringify(session.specValues)}_`);
 }
 
 function setSpecValue(session, key, value, caller = "unspecified") {
@@ -1022,10 +1031,10 @@ function getVoidedSpecs(spec, value = "E") {
 function setAskedSpec(session, specKey, source = "manual") {
     if (!session.askedSpecs) {
         session.askedSpecs = {};
-      // console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
+        // console.warn(`[UTILS setAskedSpec] array askedSpecs manquant recréé par: ${source}`);
     }
     session.askedSpecs[specKey] = true;
- //   console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
+    //   console.log(`[UTILS setAskedspec] for ["${specKey}"] = true | par: ${source}`);
 }
 
 module.exports = {
@@ -1040,5 +1049,5 @@ module.exports = {
     detectLanguageFromText,
     setLanguage,
     isText,
-    isNumeric    
+    isNumeric
 };
