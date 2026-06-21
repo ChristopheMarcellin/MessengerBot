@@ -239,6 +239,7 @@ async function classifyIntent(message, context, lang = "fr", ok = true) {
     if (intent && intent.startsWith("faq:")) {
         console.log(`[classifyIntent] ✅ FAQ détectée: ${intent}`);
         return intent;
+
     }
 
     // ⚠️ Si quota dépassé, on bloque ici → on ne monte pas à la 2e passe
