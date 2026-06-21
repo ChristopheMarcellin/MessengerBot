@@ -226,7 +226,7 @@ const faqMapByKey = {
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
-async function classifyIntent(message, lang = "fr", ok = true) {
+async function classifyIntent(message, context, lang = "fr", ok = true) {
 
     console.log("[DEBUG classifyIntent]", {
         message,
