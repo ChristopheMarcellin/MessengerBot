@@ -578,7 +578,57 @@ CONTEXTE DISPONIBLE :
 ${contextualMessage}
 
 IMPORTANT :
+Le contexte contient généralement deux parties :IMPORTANT :
 Le contexte contient généralement deux parties :
+1. des spécifications connues;
+2. des messages passés numérotés du plus ancien au plus récent.
+
+RÈGLE DE PRIORITÉ :
+Pour une question vague comme « combien ça vaut ? », « quel prix ? » ou « ça vaut quoi ? », donne priorité aux messages récents de la conversation, même s'ils apparaissent après les spécifications dans le contexte.
+
+Si le message actuel mentionne explicitement un nouveau secteur, une nouvelle ville ou une nouvelle adresse, utilise cette nouvelle localisation en priorité.
+
+Utilise les spécifications seulement si :
+- les messages récents ne permettent pas d'identifier clairement le sujet;
+- ou les spécifications semblent clairement liées au sujet discuté.
+
+OBJECTIF FINAL :
+Déterminer si la demande permet raisonnablement d'arriver à un RTA postal canadien exploitable pour produire une estimation.
+
+DÉFINITION :
+Un RTA postal correspond aux 3 premiers caractères d'un code postal canadien.
+
+Exemples :
+H3C, H3G, H2L, H8S.
+
+RÈGLES RTA POSTAL :
+- Ne demande jamais un code postal à l'utilisateur.
+- Le secteur doit être suffisamment précis pour permettre d'identifier un nombre raisonnable de RTA postaux.
+- Si le secteur correspond à 6 RTA postaux ou moins, utilise le RTA postal le plus représentatif ou le plus probable.
+- Si le secteur correspond probablement à plus de 6 RTA postaux distincts, retourne seulement REFORMULER.
+- Si aucun secteur clair n'est identifiable, retourne seulement REFORMULER.
+- Si plusieurs secteurs plausibles existent, retourne seulement REFORMULER.
+
+SI TU PEUX ESTIMER :
+Retourne une réponse destinée à l'utilisateur qui inclut :
+- ce que tu crois estimer;
+- le secteur utilisé;
+- le RTA postal utilisé pour ton raisonnement;
+- les critères pris en compte;
+- une estimation indicative prudente en $/pi² si possible;
+- la phrase exacte suivante à la fin :
+
+"Si je n’ai pas bien compris les éléments d’analyse, veuillez reformuler votre demande d’estimation avec le plus de précision possible."
+
+SI TU NE PEUX PAS ESTIMER :
+
+Retourne :
+
+REFORMULER|raison
+
+où raison est une courte explication.
+
+Aucune explication technique.
 1. des spécifications connues;
 2. des messages passés numérotés du plus ancien au plus récent.
 
