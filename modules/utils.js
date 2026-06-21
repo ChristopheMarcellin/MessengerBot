@@ -298,6 +298,7 @@ async function chatOnly(senderId, message, session) {
     // Cas 2 : ESTIMATE
     if (classification === "estimate") {
         await handlePriceEstimate(senderId, message, session);
+        await handlePriceEstimateNew(senderId, message, session);
         return;
     }
 
@@ -556,6 +557,142 @@ async function handlePriceEstimate(senderId, message, session) {
             ? "Désolé, je n’ai pas pu générer une estimation."
             : "Sorry, I couldn't generate an estimate.";
         await sendMessage(senderId, `${fallback} ${lang === 'fr' ? '(fiabilité statistique : basse)' : '(statistical reliability : low)'}`, session);
+    }
+}
+async function handlePriceEstimateNew(senderId, message, session) {
+    const lang = session?.language || "fr";
+    const contextualMessage = buildContextualPrompt(session, lang);
+
+    console.log("🧪 [PIPELINE NEW] Demande d'estimation détectée");
+    console.log("[DEBUG ESTIMATE NEW CONTEXT]");
+    console.log(contextualMessage);
+
+    const prompt = lang === "fr"
+        ? `
+Tu analyses une demande d'estimation immobilière.
+
+MESSAGE ACTUEL :
+"${message}"
+
+CONTEXTE DISPONIBLE :
+${contextualMessage}
+
+IMPORTANT :
+Le contexte contient généralement deux parties :
+1. des spécifications connues;
+2. des messages passés numérotés du plus ancien au plus récent.
+
+RÈGLE DE PRIORITÉ :
+Pour une question vague comme "combien ça vaut ?", "quel prix ?", "ça vaut quoi ?", donne priorité aux messages passés récents, même s'ils apparaissent après les spécifications dans le contexte.
+
+Utilise les spécifications seulement si :
+- les messages récents ne permettent pas d'identifier clairement le sujet;
+- ou les spécifications semblent clairement liées au sujet discuté.
+
+OBJECTIF FINAL :
+Déterminer si la demande permet raisonnablement d'arriver à un code postal canadien exploitable pour produire une estimation.
+
+RÈGLES CODE POSTAL :
+- Ne demande jamais un code postal à l'utilisateur.
+- Le secteur doit être assez précis pour dériver un code postal.
+- "Montréal" seul est trop vaste.
+- Si le secteur correspond probablement à plus de 6 codes postaux distincts, retourne seulement REFORMULER.
+- Si aucun secteur clair n'est identifiable, retourne seulement REFORMULER.
+- Si plusieurs secteurs plausibles existent, retourne seulement REFORMULER.
+- Si le secteur est assez précis, utilise le code postal le plus représentatif ou le plus probable du secteur.
+
+SI TU PEUX ESTIMER :
+Retourne une réponse destinée à l'utilisateur qui inclut :
+- ce que tu crois estimer;
+- le secteur utilisé;
+- le code postal ou préfixe postal probable utilisé pour ton raisonnement;
+- les critères pris en compte;
+- une estimation indicative prudente en $/pi² si possible;
+- la phrase exacte suivante à la fin :
+"Si je n’ai pas bien compris les éléments d’analyse, veuillez reformuler votre demande d’estimation avec le plus de précision possible."
+
+SI TU NE PEUX PAS ESTIMER :
+Retourne exactement :
+REFORMULER
+
+Aucune explication technique.
+`
+        : `
+You are analyzing a real estate estimate request.
+
+CURRENT MESSAGE:
+"${message}"
+
+AVAILABLE CONTEXT:
+${contextualMessage}
+
+IMPORTANT:
+The context usually contains two parts:
+1. known specifications;
+2. past messages numbered from oldest to newest.
+
+PRIORITY RULE:
+For a vague question such as "how much is it worth?", "what price?", or "what is that worth?", give priority to the recent past messages, even if they appear after the specifications in the context.
+
+Use the specifications only if:
+- the recent messages do not clearly identify the subject;
+- or the specifications are clearly related to the discussed subject.
+
+FINAL OBJECTIVE:
+Determine whether the request can reasonably lead to a usable Canadian postal code for an estimate.
+
+POSTAL CODE RULES:
+- Never ask the user for a postal code.
+- The area must be precise enough to derive a postal code.
+- "Montreal" alone is too broad.
+- If the area likely corresponds to more than 6 distinct postal codes, return only REFORMULATE.
+- If no clear area is identifiable, return only REFORMULATE.
+- If multiple plausible areas exist, return only REFORMULATE.
+- If the area is precise enough, use the most representative or most likely postal code for that area.
+
+IF YOU CAN ESTIMATE:
+Return a user-facing answer including:
+- what you believe is being estimated;
+- the area used;
+- the postal code or likely postal prefix used for your reasoning;
+- the criteria considered;
+- a cautious indicative estimate in $/sq.ft if possible;
+- this exact sentence at the end:
+"If I misunderstood the analysis elements, please reformulate your estimate request with as much precision as possible."
+
+IF YOU CANNOT ESTIMATE:
+Return exactly:
+REFORMULATE
+
+No technical explanation.
+`;
+
+    console.log("[GPT ESTIMATE NEW PROMPT]");
+    console.log(prompt);
+
+    try {
+        const gptResponse = await axios.post("https://api.openai.com/v1/chat/completions", {
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 350,
+            temperature: 0
+        }, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+            }
+        });
+
+        const raw = gptResponse.data.choices?.[0]?.message?.content?.trim() || "";
+
+        console.log("[GPT ESTIMATE NEW RAW]");
+        console.log(raw);
+
+        return raw;
+
+    } catch (err) {
+        console.error(`[handlePriceEstimateNew] *** ERREUR GPT NEW : ${err.message}`);
+        return "REFORMULER";
     }
 }
 
