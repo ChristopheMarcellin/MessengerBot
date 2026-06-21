@@ -227,6 +227,14 @@ const faqMapByKey = {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 async function classifyIntent(message, lang = "fr", ok = true) {
+
+    console.log("[DEBUG classifyIntent]", {
+        message,
+        lang,
+        ok,
+        typeLang: typeof lang,
+        typeOk: typeof ok
+    });
     // 1️⃣ Raccourcis directs
     if (/carole/i.test(message)) return "faq:carole";
     if (/christophe|marcellin/i.test(message)) return "faq:christophe";
