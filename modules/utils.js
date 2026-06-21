@@ -458,6 +458,7 @@ async function handlePriceEstimate(senderId, message, session) {
     //const session = context.session;
     const lang = session?.language || "fr";
     const contextualMessage = buildContextualPrompt(session, lang);
+
     console.log("[DEBUG ESTIMATE CONTEXT]", contextualMessage);
 
     console.log("🔍 [PIPELINE] Demande d'estimation détectée");
