@@ -37,7 +37,7 @@ function buildFAQPrompt(message, lang = "fr") {
         `"Quelle est votre adresse ?" → faq:office\n` +
         `"Travaillez-vous sur la Rive-Sud ou à Montréal ?" → faq:territory\n` +
         `"Faites-vous du home staging ?" → faq:homestaging\n` +
-        `"Parlez moi de votre site web immobilier" → faq:website\n`
+        `"Parlez moi de votre site web immobilier" → faq:website\n` +
             `"Parlez moi de vos alerte(s) en immobilier" → faq:website\n`
         : `Examples:\n` +
         `"What are your business hours?" → faq:hours\n` +
