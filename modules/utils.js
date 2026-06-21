@@ -88,42 +88,34 @@ function buildIntentPrompt(message, lang = "fr") {
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
 L'utilisateur peut envoyer soit une question, soit une affirmation.
 
-⚠️ Tu dois tenir compte du CONTEXTE et de l’HISTORIQUE fournis.
-Un message court ou ambigu peut être lié à l’immobilier si le contexte précédent l’est.
-
 Message de l'utilisateur : "${message}"
 
 Règles :
 1. Si le message demande d’évaluer un prix, une valeur ou une estimation immobilière → estimate
 2. Si le message est une question OU un commentaire lié à l’immobilier → gpt
 3. Si c'est une intention de réaliser une transaction immobilière (ex: "je veux acheter ou vendre ou louer une propriété") → declaration
-4. Si c'est une affirmation qui ne concerne pas l'immobilier (ex. merci, bonsoir, il fait beau) → affirmation
-5. Si le message est une question ou une demande qui ne concerne pas l’immobilier → other
+4. Si c'est une affirmation simple qui ne concerne pas l'immobilier (ex: merci, bonsoir, parfait, d'accord) → declaration
+5. Si le message est une question qui porte clairement sur autre chose que l’immobilier → other
 
 Règles importantes :
 - Ne classe JAMAIS une affirmation humaine simple comme other.
-- Si le message est ambigu mais que le contexte est immobilier → gpt.
 - Utilise other uniquement pour un vrai hors-domaine.
 
 Réponds uniquement par un mot : estimate, gpt, declaration ou other.`
         : `You are a virtual assistant specialized in residential and commercial real estate in Quebec.
 The user may send either a question or a statement.
 
-⚠️ You must take CONTEXT and HISTORY into account.
-A short or ambiguous message may relate to real estate if the previous context does.
-
 User's message: "${message}"
 
 Rules:
 1. If the message asks to estimate a price or value → estimate
 2. If the message is a question OR a statement related to real estate → gpt
-3. If the message is a human statement not related to real estate
-   (e.g. ok, thanks, understood) → declaration
-4. If the message is a question or request not related to real estate → other
+3. If the message expresses an intention to buy, sell or rent a property → declaration
+4. If the message is a simple human statement not related to real estate (e.g. ok, thanks, understood) → declaration
+5. If the message is a question clearly unrelated to real estate → other
 
 Important rules:
 - Never classify a simple human statement as other.
-- If the message is ambiguous but the context is real estate → gpt.
 - Use other only for true out-of-domain messages.
 
 Respond with a single word: estimate, gpt, declaration, or other.`;
@@ -243,7 +235,7 @@ async function classifyIntent(message, context, lang = "fr", ok = true) {
     const faqPrompt = buildFAQPrompt(message, lang);
 
     let intent = await askGptIntent(faqPrompt, lang);
-    console.log(`[classifyIntent] ✅ FAQ détectée: ${intent}`);
+    console.log(`[debug classifyIntent] ✅ FAQ détectée: ${intent}`);
     if (intent && intent.startsWith("faq:")) {
         console.log(`[classifyIntent] ✅ FAQ détectée: ${intent}`);
         return intent;
@@ -256,7 +248,13 @@ async function classifyIntent(message, context, lang = "fr", ok = true) {
     }
 
     // 3️⃣ Deuxième passe → avec specs + historique (quota)
+
+
     const intentPrompt = buildIntentPrompt(message, lang);
+
+    console.log("[DEBUG classifyIntentPrompt 2e passe]");
+    console.log(intentPrompt);
+
     intent = await askGptIntent(intentPrompt, lang);
     return intent || "other";
 }
