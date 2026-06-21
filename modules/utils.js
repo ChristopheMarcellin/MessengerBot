@@ -578,19 +578,16 @@ CONTEXTE DISPONIBLE :
 ${contextualMessage}
 
 IMPORTANT :
-Le contexte contient généralement deux parties :IMPORTANT :
 Le contexte contient généralement deux parties :
 1. des spécifications connues;
 2. des messages passés numérotés du plus ancien au plus récent.
 
 RÈGLE DE PRIORITÉ :
-Pour une question vague comme « combien ça vaut ? », « quel prix ? » ou « ça vaut quoi ? », donne priorité aux messages récents de la conversation, même s'ils apparaissent après les spécifications dans le contexte.
+Pour une question vague comme « combien ça vaut ? », « quel prix ? » ou « ça vaut quoi ? », consulte d’abord les messages récents de la conversation, même s'ils apparaissent après les spécifications dans le contexte.
+
+Si les messages récents ne contiennent aucun secteur, aucune adresse ou aucun sujet immobilier plus précis, utilise les spécifications connues.
 
 Si le message actuel mentionne explicitement un nouveau secteur, une nouvelle ville ou une nouvelle adresse, utilise cette nouvelle localisation en priorité.
-
-Utilise les spécifications seulement si :
-- les messages récents ne permettent pas d'identifier clairement le sujet;
-- ou les spécifications semblent clairement liées au sujet discuté.
 
 OBJECTIF FINAL :
 Déterminer si la demande permet raisonnablement d'arriver à un RTA postal canadien exploitable pour produire une estimation.
@@ -621,50 +618,7 @@ Retourne une réponse destinée à l'utilisateur qui inclut :
 "Si je n’ai pas bien compris les éléments d’analyse, veuillez reformuler votre demande d’estimation avec le plus de précision possible."
 
 SI TU NE PEUX PAS ESTIMER :
-
 Retourne :
-
-REFORMULER|raison
-
-où raison est une courte explication.
-
-Aucune explication technique.
-1. des spécifications connues;
-2. des messages passés numérotés du plus ancien au plus récent.
-
-RÈGLE DE PRIORITÉ :
-Pour une question vague comme "combien ça vaut ?", "quel prix ?", "ça vaut quoi ?", donne priorité aux messages passés récents, même s'ils apparaissent après les spécifications dans le contexte.
-
-Utilise les spécifications seulement si :
-- les messages récents ne permettent pas d'identifier clairement le sujet;
-- ou les spécifications semblent clairement liées au sujet discuté.
-
-OBJECTIF FINAL :
-Déterminer si la demande permet raisonnablement d'arriver à un RTA de code postal canadien exploitable pour produire une estimation.
-
-RÈGLES CODE POSTAL :
-- Ne demande jamais un code postal à l'utilisateur.
-- Le secteur doit être assez précis pour dériver moins de 7 RTA postal.
-- Si le secteur correspond à 6 RTA ou moins, utilise le RTA le plus commun
-- Si le secteur correspond à plus de 6 RTA postaux distincts REFORMULER
-- Si aucun secteur clair n'est identifiable, retourne seulement REFORMULER.
-- Si plusieurs secteurs plausibles existent, retourne seulement REFORMULER.
-
-
-SI TU PEUX ESTIMER :
-Retourne une réponse destinée à l'utilisateur qui inclut :
-- ce que tu crois estimer;
-- le secteur utilisé;
-- le code postal ou préfixe postal probable utilisé pour ton raisonnement;
-- les critères pris en compte;
-- une estimation indicative prudente en $/pi² si possible;
-- la phrase exacte suivante à la fin :
-"Si je n’ai pas bien compris les éléments d’analyse, veuillez reformuler votre demande d’estimation avec le plus de précision possible."
-
-SI TU NE PEUX PAS ESTIMER :
-
-Retourne :
-
 REFORMULER|raison
 
 où raison est une courte explication.
