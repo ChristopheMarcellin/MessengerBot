@@ -612,8 +612,12 @@ Retourne une réponse destinée à l'utilisateur qui inclut :
 "Si je n’ai pas bien compris les éléments d’analyse, veuillez reformuler votre demande d’estimation avec le plus de précision possible."
 
 SI TU NE PEUX PAS ESTIMER :
-Retourne exactement :
-REFORMULER
+
+Retourne :
+
+REFORMULER|raison
+
+où raison est une courte explication.
 
 Aucune explication technique.
 `
