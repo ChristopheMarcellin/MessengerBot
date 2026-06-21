@@ -590,16 +590,16 @@ Utilise les spécifications seulement si :
 - ou les spécifications semblent clairement liées au sujet discuté.
 
 OBJECTIF FINAL :
-Déterminer si la demande permet raisonnablement d'arriver à un code postal canadien exploitable pour produire une estimation.
+Déterminer si la demande permet raisonnablement d'arriver à un RTA de code postal canadien exploitable pour produire une estimation.
 
 RÈGLES CODE POSTAL :
 - Ne demande jamais un code postal à l'utilisateur.
-- Le secteur doit être assez précis pour dériver un code postal.
-- "Montréal" seul est trop vaste.
-- Si le secteur correspond probablement à plus de 6 codes postaux distincts, retourne seulement REFORMULER.
+- Le secteur doit être assez précis pour dériver moins de 7 RTA postal.
+- Si le secteur correspond à 6 RTA ou moins, utilise le RTA le plus commun
+- Si le secteur correspond à plus de 6 RTA postaux distincts REFORMULER
 - Si aucun secteur clair n'est identifiable, retourne seulement REFORMULER.
 - Si plusieurs secteurs plausibles existent, retourne seulement REFORMULER.
-- Si le secteur est assez précis, utilise le code postal le plus représentatif ou le plus probable du secteur.
+
 
 SI TU PEUX ESTIMER :
 Retourne une réponse destinée à l'utilisateur qui inclut :
