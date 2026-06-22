@@ -639,7 +639,7 @@ PROCÉDURE SEARCHCODE :
 
 Si un RTA crédible est identifié, construis toujours un SEARCHCODE.
 
-Format exact :
+Format exact:
 
 RTA-S:size-P:parking-V:view-B:bedrooms
 
