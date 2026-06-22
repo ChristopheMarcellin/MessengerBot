@@ -569,14 +569,6 @@ async function handlePriceEstimateNew(senderId, message, session) {
 
     const prompt = lang === "fr"
         ? `
-Tu analyses une demande d'estimation immobilière.
-
-MESSAGE ACTUEL :
-"${message}"
-
-CONTEXTE DISPONIBLE :
-${contextualMessage}
-
 IMPORTANT :
 Le contexte contient généralement deux parties :
 1. des spécifications connues;
@@ -584,45 +576,45 @@ Le contexte contient généralement deux parties :
 
 Tu analyses une demande d'estimation immobilière.
 Langue de réponse souhaitée pour le contenu des blocs : ${lang}
+
 MESSAGE ACTUEL :
 "${message}"
+
 CONTEXTE DISPONIBLE :
 ${contextualMessage}
 
 MISSION :
-Retourne exactement 4 blocs avec ces noms exacts :
+Retourne exactement 2 blocs avec ces noms exacts :
+
 SEARCHCODE=
-CRITERES=
-ANALYSE=
 ESTIME_GPT=
 
 PRIORITÉ DES INFORMATIONS :
 1. Message actuel.
-2. Messages récents de la conversation.
+2. Messages passés numérotés
 3. Spécifications connues.
 
 RÈGLE PRINCIPALE :
 La localisation est obligatoire pour construire un SEARCHCODE.
 Si aucune localisation crédible ne peut être identifiée, retourne SEARCHCODE=NONE.
-Même si SEARCHCODE=NONE, tu dois quand même retourner CRITERES, ANALYSE et ESTIME_GPT.
+Même si SEARCHCODE=NONE, tu dois retourner ESTIME_GPT.
 
 OBJECTIF :
 Déterminer si la demande permet raisonnablement d'associer la propriété à un RTA canadien exploitable (3 premiers caractères du code postal) pour produire une estimation.
 
 PROCÉDURE LOCALISATION :
 
-1. Identifie toute information géographique disponible :
-   adresse, rue, immeuble, projet immobilier, secteur, quartier, arrondissement, ville ou municipalité.
+1. Identifie tous repères géographiques disponibles : adresse, rue, immeuble, projet immobilier, secteur, quartier, arrondissement, ville
 
 2. Si le message actuel contient une nouvelle information géographique, elle a priorité sur le contexte précédent.
 
-3. Si un quartier, un secteur, un arrondissement ou une appellation locale est mentionné, tente de l'associer au RTA le plus plausible.
+3. Tente d'associer le lieu physique à un quartier et son RTA le plus plausible.
 
-4. Si seule une ville ou une municipalité est mentionnée, tente d'identifier le RTA le plus plausible lorsque cela est raisonnablement possible.
+4. Si seule une ville est mentionnée, tente d'identifier le RTA le plus plausible lorsque cela est raisonnablement possible.
 
 5. Utilise tes connaissances géographiques pour déterminer le RTA le plus crédible.
 
-6. Si le RTA demeure incertain et qu’il s’agit d’une adresse à Montréal, utilise la liste de référence ci-dessous en ciblant le quartier pour utiliser le RTA correspondant.
+6. Si le RTA demeure incertain et qu’il s’agit d’une adresse à Montréal ou à Saint-Lambert utilise la liste de référence ci-dessous pour identifier le RTA voulu.
 
 7. Si aucun RTA crédible ne peut être déduit, retourne SEARCHCODE=NONE.
 
@@ -654,7 +646,19 @@ RTA-S:size-P:parking-V:view-B:bedrooms
 Valeurs :
 
 - RTA = RTA retenu.
-- size = P, M, G ou ? si inconnu.
+
+- size = P si la superficie est inférieure à 800 pi².
+- size = M si la superficie est de 800 pi² à moins de 1300 pi².
+- size = G si la superficie est de 1300 pi² ou plus.
+- Si la superficie est connue, utilise toujours la superficie pour déterminer la taille.
+
+- Si la superficie est inconnue mais que le nombre de chambres est connu :
+- size = P si 1 chambre.
+- size = M si 2 chambres.
+- size = G si 3 chambres ou plus.
+
+- size = ? si ni la superficie ni le nombre de chambres ne sont connus.
+
 - parking = 1 si stationnement ou garage présent.
 - parking = 0 si absence clairement mentionnée.
 - parking = ? si inconnu.
@@ -668,8 +672,8 @@ Valeurs :
 
 RÈGLES D'INTERPRÉTATION :
 
-- Condo, copropriété, appartement condo et unité de copropriété sont considérés comme des propriétés comparables.
-- Si une caractéristique est absente ou inconnue, utilise ?.
+- Si une caractéristique est inconnue, utilise ?.
+- Utilise 0 seulement lorsqu'une absence réelle est clairement mentionnée.
 - Ne jamais inventer une caractéristique non mentionnée.
 - Ne jamais demander un code postal à l'utilisateur.
 - Construis un SEARCHCODE dès qu'un RTA crédible peut être déduit.
@@ -681,28 +685,47 @@ SEARCHCODE=H3C-S:M-P:1-V:0-B:2
 
 SEARCHCODE=H8S-S:?-P:1-V:?-B:2
 
-SEARCHCODE=H2Y-S:G-P:?-V:1-B:3
-
 SEARCHCODE=NONE
+
+PROCÉDURE ESTIMATION :
+
+1. Produis toujours une estimation lorsque les informations disponibles le permettent.
+
+2. Utilise les informations du message actuel, des messages récents et des spécifications connues pour déterminer ce qui est estimé.
+
+3. Si la superficie est connue ou peut être raisonnablement déduite, privilégie une estimation en prix total.
+
+4. Si la superficie est inconnue mais que la localisation et le type de propriété sont connus, privilégie une estimation en $/pi².
+
+5. Lorsque l'information est incomplète, privilégie une fourchette prudente plutôt qu'une valeur unique.
+
+6. Utilise ton jugement pour estimer la valeur en fonction de la localisation, du type de propriété, de la superficie, du nombre de chambres, du nombre de salles de bain, du stationnement, de la vue et de toute autre caractéristique pertinente disponible.
+
+7. Si certaines informations importantes sont inconnues, poursuis quand même l'estimation lorsque cela est raisonnablement possible, mais considère que la confiance de l'estimation est réduite.
+
+8. Ne présente jamais une estimation comme une valeur garantie, officielle ou professionnelle et toujours référer à un courtier immobilier.
+
+9. Explique que plusieurs facteurs nécessairement inconnus peuvent grandement influer sur une estimation
 
 CONTENU DES BLOCS :
 
 SEARCHCODE=<searchcode ou NONE>
 
-CRITERES=<résumé structuré des critères utilisés : localisation, type de propriété, grandeur, chambres, stationnement, vue et hypothèses retenues>
-
-ANALYSE=<explication concise de ce qui est estimé et pourquoi ces critères ont été retenus>
-
-ESTIME_GPT=<estimation indicative prudente en $/pi² ou en prix total lorsque plus approprié>
+ESTIME_GPT=<réponse complète en langage naturel destinée à l'utilisateur. Explique ce qui a été estimé, les critères retenus, les hypothèses utilisées et le niveau de confiance de l'estimation. Fournis ensuite une estimation indicative prudente. Si le SEARCHCODE contient un ou plusieurs ?, nomme clairement les informations manquantes correspondantes dans le texte naturel, par exemple la superficie, le nombre de chambres, le stationnement ou la vue. Explique que ces informations manquantes rendent l'estimation moins précise. Mentionne aussi naturellement que plus l'informations est détaillée, plus l'estimation risque d'être précise.'. N'utilise jamais de format de champs, de liste ou de résumé structuré. Rédige un texte naturel et conversationnel dans la langue demandée.>
 
 RÈGLE DE SORTIE :
 
-Retourne uniquement les 4 blocs demandés.
+Retourne uniquement les 2 blocs demandés.
 N'ajoute aucun texte avant ou après les blocs.
-
 `
         : `
+IMPORTANT:
+The context usually contains two parts:
+1. known specifications;
+2. past messages numbered from oldest to newest.
+
 You are analyzing a real estate estimate request.
+Response language for block content: ${lang}
 
 CURRENT MESSAGE:
 "${message}"
@@ -710,45 +733,124 @@ CURRENT MESSAGE:
 AVAILABLE CONTEXT:
 ${contextualMessage}
 
-IMPORTANT:
-The context usually contains two parts:
-1. known specifications;
-2. past messages numbered from oldest to newest.
+MISSION:
+Return exactly 2 blocks with these exact names:
 
-PRIORITY RULE:
-For a vague question such as "how much is it worth?", "what price?", or "what is that worth?", give priority to the recent past messages, even if they appear after the specifications in the context.
+SEARCHCODE=
+ESTIME_GPT=
 
-Use the specifications only if:
-- the recent messages do not clearly identify the subject;
-- or the specifications are clearly related to the discussed subject.
+INFORMATION PRIORITY:
+1. Current message.
+2. Recent conversation messages.
+3. Known specifications.
 
-FINAL OBJECTIVE:
-Determine whether the request can reasonably lead to a usable Canadian postal code for an estimate.
+MAIN RULE:
+Location is required to build a SEARCHCODE.
+If no credible location can be identified, return SEARCHCODE=NONE.
+Even if SEARCHCODE=NONE, you must still return ESTIME_GPT.
 
-POSTAL CODE RULES:
+OBJECTIVE:
+Determine whether the request can reasonably be associated with a usable Canadian FSA (first 3 characters of a postal code) in order to produce an estimate.
+
+LOCATION PROCEDURE:
+
+1. Identify any available geographic information:
+   address, street, building, real estate project, area, neighbourhood, borough, city or municipality.
+
+2. If the current message contains new geographic information, it takes priority over previous context.
+
+3. If a neighbourhood, area, borough or local designation is mentioned, attempt to associate it with the most plausible FSA.
+
+4. If only a city or municipality is mentioned, attempt to identify the most plausible FSA whenever reasonably possible.
+
+5. Use your geographic knowledge to determine the most credible FSA.
+
+6. If the FSA remains uncertain and the property is located in Montreal, use the reference list below by identifying the most relevant neighbourhood and corresponding FSA.
+
+7. If no credible FSA can be inferred, return SEARCHCODE=NONE.
+
+REFERENCE LIST:
+
+Centre = H3B
+Centre Ouest = H3G
+Cité du Havre = H3C
+Griffintown = H3C
+Île-des-Sœurs = H3E
+La Cité du Multimédia = H3C
+Montréal = H3B
+Mille-Doré = H3G
+Petite-Bourgogne = H4C
+Pointe-Saint-Charles = H3K
+Saint-Henri = H4C
+Saint-Lambert = J4P
+Verdun = H4G
+Vieux-Montréal = H2Y
+
+SEARCHCODE PROCEDURE:
+
+If a credible FSA is identified, always build a SEARCHCODE.
+
+Exact format:
+
+RTA-S:size-P:parking-V:view-B:bedrooms
+
+Values:
+
+- RTA = selected FSA.
+
+- size = P if the area is less than 800 sq.ft.
+- size = M if the area is between 800 sq.ft. and less than 1300 sq.ft.
+- size = G if the area is 1300 sq.ft. or more.
+- If the area is known, always use the area to determine size.
+
+- If the area is unknown but the number of bedrooms is known:
+- size = P if 1 bedroom.
+- size = M if 2 bedrooms.
+- size = G if 3 or more bedrooms.
+
+- size = ? if neither the area nor the number of bedrooms is known.
+
+- parking = 1 if parking or garage is present.
+- parking = 0 if absence is clearly stated.
+- parking = ? if unknown.
+
+- view = 1 if a specific view is mentioned.
+- view = 0 if absence of a view is clearly indicated.
+- view = ? if unknown.
+
+- bedrooms = number of bedrooms.
+- bedrooms = ? if unknown.
+
+INTERPRETATION RULES:
+
+- Condo, condominium, condo apartment and condominium unit are considered comparable property types.
+- If a characteristic is unknown, use ?.
+- Use 0 only when a real absence is clearly mentioned.
+- Never invent a characteristic that was not mentioned.
 - Never ask the user for a postal code.
-- The area must be precise enough to derive a postal code.
-- "Montreal" alone is too broad.
-- If the area likely corresponds to more than 6 distinct postal codes, return only REFORMULATE.
-- If no clear area is identifiable, return only REFORMULATE.
-- If multiple plausible areas exist, return only REFORMULATE.
-- If the area is precise enough, use the most representative or most likely postal code for that area.
+- Build a SEARCHCODE whenever a credible FSA can be inferred.
+- Use SEARCHCODE=NONE only when no credible FSA can be inferred.
 
-IF YOU CAN ESTIMATE:
-Return a user-facing answer including:
-- what you believe is being estimated;
-- the area used;
-- the postal code or likely postal prefix used for your reasoning;
-- the criteria considered;
-- a cautious indicative estimate in $/sq.ft if possible;
-- this exact sentence at the end:
-"If I misunderstood the analysis elements, please reformulate your estimate request with as much precision as possible."
+EXAMPLES:
 
-IF YOU CANNOT ESTIMATE:
-Return exactly:
-REFORMULATE
+SEARCHCODE=H3C-S:M-P:1-V:0-B:2
 
-No technical explanation.
+SEARCHCODE=H8S-S:?-P:1-V:?-B:2
+
+SEARCHCODE=H2Y-S:G-P:?-V:1-B:3
+
+SEARCHCODE=NONE
+
+BLOCK CONTENT:
+
+SEARCHCODE=<searchcode or NONE>
+
+ESTIME_GPT=<complete natural-language response intended for the user. Explain what was estimated, which criteria were used, which assumptions were made, and the confidence level of the estimate. Then provide a cautious indicative estimate. If the SEARCHCODE contains one or more ?, clearly name the corresponding missing information in natural language, for example the property size, number of bedrooms, parking or view. Explain that these missing details may make the estimate less precise. Also mention naturally that more detailed information may result in a more accurate estimate. Never use field-style formatting, lists, or structured summaries. Write naturally and conversationally in the requested language.>
+
+OUTPUT RULE:
+
+Return only the 2 requested blocks.
+Do not add any text before or after the blocks.
 `;
 
     console.log("[GPT ESTIMATE NEW PROMPT]");
