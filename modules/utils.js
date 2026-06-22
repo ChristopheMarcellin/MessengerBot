@@ -582,48 +582,124 @@ Le contexte contient généralement deux parties :
 1. des spécifications connues;
 2. des messages passés numérotés du plus ancien au plus récent.
 
-RÈGLE DE PRIORITÉ :
-Pour une question vague comme « combien ça vaut ? », « quel prix ? » ou « ça vaut quoi ? », consulte d’abord les messages récents de la conversation, même s'ils apparaissent après les spécifications dans le contexte.
+Tu analyses une demande d'estimation immobilière.
+Langue de réponse souhaitée pour le contenu des blocs : ${lang}
+MESSAGE ACTUEL :
+"${message}"
+CONTEXTE DISPONIBLE :
+${contextualMessage}
 
-Si les messages récents ne contiennent aucun secteur, aucune adresse ou aucun sujet immobilier plus précis, utilise les spécifications connues.
+MISSION :
+Retourne exactement 4 blocs avec ces noms exacts :
+SEARCHCODE=
+CRITERES=
+ANALYSE=
+ESTIME_GPT=
 
-Si le message actuel mentionne explicitement un nouveau secteur, une nouvelle ville ou une nouvelle adresse, utilise cette nouvelle localisation en priorité.
+PRIORITÉ DES INFORMATIONS :
+1. Message actuel.
+2. Messages récents de la conversation.
+3. Spécifications connues.
 
-OBJECTIF FINAL :
-Déterminer si la demande permet raisonnablement d'arriver à un RTA postal canadien exploitable pour produire une estimation.
+RÈGLE PRINCIPALE :
+La localisation est obligatoire pour construire un SEARCHCODE.
+Si aucune localisation crédible ne peut être identifiée, retourne SEARCHCODE=NONE.
+Même si SEARCHCODE=NONE, tu dois quand même retourner CRITERES, ANALYSE et ESTIME_GPT.
 
-DÉFINITION :
-Un RTA postal correspond aux 3 premiers caractères d'un code postal canadien.
+OBJECTIF :
+Déterminer si la demande permet raisonnablement d'associer la propriété à un RTA canadien exploitable (3 premiers caractères du code postal) pour produire une estimation.
 
-Exemples :
-H3C, H3G, H2L, H8S.
+PROCÉDURE LOCALISATION :
 
-RÈGLES RTA POSTAL :
-- Ne demande jamais un code postal à l'utilisateur.
-- Le secteur doit être suffisamment précis pour permettre d'identifier un nombre raisonnable de RTA postaux.
-- Si le secteur correspond à 6 RTA postaux ou moins, utilise le RTA postal le plus représentatif ou le plus probable.
-- Si le secteur correspond probablement à plus de 6 RTA postaux distincts, retourne seulement REFORMULER.
-- Si aucun secteur clair n'est identifiable, retourne seulement REFORMULER.
-- Si plusieurs secteurs plausibles existent, retourne seulement REFORMULER.
+1. Identifie toute information géographique disponible :
+   adresse, rue, immeuble, projet immobilier, secteur, quartier, arrondissement, ville ou municipalité.
 
-SI TU PEUX ESTIMER :
-Retourne une réponse destinée à l'utilisateur qui inclut :
-- ce que tu crois estimer;
-- le secteur utilisé;
-- le RTA postal utilisé pour ton raisonnement;
-- les critères pris en compte;
-- une estimation indicative prudente en $/pi² si possible;
-- la phrase exacte suivante à la fin :
+2. Si le message actuel contient une nouvelle information géographique, elle a priorité sur le contexte précédent.
 
-"Si je n’ai pas bien compris les éléments d’analyse, veuillez reformuler votre demande d’estimation avec le plus de précision possible."
+3. Si un quartier, un secteur, un arrondissement ou une appellation locale est mentionné, tente de l'associer au RTA le plus plausible.
 
-SI TU NE PEUX PAS ESTIMER :
-Retourne :
-REFORMULER|raison
+4. Si seule une ville ou une municipalité est mentionnée, tente d'identifier le RTA le plus plausible lorsque cela est raisonnablement possible.
 
-où raison est une courte explication.
+5. Utilise tes connaissances géographiques pour déterminer le RTA le plus crédible.
 
-Aucune explication technique.
+6. Si le RTA demeure incertain et qu’il s’agit d’une adresse à Montréal, utilise la liste de référence ci-dessous en ciblant le quartier pour utiliser le RTA correspondant.
+
+7. Si aucun RTA crédible ne peut être déduit, retourne SEARCHCODE=NONE.
+
+LISTE DE RÉFÉRENCE :
+
+Centre = H3B
+Centre Ouest = H3G
+Cité du Havre = H3C
+Griffintown = H3C
+Île-des-Sœurs = H3E
+La Cité du Multimédia = H3C
+Montréal = H3B
+Mille-Doré = H3G
+Petite-Bourgogne = H4C
+Pointe-Saint-Charles = H3K
+Saint-Henri = H4C
+Saint-Lambert = J4P
+Verdun = H4G
+Vieux-Montréal = H2Y
+
+PROCÉDURE SEARCHCODE :
+
+Si un RTA crédible est identifié, construis toujours un SEARCHCODE.
+
+Format exact :
+
+RTA-S:size-P:parking-V:view-B:bedrooms
+
+Valeurs :
+
+- RTA = RTA retenu.
+- size = P, M, G ou ? si inconnu.
+- parking = 1 si stationnement ou garage présent.
+- parking = 0 si absence clairement mentionnée.
+- parking = ? si inconnu.
+
+- view = 1 si une vue particulière est mentionnée.
+- view = 0 si l'absence de vue est clairement indiquée.
+- view = ? si inconnu.
+
+- bedrooms = nombre de chambres.
+- bedrooms = ? si inconnu.
+
+RÈGLES D'INTERPRÉTATION :
+
+- Condo, copropriété, appartement condo et unité de copropriété sont considérés comme des propriétés comparables.
+- Si une caractéristique est absente ou inconnue, utilise ?.
+- Ne jamais inventer une caractéristique non mentionnée.
+- Ne jamais demander un code postal à l'utilisateur.
+- Construis un SEARCHCODE dès qu'un RTA crédible peut être déduit.
+- Utilise SEARCHCODE=NONE seulement lorsqu'aucun RTA crédible ne peut être déduit.
+
+EXEMPLES :
+
+SEARCHCODE=H3C-S:M-P:1-V:0-B:2
+
+SEARCHCODE=H8S-S:?-P:1-V:?-B:2
+
+SEARCHCODE=H2Y-S:G-P:?-V:1-B:3
+
+SEARCHCODE=NONE
+
+CONTENU DES BLOCS :
+
+SEARCHCODE=<searchcode ou NONE>
+
+CRITERES=<résumé structuré des critères utilisés : localisation, type de propriété, grandeur, chambres, stationnement, vue et hypothèses retenues>
+
+ANALYSE=<explication concise de ce qui est estimé et pourquoi ces critères ont été retenus>
+
+ESTIME_GPT=<estimation indicative prudente en $/pi² ou en prix total lorsque plus approprié>
+
+RÈGLE DE SORTIE :
+
+Retourne uniquement les 4 blocs demandés.
+N'ajoute aucun texte avant ou après les blocs.
+
 `
         : `
 You are analyzing a real estate estimate request.
