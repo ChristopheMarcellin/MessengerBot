@@ -83,19 +83,25 @@ function buildFAQPrompt(message, lang = "fr") {
 
 //Respond with a single word: estimate, gpt, declaration, or other.`;
 //}
-function buildIntentPrompt(message, lang = "fr") {
+function buildIntentPrompt(message, context, lang = "fr") {
+
     return lang === "fr"
         ? `Tu es un assistant virtuel spécialisé en immobilier résidentiel et commercial au Québec.
 L'utilisateur peut envoyer soit une question, soit une affirmation.
 
 Message de l'utilisateur : "${message}"
+Contexte disponible :
+${context}
 
 Règles :
-1. Si le message demande d’évaluer un prix, une valeur ou une estimation immobilière → estimate
-2. Si le message est une question OU un commentaire lié à l’immobilier → gpt
-3. Si c'est une intention de réaliser une transaction immobilière (ex: "je veux acheter ou vendre ou louer une propriété") → declaration
-4. Si c'est une affirmation simple qui ne concerne pas l'immobilier (ex: merci, bonsoir, parfait, d'accord) → declaration
-5. Si le message est une question qui porte clairement sur autre chose que l’immobilier → other
+1. Le message actuel est prioritaire.
+Utilise le contexte seulement si le message actuel est ambigu, incomplet ou dépend d'un élément déjà discuté.
+Si le message actuel est une question générale autonome, ignore le contexte.
+2. Si le message demande d’évaluer un prix, une valeur ou une estimation immobilière → estimate
+3. Si le message est une question OU un commentaire lié à l’immobilier → gpt
+5. Si c'est une intention de réaliser une transaction immobilière (ex: "je veux acheter ou vendre ou louer une propriété") → declaration
+6. Si c'est une affirmation simple qui ne concerne pas l'immobilier (ex: merci, bonsoir, parfait, d'accord) → declaration
+7. Si le message est une question qui porte clairement sur autre chose que l’immobilier → other
 
 Règles importantes :
 - Ne classe JAMAIS une affirmation humaine simple comme other.
@@ -107,18 +113,29 @@ The user may send either a question or a statement.
 
 User's message: "${message}"
 
+Available context:
+${context}
+
 Rules:
-1. If the message asks to estimate a price or value → estimate
-2. If the message is a question OR a statement related to real estate → gpt
-3. If the message expresses an intention to buy, sell or rent a property → declaration
-4. If the message is a simple human statement not related to real estate (e.g. ok, thanks, understood) → declaration
-5. If the message is a question clearly unrelated to real estate → other
+1. The current message has priority.
+Use the context only if the current message is ambiguous, incomplete, or depends on something already discussed.
+If the current message is a standalone general question, ignore the context.
+
+2. If the message asks to evaluate a price, value, or real estate estimate → estimate
+
+3. If the message is a question OR a comment related to real estate → gpt
+
+4. If the message expresses an intention to complete a real estate transaction (e.g. "I want to buy, sell, or rent a property") → declaration
+
+5. If the message is a simple statement that is not related to real estate (e.g. thanks, good evening, perfect, okay) → declaration
+
+6. If the message is a question clearly about something other than real estate → other
 
 Important rules:
-- Never classify a simple human statement as other.
-- Use other only for true out-of-domain messages.
+- NEVER classify a simple human statement as other.
+- Use other only for a genuine out-of-domain message.
 
-Respond with a single word: estimate, gpt, declaration, or other.`;
+Respond with a single word only: estimate, gpt, declaration, or other.`;;
 }
 //construit les 5 derniers messages avec les specs de l'usager
 function buildContextualPrompt(session, lang = "fr") {
@@ -251,7 +268,7 @@ async function classifyIntent(message, context, lang = "fr", ok = true) {
     // 3️⃣ Deuxième passe → avec specs + historique (quota)
 
 
-    const intentPrompt = buildIntentPrompt(message, lang);
+    const intentPrompt = buildIntentPrompt(message, context, lang);;
 
     console.log("[DEBUG classifyIntentPrompt 2e passe]");
     console.log(intentPrompt);
@@ -262,18 +279,6 @@ async function classifyIntent(message, context, lang = "fr", ok = true) {
 
 
 /////////////////////////////////////////////////
-
-function extractBlock(text, blockName) {
-    if (!text) return "";
-
-    const regex = new RegExp(
-        `${blockName}=([\\s\\S]*?)(?=\\n[A-Z_]+\\=|$)`,
-        "i"
-    );
-
-    const match = text.match(regex);
-    return match ? match[1].trim() : "";
-}
 function extractBlock(text, blockName) {
     if (!text) return "";
 
