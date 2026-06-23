@@ -262,6 +262,19 @@ async function classifyIntent(message, context, lang = "fr", ok = true) {
 
 
 /////////////////////////////////////////////////
+
+function extractBlock(text, blockName) {
+    if (!text) return "";
+
+    const regex = new RegExp(
+        `${blockName}=([\\s\\S]*?)(?=\\n[A-Z_]+\\=|$)`,
+        "i"
+    );
+
+    const match = text.match(regex);
+    return match ? match[1].trim() : "";
+}
+
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
         if (message && isNaN(message)) { // exclure numériques simples
