@@ -274,7 +274,33 @@ function extractBlock(text, blockName) {
     const match = text.match(regex);
     return match ? match[1].trim() : "";
 }
+function extractBlock(text, blockName) {
+    if (!text) return "";
 
+    const regex = new RegExp(
+        `${blockName}=([\\s\\S]*?)(?=\\n[A-Z_]+\\=|$)`,
+        "i"
+    );
+
+    const match = text.match(regex);
+    return match ? match[1].trim() : "";
+}
+
+function splitSearchCode(searchCode) {
+    if (!searchCode || searchCode === "NONE") return null;
+
+    const parts = searchCode.trim().split("-");
+
+    if (parts.length < 2) return null;
+
+    const codePostal = parts[0];
+    const knownSpecs = parts.slice(1).join("-");
+
+    return {
+        codePostal,
+        knownSpecs
+    };
+}
 async function chatOnly(senderId, message, session) {
     if (!session.language) {
         if (message && isNaN(message)) { // exclure numériques simples
