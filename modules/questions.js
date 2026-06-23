@@ -66,35 +66,26 @@ Exemples de formats numériques valides:
         price: {
             en: `💰 Do you have an approximate selling price in mind? 
 
-Use valid numeric formats such as:
+        (Numeric only, examples: 625,900 or 625 900)`,
 
-(750000, 
-750 000 or
-750,000)`,
             fr: `💰 Avez-vous un prix de vente approximatif en tête ? 
 
-Utiliser un format numérique valide, par exemple:
-(750000, 
-750 000 ou 
-750,000)`,
+(Valeur numérique seulement, ex.: 625,900 ou 625 900):
+`,
         },
 
         bedrooms: {
             en: `🛏️ How many bedrooms do you have? 
 
 (a number only please)`,
-            fr: `🛏️ Combien de chambres avez-vous ? 
-
-(un nombre seulement SVP)`,
+            fr: `🛏️ Combien de chambres avez-vous ? `,
         },
 
         bathrooms: {
             en: `🛁 How many bathrooms do you have? 
 
 (a number only please)`,
-            fr: `🛁 Combien de salles de bains avez-vous ? 
-
-(un nombre seulement SVP)`,
+            fr: `🛁 Combien de salles de bains avez-vous ? `,
         },
 
         garage: {
@@ -114,15 +105,12 @@ Utiliser un format numérique valide, par exemple:
     R: {
         price: {
             en: `💰 What rental price target per month do you have in mind? 
-
-Use valid numeric formats such as:
+(Numeric value only, for example: 2000 or 2,000)
 
 (2000, 2 000 or 2,000)`,
             fr: `💰 Quel montant par mois avez vous en tête?
 
-Utiliser un format de réponse valide, par exemple:
-
-(2000, 2 000 ou 2,000)`,
+(Valeur numérique seulement par exemple (2000 ou 2,000):`,
         },
 
         bedrooms: {
@@ -162,9 +150,9 @@ Utiliser un format de réponse valide, par exemple:
 
     generic: {
         expectations: {
-            fr: `✨ Dictez vos attentes particulières:
+            fr: `✨ Énoncez vos attentes particulières:
 
-🏊‍ Je veux une piscine creusée (incontournable)
+
 🔥 Je veux un foyer (souhaitable)
 ⚖️ Je veux vendre sans garantie légale
 🎭 Je veux un service de "home staging"
@@ -173,7 +161,6 @@ Utiliser un format de réponse valide, par exemple:
 
             en: `✨ State any of your expectations: 
 
-🏊‍ Inground pool (a must) 
 🔥 A Fireplace (nice to have)
 ⚖️ I want to sell without legal warranty
 🎭 I need a home staging service
@@ -184,12 +171,12 @@ Utiliser un format de réponse valide, par exemple:
 
 //firstName désigne un nom complet, le nom du champ a été conservé pour préserver la mécanique du code
         firstName: {
-            fr: `Quel est *votre nom* SVP ?
-(Vos réponses nous aident à offrir un meilleur service) Répondez X pour préserver votre confidentialité!
-(Notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).`,
+            fr: `
 
-            en: `*Your name*, please?
-(Your answers help us provide better support) Reply *X* for privacy!
+
+            Votre nom SVP (*X* si confidentiel) ? \n
+(Notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).`,
+            en: `*Your name*, please (*X* if condidential)?\n
 (Our privacy policy at: https://christophe-marcellin.c21.ca/en/contact/#policy).`
         }
 
@@ -208,13 +195,13 @@ Utiliser un format de réponse valide, par exemple:
 //    },
 
         phone: {
-        fr: `📞 À quel numéro de téléphone pouvons-nous vous joindre (format 999-999-9999) ?`,
-        en: `📞 What is your phone number (format 999-999-9999)?`,
+        fr: `📞 No de tel. (format 123-456-7890, *X* si confidentiel) ?`,
+        en: `📞 What is your phone number (format 123-456-7890, *X* if confidential)`,
     },
 
     email: {
-        fr: `✉️ Quelle est votre adresse courriel SVP ?`,
-        en: `✉️ What is your email address please?`,
+        fr: `✉️ Votre adresse courriel SVP (*X* si confidentiel)`,
+        en: `✉️ Your email address please? (*X* si confidential)`,
     },
 
     wantsContact: {
@@ -222,13 +209,15 @@ Utiliser un format de réponse valide, par exemple:
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ Je désire un site Web comme https://tinyurl.com/45fskxav pour trouver une propriété selon mes spécifications que j'ai fournies`,
+3️⃣ Je désire un site Web qui présente des propriétés en vente \n
+(disponible seulement si les informations fournies le permettent, voir un exemple: https://tinyurl.com/45fskxav )`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
 1️⃣ Yes  
 2️⃣ No  
-3️⃣ I would like a website like https://tinyurl.com/45fskxav to find a property based on the specifications I provided.`
+3️⃣ I would like a website showcasing properties for sale.\n
+(available only when the provided information allow it, see an example: https://tinyurl.com/45fskxav )`
     }
 ,
 
@@ -249,12 +238,12 @@ function getPromptForSpec(field, lang = 'fr', projectType = 'B') {
 function getPromptForProjectType(lang = 'fr') {
 
      return  lang === 'en'
-         ? `To better assist you, which number best describes your goal here?\n
+         ? `\n Which number defines best your visit?\n
 1️⃣ Buying / Renting 
 2️⃣ Selling  
 3️⃣ Renting out  
 4️⃣ Let's talk Real Estate`
-            : `Pour bien vous assister, votre but correspond à quel numéro:\n
+         : `\n Quel numéro définit le mieux votre visite ?\n
 1️⃣ Acheter / Louer
 2️⃣ Vendre  
 3️⃣ Offrir en location  
@@ -266,12 +255,12 @@ function getPromptForProjectType(lang = 'fr') {
 function getPromptForPropertyUsage(lang = 'fr') {
 
   return     lang === 'en'
-            ? `🏠 To be precise, which nbr corresponds to the type of property you are refering to:\n
+            ? `🏠 Which nbr matches best the targeted property type:\n
 1️⃣ Single-family home  
 2️⃣ Condo  
 3️⃣ Apartment  
 4️⃣ Multiplex`
-            : `🏠 Veuillez indiquer le no. correspondant à la propriété ciblée:\n
+            : `🏠 Quel no. correspond au type de propriété visé:\n
 1️⃣ Unifamiliale  
 2️⃣ Condo  
 3️⃣ Logement  
@@ -282,9 +271,9 @@ function getPromptForPropertyUsage(lang = 'fr') {
 
 function getPreamble(lang = 'fr')
 {
-    return lang === 'fr' ? `Bonjour, je suis CasaNova, une IA qui offre plus de donnée que ChatGpt en immobilier pour le secteur sud de Montréal (détails du secteur sur www.christophemarcellin.com).`
+    return lang === 'fr' ? `Bonjour, avant de débuter je dois vous poser quelques questions qui faciliteront notre échange, plus vous êtes précis, plus je peux vous être utile.`
 
-      : `Hello, I’m CasaNova, your real estate AI offering more knowledge than ChatGpt for the south of Montreal (target area at www.christophemarcellin.com`
+        : `Hello, before we begin, I need to ask you a few questions that will help guide our conversation. The more precise your answers are, the more helpful I can be.`
 };
 
 
