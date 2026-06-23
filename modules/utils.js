@@ -203,8 +203,8 @@ const faqMapByKey = {
         en: "Of course, we help you homestage your property at its best by providing the appropriate advisory services."
     },
     assessment: {
-        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite pour votre adresse cible.  Toutefois, seul un professionnel peut vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
-        en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away for your your address. However, only a professional can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
+        fr: "Nous pouvons vous aider à estimer votre bien sur une base de comparables. La consultation est gratuite, et inclut l'estimation de votre bien.  Vous pouvez même me demander une approximation tout de suite avec vos spécifications précises.  Toutefois, seul un professionnel peut vous fournir un estimé fiable: la qualité des comparables, la condition de votre propriété, son emplacement, les rénovations faites sont autant de facteurs à considérer auxquels CasaNova ne peut répondre.",
+        en: "We can help you estimate your property based on comparable sales. The consultation is free and includes an estimate of your property. You can even ask me for an approximation right away with your detailed specifications. However, only a professional can provide you with a reliable estimate: the quality of the comparables, the condition of your property, its location, and any renovations made are all factors to consider that CasaNova cannot fully address."
     },
     website: {
         fr: "En plus du site https://christophe-marcellin.c21.ca/ pour consulter nos propriétés en vente, nous pouvons concevoir rapidement un site qui présente les propriétés qui se concentrent sur vos attentes.",
@@ -643,6 +643,7 @@ Le contexte contient généralement deux parties :
 2. des messages passés numérotés du plus ancien au plus récent.
 
 Tu analyses une demande d'estimation immobilière.
+Tu dois toujours lire le message reçu et le contexte au complet pour réussir ton analyse
 Langue de réponse souhaitée pour le contenu des blocs : ${lang}
 
 MESSAGE ACTUEL :
