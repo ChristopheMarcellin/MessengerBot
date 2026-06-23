@@ -679,7 +679,7 @@ PROCÉDURE LOCALISATION :
 
 1. Identifie tous les repères géographiques disponibles : adresse, rue, immeuble, projet immobilier, secteur, quartier, arrondissement ou ville.
 
-2. Si le message actuel contient une nouvelle information géographique, elle a priorité sur le contexte précédent.
+2. Tu dois identifier un lieu géographique en analysant le message reçu, le contexte des Messages numérotés et parmi les spécifications connues, dans cet ordre.
 
 3. Tente d'associer le lieu physique à un quartier et à son RTA le plus plausible.
 
