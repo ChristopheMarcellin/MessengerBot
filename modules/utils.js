@@ -297,8 +297,55 @@ async function chatOnly(senderId, message, session) {
 
     // Cas 2 : ESTIMATE
     if (classification === "estimate") {
-        await handlePriceEstimate(senderId, message, session);
-        await handlePriceEstimateNew(senderId, message, session);
+        await handlePriceEstimate(senderId, message, session); // production actuelle : répond à l'usager
+
+        const rawNew = await handlePriceEstimateNew(senderId, message, session); // test/log seulement
+
+        const searchCode = extractBlock(rawNew, "SEARCHCODE");
+        const estimeGpt = extractBlock(rawNew, "ESTIME_GPT");
+        const rue = extractBlock(rawNew, "RUE");
+        const dimension = extractBlock(rawNew, "DIMENSION");
+
+        console.log("[NEW ESTIMATE SEARCHCODE]", searchCode);
+        console.log("[NEW ESTIMATE ESTIME_GPT]", estimeGpt);
+        console.log("[NEW ESTIMATE RUE]", rue);
+        console.log("[NEW ESTIMATE DIMENSION]", dimension);
+
+        const parsed = splitSearchCode(searchCode);
+
+        if (parsed) {
+            const result = evalPrix(
+                parsed.codePostal,
+                parsed.knownSpecs,
+                rue && rue !== "?" ? rue : undefined
+            );
+
+            console.log("[NEW ESTIMATE EVALPRIX]", result);
+
+            if (result.valeur > 0) {
+                const excelMessage = buildEstimateMessage(
+                    result.valeur,
+                    result.precision,
+                    lang,
+                    rue,
+                    dimension
+                );
+
+                console.log("[NEW ESTIMATE FINAL MESSAGE - EXCEL]");
+                console.log(excelMessage);
+            }
+            else {
+                console.log("[NEW ESTIMATE FINAL MESSAGE - GPT]");
+                console.log(estimeGpt);
+            }
+        }
+        else {
+            console.log("[NEW ESTIMATE EVALPRIX] Aucun SEARCHCODE exploitable");
+
+            console.log("[NEW ESTIMATE FINAL MESSAGE - GPT]");
+            console.log(estimeGpt);
+        }
+
         return;
     }
 
@@ -344,28 +391,7 @@ async function chatOnly(senderId, message, session) {
 
     }
 
-    //// Cas 5 : Declaration (affirmations)
-    //if (classification === "affirmation") {
-    //    const contextualMessage = buildContextualPrompt(session, lang);
-
-    //    const prompt = lang === "fr"
-    //        ? `Assistant en immobilier résidentiel et commercial au Québec, parlant au nom du courtier Christophe. ` +
-    //        `Engagez la conversation, sans reformulation ou détour. S'il vous fait des salutations, retournez poliment ses salutations` +
-    //        `Informez-vous pour savoir si l'usager a une question` +
-    //        `Ne demandez jamais de coordonnées.\n\n` +
-    //        `Réagissez à ce message: ${message}\nContexte : ${contextualMessage}\n\n`
-    //        : `Real estate assistant (residential and commercial) in Quebec, speaking on behalf of broker Christophe. ` +
-    //        `Engage in conversation ` +
-    //        `Verify if the user has a question ` +
-    //        `Never ask for contact details.\n\n` +
-    //        `React to this message: ${message}\nContext: ${contextualMessage}\n\n`;
-
-    //    console.log(`[ZZZZZ CHATONLY PROMPT: "${prompt}"`);
-    //    return await askGptAndSend(senderId, session, prompt, lang);
-
-    //}
-
-
+ 
 
     // Cas 6 : Other (hors sujet)
     if (classification === "other") {
@@ -584,37 +610,42 @@ CONTEXTE DISPONIBLE :
 ${contextualMessage}
 
 MISSION :
-Retourne exactement 2 blocs avec ces noms exacts :
+Retourne exactement 4 blocs avec ces noms exacts :
 
 SEARCHCODE=
 ESTIME_GPT=
+RUE=
+DIMENSION=
 
 PRIORITÉ DES INFORMATIONS :
+
 1. Message actuel.
-2. Messages passés numérotés
+2. Messages passés numérotés.
 3. Spécifications connues.
 
 RÈGLE PRINCIPALE :
+
 La localisation est obligatoire pour construire un SEARCHCODE.
 Si aucune localisation crédible ne peut être identifiée, retourne SEARCHCODE=NONE.
 Même si SEARCHCODE=NONE, tu dois retourner ESTIME_GPT.
 
 OBJECTIF :
+
 Déterminer si la demande permet raisonnablement d'associer la propriété à un RTA canadien exploitable (3 premiers caractères du code postal) pour produire une estimation.
 
 PROCÉDURE LOCALISATION :
 
-1. Identifie tous repères géographiques disponibles : adresse, rue, immeuble, projet immobilier, secteur, quartier, arrondissement, ville
+1. Identifie tous les repères géographiques disponibles : adresse, rue, immeuble, projet immobilier, secteur, quartier, arrondissement ou ville.
 
 2. Si le message actuel contient une nouvelle information géographique, elle a priorité sur le contexte précédent.
 
-3. Tente d'associer le lieu physique à un quartier et son RTA le plus plausible.
+3. Tente d'associer le lieu physique à un quartier et à son RTA le plus plausible.
 
 4. Si seule une ville est mentionnée, tente d'identifier le RTA le plus plausible lorsque cela est raisonnablement possible.
 
 5. Utilise tes connaissances géographiques pour déterminer le RTA le plus crédible.
 
-6. Si le RTA demeure incertain et qu’il s’agit d’une adresse à Montréal ou à Saint-Lambert utilise la liste de référence ci-dessous pour identifier le RTA voulu.
+6. Si le RTA demeure incertain et qu'il s'agit d'une adresse à Montréal ou à Saint-Lambert, utilise la liste de référence ci-dessous pour identifier le RTA le plus approprié.
 
 7. Si aucun RTA crédible ne peut être déduit, retourne SEARCHCODE=NONE.
 
@@ -639,7 +670,7 @@ PROCÉDURE SEARCHCODE :
 
 Si un RTA crédible est identifié, construis toujours un SEARCHCODE.
 
-Format exact:
+Format exact :
 
 RTA-S:size-P:parking-V:view-B:bedrooms
 
@@ -659,8 +690,8 @@ Valeurs :
 
 - size = ? si ni la superficie ni le nombre de chambres ne sont connus.
 
-- parking = 1 si stationnement ou garage présent.
-- parking = 0 si absence clairement mentionnée.
+- parking = 1 si un stationnement ou un garage est présent.
+- parking = 0 si son absence est clairement mentionnée.
 - parking = ? si inconnu.
 
 - view = 1 si une vue particulière est mentionnée.
@@ -703,73 +734,68 @@ PROCÉDURE ESTIMATION :
 
 7. Si certaines informations importantes sont inconnues, poursuis quand même l'estimation lorsque cela est raisonnablement possible, mais considère que la confiance de l'estimation est réduite.
 
-8. Ne présente jamais une estimation comme une valeur garantie, officielle ou professionnelle et toujours référer à un courtier immobilier.
+8. Ne présente jamais une estimation comme une valeur garantie, officielle ou professionnelle et réfère toujours l'utilisateur à un courtier immobilier.
 
-9. Explique que plusieurs facteurs nécessairement inconnus peuvent grandement influer sur une estimation
+9. Explique que plusieurs facteurs nécessairement inconnus peuvent grandement influer sur une estimation.
 
 CONTENU DES BLOCS :
 
 SEARCHCODE=<searchcode ou NONE>
 
-ESTIME_GPT=<réponse complète en langage naturel destinée à l'utilisateur. Explique ce qui a été estimé, les critères retenus, les hypothèses utilisées et le niveau de confiance de l'estimation. Fournis ensuite une estimation indicative prudente. Si le SEARCHCODE contient un ou plusieurs ?, nomme clairement les informations manquantes correspondantes dans le texte naturel, par exemple la superficie, le nombre de chambres, le stationnement ou la vue. Explique que ces informations manquantes rendent l'estimation moins précise. Mentionne aussi naturellement que plus l'informations est détaillée, plus l'estimation risque d'être précise.'. N'utilise jamais de format de champs, de liste ou de résumé structuré. Rédige un texte naturel et conversationnel dans la langue demandée.>
+ESTIME_GPT=<réponse complète en langage naturel destinée à l'utilisateur. Explique ce qui a été estimé, les critères retenus, les hypothèses utilisées et le niveau de confiance de l'estimation. Fournis ensuite une estimation indicative prudente. Si certaines informations importantes sont inconnues ou ont conduit à l'utilisation du caractère ? dans le SEARCHCODE, nomme clairement ces informations manquantes dans le texte naturel, par exemple la superficie, le nombre de chambres, le stationnement ou la vue. Explique que ces informations manquantes rendent l'estimation moins précise. Mentionne aussi naturellement que plus l'information est détaillée, plus l'estimation risque d'être précise. N'utilise jamais de format de champs, de liste ou de résumé structuré. Rédige un texte naturel et conversationnel dans la langue demandée.>
+
+RUE=<nom de rue seulement, sans numéro civique, sans numéro d'unité, ou ? si inconnue>
+
+DIMENSION=<nombre seulement en pieds carrés, sans unité ni texte. Si la dimension est fournie en mètres carrés, convertis-la en pieds carrés. Utilise ? si inconnue>
 
 RÈGLE DE SORTIE :
 
-Retourne uniquement les 2 blocs demandés.
+Retourne uniquement les 4 blocs demandés.
 N'ajoute aucun texte avant ou après les blocs.
 `
         : `
-IMPORTANT:
-The context usually contains two parts:
-1. known specifications;
-2. past messages numbered from oldest to newest.
+MISSION :
 
-You are analyzing a real estate estimate request.
-Response language for block content: ${lang}
-
-CURRENT MESSAGE:
-"${message}"
-
-AVAILABLE CONTEXT:
-${contextualMessage}
-
-MISSION:
-Return exactly 2 blocks with these exact names:
+Return exactly 4 blocks with these exact names:
 
 SEARCHCODE=
 ESTIME_GPT=
+RUE=
+DIMENSION=
 
-INFORMATION PRIORITY:
+INFORMATION PRIORITY :
+
 1. Current message.
-2. Recent conversation messages.
+2. Numbered past messages.
 3. Known specifications.
 
-MAIN RULE:
+MAIN RULE :
+
 Location is required to build a SEARCHCODE.
 If no credible location can be identified, return SEARCHCODE=NONE.
 Even if SEARCHCODE=NONE, you must still return ESTIME_GPT.
 
-OBJECTIVE:
-Determine whether the request can reasonably be associated with a usable Canadian FSA (first 3 characters of a postal code) in order to produce an estimate.
+OBJECTIVE :
 
-LOCATION PROCEDURE:
+Determine whether the request reasonably allows the property to be associated with a usable Canadian FSA (first 3 characters of a postal code) for estimation purposes.
 
-1. Identify any available geographic information:
-   address, street, building, real estate project, area, neighbourhood, borough, city or municipality.
+LOCATION PROCEDURE :
+
+1. Identify all available geographic references: address, street, building, real estate project, area, neighborhood, borough or city.
 
 2. If the current message contains new geographic information, it takes priority over previous context.
 
-3. If a neighbourhood, area, borough or local designation is mentioned, attempt to associate it with the most plausible FSA.
+3. Attempt to associate the physical location with the most plausible neighborhood and corresponding FSA.
 
-4. If only a city or municipality is mentioned, attempt to identify the most plausible FSA whenever reasonably possible.
+4. If only a city is mentioned, attempt to identify the most plausible FSA whenever reasonably possible.
 
 5. Use your geographic knowledge to determine the most credible FSA.
 
-6. If the FSA remains uncertain and the property is located in Montreal, use the reference list below by identifying the most relevant neighbourhood and corresponding FSA.
+6. If the FSA remains uncertain and the location is in Montreal or Saint-Lambert, use the reference list below to identify the most appropriate FSA.
 
 7. If no credible FSA can be inferred, return SEARCHCODE=NONE.
 
-REFERENCE LIST:
+REFERENCE LIST :
 
 Centre = H3B
 Centre Ouest = H3G
@@ -786,44 +812,43 @@ Saint-Lambert = J4P
 Verdun = H4G
 Vieux-Montréal = H2Y
 
-SEARCHCODE PROCEDURE:
+SEARCHCODE PROCEDURE :
 
 If a credible FSA is identified, always build a SEARCHCODE.
 
-Exact format:
+Exact format :
 
-RTA-S:size-P:parking-V:view-B:bedrooms
+FSA-S:size-P:parking-V:view-B:bedrooms
 
-Values:
+Values :
 
-- RTA = selected FSA.
+- FSA = selected FSA.
 
 - size = P if the area is less than 800 sq.ft.
 - size = M if the area is between 800 sq.ft. and less than 1300 sq.ft.
-- size = G if the area is 1300 sq.ft. or more.
-- If the area is known, always use the area to determine size.
+- size = G if the area is 1300 sq.ft. or greater.
+- If the area is known, always use the area to determine the size.
 
 - If the area is unknown but the number of bedrooms is known:
 - size = P if 1 bedroom.
 - size = M if 2 bedrooms.
-- size = G if 3 or more bedrooms.
+- size = G if 3 bedrooms or more.
 
-- size = ? if neither the area nor the number of bedrooms is known.
+- size = ? if neither area nor bedroom count is known.
 
-- parking = 1 if parking or garage is present.
-- parking = 0 if absence is clearly stated.
+- parking = 1 if parking or a garage is present.
+- parking = 0 if its absence is clearly mentioned.
 - parking = ? if unknown.
 
 - view = 1 if a specific view is mentioned.
-- view = 0 if absence of a view is clearly indicated.
+- view = 0 if the absence of a view is clearly indicated.
 - view = ? if unknown.
 
 - bedrooms = number of bedrooms.
 - bedrooms = ? if unknown.
 
-INTERPRETATION RULES:
+INTERPRETATION RULES :
 
-- Condo, condominium, condo apartment and condominium unit are considered comparable property types.
 - If a characteristic is unknown, use ?.
 - Use 0 only when a real absence is clearly mentioned.
 - Never invent a characteristic that was not mentioned.
@@ -831,27 +856,48 @@ INTERPRETATION RULES:
 - Build a SEARCHCODE whenever a credible FSA can be inferred.
 - Use SEARCHCODE=NONE only when no credible FSA can be inferred.
 
-EXAMPLES:
+EXAMPLES :
 
 SEARCHCODE=H3C-S:M-P:1-V:0-B:2
 
 SEARCHCODE=H8S-S:?-P:1-V:?-B:2
 
-SEARCHCODE=H2Y-S:G-P:?-V:1-B:3
-
 SEARCHCODE=NONE
 
-BLOCK CONTENT:
+ESTIMATION PROCEDURE :
+
+1. Always produce an estimate when the available information allows it.
+
+2. Use information from the current message, recent messages and known specifications to determine what is being estimated.
+
+3. If the area is known or can be reasonably inferred, prefer a total price estimate.
+
+4. If the area is unknown but the location and property type are known, prefer an estimate in $/sq.ft.
+
+5. When information is incomplete, prefer a cautious range rather than a single value.
+
+6. Use your judgment to estimate value based on location, property type, area, number of bedrooms, number of bathrooms, parking, view and any other relevant characteristic available.
+
+7. If important information is unknown, continue the estimation whenever reasonably possible, but consider the confidence level to be reduced.
+
+8. Never present an estimate as guaranteed, official or professional, and always refer the user to a real estate broker.
+
+9. Explain that several necessarily unknown factors can significantly influence an estimate.
+
+BLOCK CONTENT :
 
 SEARCHCODE=<searchcode or NONE>
 
-ESTIME_GPT=<complete natural-language response intended for the user. Explain what was estimated, which criteria were used, which assumptions were made, and the confidence level of the estimate. Then provide a cautious indicative estimate. If the SEARCHCODE contains one or more ?, clearly name the corresponding missing information in natural language, for example the property size, number of bedrooms, parking or view. Explain that these missing details may make the estimate less precise. Also mention naturally that more detailed information may result in a more accurate estimate. Never use field-style formatting, lists, or structured summaries. Write naturally and conversationally in the requested language.>
+ESTIME_GPT=<complete natural-language response intended for the user. Explain what was estimated, which criteria were used, which assumptions were made, and the confidence level of the estimate. Then provide a cautious indicative estimate. If important information is unknown or resulted in the use of the ? character in the SEARCHCODE, clearly identify those missing pieces of information in the natural-language response, such as area, number of bedrooms, parking or view. Explain that these missing details make the estimate less precise. Also mention naturally that the more detailed the information provided, the more accurate the estimate is likely to be. Never use field formatting, lists or structured summaries. Write a natural and conversational text in the requested language.>
 
-OUTPUT RULE:
+RUE=<street name only, without civic number or unit number, or ? if unknown>
 
-Return only the 2 requested blocks.
-Do not add any text before or after the blocks.
-`;
+DIMENSION=<number only in square feet, without units or text. If the area is provided in square meters, convert it to square feet. Use ? if unknown>
+
+OUTPUT RULE :
+
+Return only the 4 requested blocks.
+Do not add any text before or after the blocks.`;
 
     console.log("[GPT ESTIMATE NEW PROMPT]");
     console.log(prompt);
@@ -881,6 +927,7 @@ Do not add any text before or after the blocks.
         return "REFORMULER";
     }
 }
+
 
 async function checkQuota(senderId, session) {
     const max = await getMaxQuestions(senderId);
@@ -924,33 +971,71 @@ function getPrecisionLabel(level, lang = 'fr') {
 }
 
 // === Construction du message complet ===
-function buildEstimateMessage(valeur, precision, lang = 'fr') {
+function buildEstimateMessage(valeur, precision, lang = "fr", rue = null, dimension = null) {
     if (valeur === 0) {
-        return lang === 'fr'
+        return lang === "fr"
             ? "Désolé, je n’ai pu trouver de statistiques pertinentes pour le lieu désigné."
             : "Sorry, I couldn’t find any relevant statistics for the specified location.";
     }
 
-    const confiance = getPrecisionLabel(precision, lang);
-    if (lang === 'fr') {
+    const cleanRue = rue && rue !== "?" ? rue.trim() : null;
+
+    const cleanDimension = dimension && dimension !== "?"
+        ? Number(dimension.toString().replace(/[^\d.]/g, ""))
+        : 0;
+
+    const hasDimension = cleanDimension > 0;
+    const hasStreetMatch = precision === 3 && cleanRue;
+
+    const locale = lang === "fr" ? "fr-CA" : "en-CA";
+
+    const prixPc = Number(valeur).toLocaleString(locale, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+
+    const dimensionReference = hasDimension ? cleanDimension : 1000;
+
+    const total = valeur * dimensionReference;
+
+    const totalFormatted = total.toLocaleString(locale, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+
+    if (lang === "fr") {
+        const lieu = hasStreetMatch
+            ? `la rue ${cleanRue}`
+            : "l'endroit ciblé";
+
+        const calcul = hasDimension
+            ? `ce qui signifie environ ${totalFormatted} $ pour ${cleanDimension.toLocaleString("fr-CA")} pieds carrés`
+            : `ce qui signifie environ ${totalFormatted} $ pour 1000 pieds carrés, à vous d'ajuster pour votre dimension exacte`;
+
         return (
-            `D’après nos données, la valeur estimative pour l'endroit ciblé est de ${valeur} $ le pied carré, ` +
-            `ce qui signifie environ ${(valeur * 1000).toLocaleString('fr-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ pour 1000 pieds carrés, à vous d'ajuster pour votre dimension exacte ` +
-            `(fiabilité statistique : ${confiance}). ` +
+            `D’après nos données, la valeur estimative pour ${lieu} est de ${prixPc} $ le pied carré, ` +
+            `${calcul}. ` +
             `Évidemment, plusieurs critères peuvent influer sur l'exactitude de l'estimé, ` +
             `comme le positionnement de la propriété ou les rénovations faites. ` +
-            `Vous devriez toujours vous fier à un professionnel de l'immobilier pour fournir un estimé fiable.`
-        );
-    } else {
-        return (
-            `Based on our data, the estimated value for the targeted location is ${valeur} $ per square foot, ` +
-            `which means approximately ${(valeur * 1000).toLocaleString('en-CA', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} $ for 1000 square foot, please adjust for your exact dimension ` +
-            `(statistical reliability: ${confiance}). ` +
-            `Obviously, several factors can influence the accuracy of this estimate, ` +
-            `such as the property's positioning or renovations made. ` +
-            `You should always rely on a real estate professional to provide a reliable estimate.`
+            `Vous devriez toujours vous fier à un professionnel de l'immobilier comme Christophe Marcellin 514-231-6370 pour fournir un estimé fiable.`
         );
     }
+
+    const location = hasStreetMatch
+        ? `${cleanRue} street`
+        : "the targeted location";
+
+    const calculation = hasDimension
+        ? `which means approximately ${totalFormatted} $ for ${cleanDimension.toLocaleString("en-CA")} square feet`
+        : `which means approximately ${totalFormatted} $ for 1000 square feet, please adjust for your exact dimension`;
+
+    return (
+        `Based on our data, the estimated value for ${location} is ${prixPc} $ per square foot, ` +
+        `${calculation}. ` +
+        `Obviously, several factors can influence the accuracy of this estimate, ` +
+        `such as the property's positioning or renovations made. ` +
+        `You should always rely on a real estate professional such as Christophe Marcellin 514-231-6370 to provide a reliable estimate.`
+    );
 }
 
 //gpt classifies project

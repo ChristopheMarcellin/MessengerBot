@@ -4,8 +4,20 @@ const readline = require("readline");
 
 // === CONFIGURATION ===
 
-const filePath = path.join(__dirname, "statsPrixMaster.xlsx"); 
-const sheetName = "Prix"; // onglet
+const filePath = path.join(__dirname, "statsPrixMaster.xlsx");
+const sheetName = "Prix";
+
+// === NORMALISER TEXTE ===
+function normalizeText(value) {
+    if (!value) return "";
+
+    return value
+        .toString()
+        .trim()
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+}
 
 // === CHARGER LE FICHIER EXCEL ===
 function loadData() {
@@ -18,14 +30,13 @@ function loadData() {
 
     const json = xlsx.utils.sheet_to_json(sheet, { defval: "" });
 
-    const data = json.map(row => ({
-        SearchCode: (row["SearchCode"] || "")
-            .toString()
-            .trim()
-            .toUpperCase(),
+    return json.map(row => ({
+        SearchCode: normalizeText(row["SearchCode"]),
 
-        PrixComparables: parseFloat(
-            (row["PrixComparables"] || "")
+        Rue: normalizeText(row["rue"]),
+
+        PrixMoyen: parseFloat(
+            (row["PrixMoyen"] || "")
                 .toString()
                 .replace(/[^\d.,]/g, "")
                 .replace(",", ".")
@@ -33,10 +44,8 @@ function loadData() {
     }))
         .filter(r =>
             r.SearchCode &&
-            !isNaN(r.PrixComparables)
+            !isNaN(r.PrixMoyen)
         );
-
-    return data;
 }
 
 // === NORMALISER LE CODE POSTAL ===
@@ -49,21 +58,21 @@ function normalizePostalCode(cp) {
         .slice(0, 3);
 }
 
-
 // === EVALUATION ===
 function evalPrix(
     codePostal,
-    knownSpecs = "S:M-P:1-V:0-B:1"
+    knownSpecs = "S:M-P:1-V:0-B:1",
+    rue
 ) {
     const data = loadData();
 
     const postalPrefix = normalizePostalCode(codePostal);
 
-    console.log(`[evalPrix] Code postal: ${codePostal}`);
-    console.log(`[evalPrix] Préfixe postal: ${postalPrefix}`);
+    console.log(`[DEBUG evalPrix] Code postal: ${codePostal}`);
+    console.log(`[DEBUG evalPrix] Préfixe postal: ${postalPrefix}`);
 
     if (!postalPrefix) {
-        console.log("[evalPrix] Code postal invalide.");
+        console.log("[DEBUG evalPrix] Code postal invalide.");
         return {
             valeur: 0,
             type: "aucune donnée",
@@ -72,26 +81,61 @@ function evalPrix(
         };
     }
 
-    const searchCode = `${postalPrefix}-${knownSpecs}`;
+    const cleanSpecs = (knownSpecs || "")
+        .toString()
+        .trim()
+        .toUpperCase()
+        .replace(/\?/g, "0");
 
-    console.log(`[evalPrix] SearchCode recherché: ${searchCode}`);
+    const searchCode = `${postalPrefix}-${cleanSpecs}`;
+    const cleanRue = normalizeText(rue);
 
+    console.log(`[DEBUG evalPrix] Specs reçues: ${knownSpecs}`);
+    console.log(`[DEBUG evalPrix] Specs normalisées: ${cleanSpecs}`);
+    console.log(`[DEBUG evalPrix] Rue reçue: ${rue}`);
+    console.log(`[DEBUG evalPrix] Rue normalisée: ${cleanRue}`);
+    console.log(`[DEBUG evalPrix] SearchCode recherché: ${searchCode}`);
+
+    // 1) Match plus précis : SearchCode + rue
+    if (cleanRue && cleanRue !== "?") {
+        const rueMatches = data.filter(r =>
+            r.SearchCode === searchCode &&
+            r.Rue === cleanRue
+        );
+
+        if (rueMatches.length > 0) {
+            const prix = rueMatches[0].PrixMoyen;
+
+            console.log(`[evalPrix] Match rue + searchcode trouvé (${rueMatches.length}) → ${prix} $/pc`);
+
+            return {
+                valeur: +prix.toFixed(2),
+                type: "searchcode-rue",
+                nbValeurs: rueMatches.length,
+                precision: 3
+            };
+        }
+
+        console.log(`[evalPrix] Aucun match rue + searchcode pour ${searchCode} / ${cleanRue}`);
+    }
+
+    // 2) Fallback : SearchCode seulement
     const matches = data.filter(r => r.SearchCode === searchCode);
 
     if (matches.length > 0) {
-        const prix = matches[0].PrixComparables;
+        const prix = matches[0].PrixMoyen;
 
-        console.log(`[evalPrix] Match trouvé (${matches.length}) → ${prix} $/pc`);
+        console.log(`[evalPrix] Match searchcode trouvé (${matches.length}) → ${prix} $/pc`);
 
         return {
             valeur: +prix.toFixed(2),
             type: "searchcode-exact",
             nbValeurs: matches.length,
-            precision: 3
+            precision: 2
         };
     }
 
-    console.log(`[evalPrix] Aucune donnée pour ${searchCode}`);
+    console.log(`[DEBUG evalPrix] Aucune donnée pour ${searchCode}`);
 
     return {
         valeur: 0,
@@ -104,6 +148,7 @@ function evalPrix(
 // === MODE INTERACTIF ===
 if (require.main === module) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
     rl.question("Entrez un code postal: ", (cp) => {
         console.log("Résultat :", evalPrix(cp));
         rl.close();
