@@ -262,9 +262,9 @@ function getPromptForPropertyUsage(lang = 'fr') {
 
 function getPreamble(lang = 'fr')
 {
-    return lang === 'fr' ? `Bonjour, je suis CasaNova l'assistant de Christophe, je peux vous aider avec un projet de transaction immobilière et répondre à plusieurs de vos questions, mais avant de débuter je dois vous poser quelques questions qui m'aideront à mieux vous servir (plus vous êtes précis, plus je saurai vous être utile). \n \n Vous pouvez en tous temps mettre fin à cette cessison en tapant "bye".`
+    return lang === 'fr' ? `Bonjour, je suis CasaNova l'assistant de Christophe, je peux vous aider avec un projet de transaction immobilière et répondre à plusieurs de vos questions, mais avant de débuter je dois vous poser quelques questions qui m'aideront à mieux vous servir (plus vous êtes précis, plus je saurai vous être utile). \n \n Vous pouvez en tous temps mettre fin à cette cessison en tapant *bye*.`
 
-        : `Hello, I am CasaNova, Christophe’s virtual assistant. I can help you with a real estate transaction project and answer many of your questions. Before we begin, however, I need to ask you a few questions that will help me serve you better (the more precise you are, the more helpful I can be).\n \n You may end this session at any moment by typing "bye"`
+        : `Hello, I am CasaNova, Christophe’s virtual assistant. I can help you with a real estate transaction project and answer many of your questions. Before we begin, however, I need to ask you a few questions that will help me serve you better (the more precise you are, the more helpful I can be).\n \n You may end this session at any moment by typing *bye*`
 };
 
 
