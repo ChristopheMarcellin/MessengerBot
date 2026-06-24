@@ -95,12 +95,12 @@ ${context}
 
 Règles :
 1. Le message actuel est prioritaire.
-Utilise le contexte seulement si le message actuel est ambigu, incomplet ou dépend d'un élément déjà discuté.
-Si le message actuel est une question générale autonome, ignore le contexte.
-2. Si le message demande d’évaluer un prix, une valeur ou une estimation immobilière → estimate
-3. Si le message est une question OU un commentaire lié à l’immobilier → gpt
-5. Si c'est une intention de réaliser une transaction immobilière (ex: "je veux acheter ou vendre ou louer une propriété") → declaration
-6. Si c'est une affirmation simple qui ne concerne pas l'immobilier (ex: merci, bonsoir, parfait, d'accord) → declaration
+Pour chaque règle, analyse le message seul sauf si le message seul est ambigu, incomplet ou dépend d'un élément déjà discuté. 
+Si le message seul est ambigu ou incomplet analyse toujours le message avec son contexte.
+2. Si le message demande, d’évaluer un prix, une valeur ou une estimation immobilière → estimate
+3. Si le message est une question OU un commentaire lié directement ou indirectement à l’immobilier → gpt
+5. Si le message est une intention de réaliser une transaction immobilière (ex: "je veux acheter ou vendre ou louer une propriété") → declaration
+6. Si le message est une affirmation simple qui ne concerne pas l'immobilier (ex: merci, bonsoir, parfait, d'accord) → declaration
 7. Si le message est une question qui porte clairement sur autre chose que l’immobilier → other
 
 Règles importantes :
@@ -123,7 +123,7 @@ If the current message is a standalone general question, ignore the context.
 
 2. If the message asks to evaluate a price, value, or real estate estimate → estimate
 
-3. If the message is a question OR a comment related to real estate → gpt
+3. If the message is a question related directly or indirectly to real estate → gpt
 
 4. If the message expresses an intention to complete a real estate transaction (e.g. "I want to buy, sell, or rent a property") → declaration
 
@@ -451,8 +451,8 @@ async function chatOnly(senderId, message, session) {
         } else {
             // Cas 2: GPT n'a pas compris
             const reformulateMsg = lang === "fr"
-                ? "Pouvez-vous reformuler votre message SVP ? Je n'arrive pas à faire un lien avec l'immobilier ou à comprendre votre message."
-                : "Could you rephrase your message please ? I'm unable to comprehend how it relates to real estate or your message.";
+                ? "N'étant autorisé qu'à discuter d'immobilier, il m'est impossible de vous répondre, aussi peut-être ai-je mal compris, reformuler votre question SVP?"
+                : "As I am only authorized to discuss real estate matters, I am unable to answer your question. I may also have misunderstood your request, so could you please rephrase it?";
             await sendMessage(senderId, reformulateMsg, session);
         }
         return true;
@@ -790,7 +790,7 @@ CONTENU DES BLOCS :
 
 SEARCHCODE=<searchcode ou NONE>
 
-ESTIME_GPT=<réponse complète en langage naturel destinée à l'utilisateur. Explique ce qui a été estimé, les critères retenus, les hypothèses utilisées et le niveau de confiance de l'estimation. Fournis ensuite une estimation indicative prudente. Si certaines informations importantes sont inconnues ou ont conduit à l'utilisation du caractère ? dans le SEARCHCODE, nomme clairement ces informations manquantes dans le texte naturel, par exemple la superficie, le nombre de chambres, le stationnement ou la vue. Explique que ces informations manquantes rendent l'estimation moins précise. Mentionne aussi naturellement que plus l'information est détaillée, plus l'estimation risque d'être précise. N'utilise jamais de format de champs, de liste ou de résumé structuré. Rédige un texte naturel et conversationnel dans la langue demandée.>
+ESTIME_GPT=<réponse complète en langage naturel destinée à l'utilisateur. Explique ce qui a été estimé, les critères retenus sauf le code de grandeur (size), les hypothèses utilisées et le niveau de confiance de l'estimation. Fournis ensuite une estimation indicative prudente. Si certaines informations importantes sont inconnues ou ont conduit à l'utilisation du caractère ? dans le SEARCHCODE, nomme clairement ces informations manquantes dans le texte naturel, par exemple la superficie, le nombre de chambres, le stationnement ou la vue. Explique que ces informations manquantes rendent l'estimation moins précise. Mentionne aussi naturellement que plus l'information est détaillée, plus l'estimation risque d'être précise. N'utilise jamais de format de champs, de liste ou de résumé structuré. Rédige un texte naturel et conversationnel dans la langue demandée.>
 
 RUE=<nom de rue seulement, normalisé en français si possible. Utilise des abréviations : Av., Boul., Ch., St-. Par exemple "Saint-Charles" devient "St-Charles". Si inconnue, retourne ?>
 
@@ -961,7 +961,7 @@ BLOCK CONTENT:
 
 SEARCHCODE=<searchcode or NONE>
 
-ESTIME_GPT=<complete natural-language response intended for the user. Explain what was estimated, the criteria used, the assumptions made, and the confidence level of the estimate. Then provide a cautious indicative estimate. If some important information is unknown or led to the use of ? in the SEARCHCODE, clearly mention those missing details naturally, for example area, number of bedrooms, parking, or view. Explain that these missing details make the estimate less precise. Also mention naturally that the more detailed the information is, the more precise the estimate is likely to be. Never use a field format, list, or structured summary. Write a natural, conversational text in the requested language.>
+ESTIME_GPT=<complete natural-language response intended for the user. Explain what was estimated, the criteria used excluding the size code, the assumptions made, and the confidence level of the estimate. Then provide a cautious indicative estimate. If some important information is unknown or led to the use of ? in the SEARCHCODE, clearly mention those missing details naturally, for example area, number of bedrooms, parking, or view. Explain that these missing details make the estimate less precise. Also mention naturally that the more detailed the information is, the more precise the estimate is likely to be. Never use a field format, list, or structured summary. Write a natural, conversational text in the requested language.>
 
 RUE=<street name only, normalized in French if possible. Use abbreviations: Av., Boul., Ch., St-. For example, "Saint-Charles" becomes "St-Charles". If unknown, return ?>
 
