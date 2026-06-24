@@ -97,9 +97,9 @@ Règles :
 1. Le message actuel est prioritaire.
 Pour chaque règle, analyse le message seul sauf si le message seul est ambigu, incomplet ou dépend d'un élément déjà discuté. 
 Si le message seul est ambigu ou incomplet analyse toujours le message avec son contexte.
-2. Si le message demande, d’évaluer un prix, une valeur ou une estimation immobilière → estimate
+2. Si le message demande, d’évaluer un prix de vente, une valeur ou une estimation immobilière excluant les locations → estimate
 3. Si le message est une question OU un commentaire lié directement ou indirectement à l’immobilier → gpt
-5. Si le message est une intention de réaliser une transaction immobilière (ex: "je veux acheter ou vendre ou louer une propriété") → declaration
+5. Si le message est une intention de réaliser une transaction immobilière (ex: "je veux acheter, vendre ou louer une propriété") → declaration
 6. Si le message est une affirmation simple qui ne concerne pas l'immobilier (ex: merci, bonsoir, parfait, d'accord) → declaration
 7. Si le message est une question qui porte clairement sur autre chose que l’immobilier → other
 
@@ -117,25 +117,20 @@ Available context:
 ${context}
 
 Rules:
+
 1. The current message has priority.
-Use the context only if the current message is ambiguous, incomplete, or depends on something already discussed.
-If the current message is a standalone general question, ignore the context.
+For each rule, analyze the message by itself unless the message alone is ambiguous, incomplete, or depends on something previously discussed.
+If the message alone is ambiguous or incomplete, always analyze it together with its context.
 
 2. If the message asks to evaluate a price, value, or real estate estimate → estimate
 
-3. If the message is a question related directly or indirectly to real estate → gpt
+3. If the message is a question OR a comment directly or indirectly related to real estate → gpt
 
-4. If the message expresses an intention to complete a real estate transaction (e.g. "I want to buy, sell, or rent a property") → declaration
+4. If the message expresses an intention to carry out a real estate transaction (e.g. "I want to buy, sell, or rent a property") → declaration
 
-5. If the message is a simple statement that is not related to real estate (e.g. thanks, good evening, perfect, okay) → declaration
+5. If the message is a simple statement unrelated to real estate (e.g. thanks, good evening, perfect, okay) → declaration
 
-6. If the message is a question clearly about something other than real estate → other
-
-Important rules:
-- NEVER classify a simple human statement as other.
-- Use other only for a genuine out-of-domain message.
-
-Respond with a single word only: estimate, gpt, declaration, or other.`;;
+6. If the message is a question clearly about something other than real estate → other`;;
 }
 //construit les 5 derniers messages avec les specs de l'usager
 function buildContextualPrompt(session, lang = "fr") {
@@ -203,8 +198,8 @@ const faqMapByKey = {
     //    en: "Carole has been a real estate broker for over 25 years and has won numerous awards. She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2025 and received the Centurion Award from 2003 to 2013 (except 2010), and is a member of the Century 21 Canada Hall of Fame since 2007."
     //},
     christophe: {
-        fr: "Christophe pratique le courtage depuis 2 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre rapidement. Cet assistant virtuel est d'ailleurs un excellent exemple de la technologie à votre service.",
-        en: "Christophe has been a broker for 2 years and brings 25 years of technology experience to help his clients sell efficiently. This virtual assistant is a great example of technology working for you."
+        fr: "Christophe pratique le courtage depuis 2023 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre, acheter ou louer. Cet assistant virtuel et les outils à votre disposition sur www.christophemarcellin.com sont d'ailleurs conçu par Christophe.",
+        en: "Christophe has been a real estate broker since 2023 and brings 25 years of technology experience to help clients buy, sell, and rent properties. This virtual assistant, along with the tools available on https://en.christophemarcellin.com, was designed and developed by Christophe himself."
     },
     office:
     {
