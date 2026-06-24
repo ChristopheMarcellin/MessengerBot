@@ -4,7 +4,7 @@ const { checkSenderInSheets } = require('../googleData')
 
 async function stepInitializeSession(context) {
     const { senderId, message } = context;
-    const isEndSession = message.trim().toLowerCase() === 'end session';
+    const isEndSession = message.trim().toLowerCase() === 'bye';
     let session;
 
     // Validate sender Id (protection, unlikely to come through this if)
@@ -13,11 +13,11 @@ async function stepInitializeSession(context) {
         return false;
     }
 
-    // Manage end session call
+    // Manage bye call
     if (isEndSession) {
         session = resetSession(context);
         context.session = session;
-        console.log(`[INIT end session] Session reset, langue='${session.language}' pour '${message}'`);
+        console.log(`[INIT bye] Session reset, langue='${session.language}' pour '${message}'`);
         return false;
     }
 

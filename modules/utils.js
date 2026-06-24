@@ -122,7 +122,7 @@ Rules:
 For each rule, analyze the message by itself unless the message alone is ambiguous, incomplete, or depends on something previously discussed.
 If the message alone is ambiguous or incomplete, always analyze it together with its context.
 
-2. If the message asks to evaluate a price, value, or real estate estimate → estimate
+2. If the message asks to evaluate a price, value, or real estate estimate, rentals excluded → estimate
 
 3. If the message is a question OR a comment directly or indirectly related to real estate → gpt
 

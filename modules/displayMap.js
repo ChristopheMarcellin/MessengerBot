@@ -66,7 +66,7 @@ module.exports = {
             0: "No garage",
             1: "1 garage",
             2: "2 garages",
-            3: "2+ garages"
+            3: "2 garages or more"
         }
     },
 

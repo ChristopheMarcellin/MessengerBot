@@ -178,7 +178,12 @@ function buildSpecSummary(session, lang = "fr") {
         const display = getDisplayValue(key, fields[key], lang);
         summary += `${display}\n`;
     }
-
+    if (session.projectType === "S") {
+        summary = summary
+            .replace(/ ou plus/g, "")
+            .replace(/ or more/g, "")
+            .replace(/2\+ garages/g, "2 garages");
+    }
     const footer = lang === "fr"
         ? `\n*Prêt pour vos questions !*\n\n` +
         `La précision de vos questions améliore la qualité de mes réponses. Il peut m'arriver de faire erreur, il est toujours préférable de valider avec un courtier professionnel !

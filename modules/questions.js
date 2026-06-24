@@ -6,27 +6,17 @@ const questions = {
 
 For a rental, specify a monthly amount; for a purchase, the property amount.
 
-Examples of valid numeric formats:
+(Valid formats: 2000, 2 000)
 
-2000
-2 000
-2,000
-1100000
-1 100 000
-1,100,000
+
 `,
             fr: `💰 Avez-vous un budget en tête ? 
 
 Pour une location préciser un montant par mois, pour un achat le montant de la propriété.
 
-Exemples de formats numériques valides:
+(Formats valides: 2000, 2 000, 2,000)
 
-2000
-2 000
-2,000
-1100000
-1 100 000
-1,100,000`,
+`,
         },
 
         bedrooms: {
@@ -58,17 +48,17 @@ Exemples de formats numériques valides:
 
         location: {
             en: `📍 Please confirm next the region, city and even the neighborhood(s) of the target property if possible!`,
-            fr: `📍 Veuillez confirmer la région, ville et possiblement le(s) quartier(s) de la propriété concernée !`,
+            fr: `📍 Veuillez confirmer la région, ville et possiblement le(s) quartier(s) de la propriété visée !`,
         },
     },
 
     S: {
         price: {
-            en: `💰 Do you have an approximate selling price in mind? 
+            en: `💰 Do you have an approximate selling price in mind (0 if not)? 
 
         (Numeric only, examples: 625,900 or 625 900)`,
 
-            fr: `💰 Avez-vous un prix de vente approximatif en tête ? 
+            fr: `💰 Avez-vous un prix de vente approximatif en tête (0 pour non) ? 
 
 (Valeur numérique seulement, ex.: 625,900 ou 625 900):
 `,
@@ -150,7 +140,7 @@ Exemples de formats numériques valides:
 
     generic: {
         expectations: {
-            fr: `✨ Énoncez vos attentes particulières:
+            fr: `✨ Énoncez vos attentes particulières, par exemple:
 
 
 🔥 Je veux un foyer (souhaitable)
@@ -159,7 +149,7 @@ Exemples de formats numériques valides:
 ...`
 ,
 
-            en: `✨ State any of your expectations: 
+            en: `✨ State any of your expectations, for example: 
 
 🔥 A Fireplace (nice to have)
 ⚖️ I want to sell without legal warranty
@@ -175,9 +165,10 @@ Exemples de formats numériques valides:
 
 
             Votre nom SVP (*X* si confidentiel) ? \n
-(Notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).`,
+            
+(Répondre facilite les suivis ! - Notre politique de confidentialité au: https://christophe-marcellin.c21.ca/contact/#politique).`,
             en: `*Your name*, please (*X* if condidential)?\n
-(Our privacy policy at: https://christophe-marcellin.c21.ca/en/contact/#policy).`
+(Answering facilitates follow-ups! - Our privacy policy at: https://christophe-marcellin.c21.ca/en/contact/#policy).`
         }
 
 
@@ -195,13 +186,13 @@ Exemples de formats numériques valides:
 //    },
 
         phone: {
-        fr: `📞 No de tel. (format 123-456-7890, *X* si confidentiel) ?`,
-        en: `📞 What is your phone number (format 123-456-7890, *X* if confidential)`,
+        fr: `📞 No de tel. (*X* si confidentiel - format 123-456-7890) ?`,
+            en: `📞 What is your phone number (*X* if confidential - format 123-456-7890)`,
     },
 
     email: {
         fr: `✉️ Votre adresse courriel SVP (*X* si confidentiel)`,
-        en: `✉️ Your email address please? (*X* si confidential)`,
+        en: `✉️ Your email address please? (*X* if confidential)`,
     },
 
     wantsContact: {
@@ -209,14 +200,14 @@ Exemples de formats numériques valides:
 
 1️⃣ Oui  
 2️⃣ Non 
-3️⃣ Je désire un site Web qui présente des propriétés en vente \n
+3️⃣ Je désire un site Web qui présente des propriétés que je cherche. \n
 (disponible seulement si les informations fournies le permettent, voir un exemple: https://tinyurl.com/45fskxav )`,
 
         en: `👥 Would you like someone from our team to contact you? Specify an option number:  
 
 1️⃣ Yes  
 2️⃣ No  
-3️⃣ I would like a website showcasing properties for sale.\n
+3️⃣ I would like a website showcasing properties I am looking for.\n
 (available only when the provided information allow it, see an example: https://tinyurl.com/45fskxav )`
     }
 ,
@@ -271,9 +262,9 @@ function getPromptForPropertyUsage(lang = 'fr') {
 
 function getPreamble(lang = 'fr')
 {
-    return lang === 'fr' ? `Bonjour, avant de débuter je dois vous poser quelques questions qui faciliteront notre échange, plus vous êtes précis, plus je peux vous être utile.`
+    return lang === 'fr' ? `Bonjour, je suis CasaNova l'assistant de Christophe, je peux vous aider avec un projet de transaction immobilière et répondre à plusieurs de vos questions, mais avant de débuter je dois vous poser quelques questions qui m'aideront à mieux vous servir (plus vous êtes précis, plus je saurai vous être utile). \n \n Vous pouvez en tous temps mettre fin à cette cessison en tapant "bye".`
 
-        : `Hello, before we begin, I need to ask you a few questions that will help guide our conversation. The more precise your answers are, the more helpful I can be.`
+        : `Hello, I am CasaNova, Christophe’s virtual assistant. I can help you with a real estate transaction project and answer many of your questions. Before we begin, however, I need to ask you a few questions that will help me serve you better (the more precise you are, the more helpful I can be).\n \n You may end this session at any moment by typing "bye"`
 };
 
 
@@ -281,8 +272,6 @@ module.exports = {
     getPromptForProjectType,
     getPromptForPropertyUsage
 };
-
-
 
 
 module.exports = {

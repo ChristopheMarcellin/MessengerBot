@@ -90,7 +90,7 @@ app.post('/webhook', async (req, res) => {
         // === Contexte session ===
         const cleanText = (receivedMessage || "").toLowerCase().replace(/[^\w\s]/gi, '').trim();
         const session = getSession(senderId) || {};
-        const isEndSession = cleanText === 'end session';
+        const isEndSession = cleanText === 'bye';
 
         if (shouldSkipMessage(session, receivedMessage, timestamp)) {
             return res.sendStatus(200);
