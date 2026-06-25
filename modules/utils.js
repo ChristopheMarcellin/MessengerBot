@@ -206,8 +206,8 @@ const faqMapByKey = {
     //    en: "Carole has been a real estate broker for over 25 years and has won numerous awards. She was named Master Salesperson in 2000, 2001, 2002, 2010, 2014 to 2025 and received the Centurion Award from 2003 to 2013 (except 2010), and is a member of the Century 21 Canada Hall of Fame since 2007."
     //},
     christophe: {
-        fr: "Christophe pratique le courtage depuis 2023 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre, acheter ou louer. Cet assistant virtuel et les outils à votre disposition sur www.christophemarcellin.com sont d'ailleurs conçu par Christophe.",
-        en: "Christophe has been a real estate broker since 2023 and brings 25 years of technology experience to help clients buy, sell, and rent properties. This virtual assistant, along with the tools available on https://en.christophemarcellin.com, was designed and developed by Christophe himself."
+        fr: "Christophe pratique le courtage depuis 2023 ans et apporte à sa clientèle 25 ans d'expérience en technologie pour vous aider à vendre, acheter ou louer. Cet assistant virtuel et les outils à votre disposition sur www.christophemarcellin.com sont d'ailleurs conçu par Christophe à titre d'exemple.",
+        en: "Christophe has been a real estate broker since 2023 and brings 25 years of technology experience to help clients buy, sell, and rent properties. This virtual assistant, along with the tools available on https://en.christophemarcellin.com, were designed and developed by Christophe himself as an example."
     },
     office:
     {
@@ -694,11 +694,11 @@ PROCÉDURE LOCALISATION :
 
 4. Si seule une ville est mentionnée, tente d'identifier le RTA le plus plausible lorsque cela est raisonnablement possible.
 
-5. Utilise tes connaissances géographiques pour déterminer le RTA le plus crédible.
+5. Dès qu'une rue, une ville, un quartier, un secteur, un immeuble ou un repère géographique permet raisonnablement d'associer la propriété à un RTA canadien, tu dois choisir le RTA le plus probable.
 
-6. Si le RTA demeure incertain et qu'il s'agit d'une adresse à Montréal ou à Saint-Lambert, utilise la liste de référence ci-dessous pour identifier le RTA le plus approprié.
+6. Si le RTA demeure incertain et qu'il s'agit d'une adresse, d'un secteur ou d'un quartier à Montréal ou à Saint-Lambert, utilise la liste de référence ci-dessous pour identifier le RTA le plus approprié.
 
-7. Si aucun RTA crédible ne peut être déduit, retourne SEARCHCODE=NONE.
+7. Retourne SEARCHCODE=NONE seulement lorsqu'aucune localisation exploitable ne permet de choisir un RTA probable.
 
 LISTE DE RÉFÉRENCE :
 
@@ -758,8 +758,8 @@ RÈGLES D'INTERPRÉTATION :
 - Utilise 0 seulement lorsqu'une absence réelle est clairement mentionnée.
 - Ne jamais inventer une caractéristique non mentionnée.
 - Ne jamais demander un code postal à l'utilisateur.
-- Construis un SEARCHCODE dès qu'un RTA crédible peut être déduit.
-- Utilise SEARCHCODE=NONE seulement lorsqu'aucun RTA crédible ne peut être déduit.
+- Construis un SEARCHCODE dès qu'un RTA probable peut être associé à la localisation.
+- Utilise SEARCHCODE=NONE seulement lorsqu'aucune localisation exploitable ne permet de choisir un RTA probable.
 
 EXEMPLES :
 
@@ -930,8 +930,8 @@ INTERPRETATION RULES:
 * Use 0 only when a true absence is clearly mentioned.
 * Never invent an unmentioned characteristic.
 * Never ask the user for a postal code.
-* Build a SEARCHCODE as soon as a credible RTA/FSA can be deduced.
-* Use SEARCHCODE=NONE only when no credible RTA/FSA can be deduced.
+* Build a SEARCHCODE as soon as a probable RTA/FSA can be associated with the property's location.
+* Use SEARCHCODE=NONE only when no usable location allows a probable RTA/FSA to be selected.
 
 EXAMPLES:
 
