@@ -785,7 +785,7 @@ CONTENU DES BLOCS :
 
 SEARCHCODE=<searchcode ou NONE>
 
-ESTIME_GPT=<réponse complète en langage naturel destinée à l'utilisateur. Explique ce qui a été estimé, les critères retenus sauf le code de grandeur (size), les hypothèses utilisées et le niveau de confiance de l'estimation. Fournis ensuite une estimation indicative prudente. Si certaines informations importantes sont inconnues ou ont conduit à l'utilisation du caractère ? dans le SEARCHCODE, nomme clairement ces informations manquantes dans le texte naturel, par exemple la superficie, le nombre de chambres, le stationnement ou la vue. Explique que ces informations manquantes rendent l'estimation moins précise. Mentionne aussi naturellement que plus l'information est détaillée, plus l'estimation risque d'être précise. N'utilise jamais de format de champs, de liste ou de résumé structuré. Rédige un texte naturel et conversationnel dans la langue demandée.>
+ESTIME_GPT=<réponse complète en langage naturel destinée à l'utilisateur. Explique ce qui a été estimé les hypothèses utilisées et le niveau de confiance de l'estimation, les critères retenus, ne pas référer aux valeurs du SEARCHCODE,. Fournis ensuite une estimation indicative prudente. Si certaines informations importantes sont inconnues ou ont conduit à l'utilisation du caractère ? dans le SEARCHCODE, nomme clairement ces informations manquantes dans le texte naturel, par exemple la superficie, le nombre de chambres, le stationnement ou la vue. Explique que ces informations manquantes rendent l'estimation moins précise. Mentionne aussi naturellement que plus l'information est détaillée, plus l'estimation risque d'être précise. N'utilise jamais de format de champs, de liste ou de résumé structuré. Rédige un texte naturel et conversationnel dans la langue demandée.>
 
 RUE=<nom de rue seulement, normalisé en français si possible. Utilise des abréviations : Av., Boul., Ch., St-. Par exemple "Saint-Charles" devient "St-Charles". Si inconnue, retourne ?>
 
@@ -804,6 +804,7 @@ The context generally contains two parts:
 2. numbered past messages, from oldest to most recent.
 
 You are analyzing a real estate price estimate request.
+You must always read the current message and the entire context before completing your analysis.
 Desired response language for the block content: ${lang}
 
 CURRENT MESSAGE:
@@ -840,11 +841,11 @@ LOCATION PROCEDURE:
 
 1. Identify all available geographic clues: address, street, building, real estate project, sector, neighborhood, borough, or city.
 
-2. If the current message contains new geographic information, it has priority over the previous context.
+2. You must identify the property's location by analyzing the current message, the numbered past messages, and the known specifications, in that exact order.
 
 3. Try to associate the physical location with the most plausible neighborhood and RTA/FSA.
 
-4. If only a city is mentioned, try to identify the most plausible RTA/FSA when reasonably possible.
+4. If only a city is mentioned, try to identify the most plausible RTA/FSA whenever reasonably possible.
 
 5. Use your geographic knowledge to determine the most credible RTA/FSA.
 
@@ -936,7 +937,7 @@ ESTIMATION PROCEDURE:
 
 1. Always produce an estimate when the available information reasonably allows it.
 
-2. Use information from the current message, recent messages, and known specifications to determine what is being estimated.
+2. Use information from the current message, the numbered past messages, and the known specifications to determine what is being estimated.
 
 3. If the area is known or can reasonably be inferred, prefer a total price estimate.
 
@@ -956,7 +957,7 @@ BLOCK CONTENT:
 
 SEARCHCODE=<searchcode or NONE>
 
-ESTIME_GPT=<complete natural-language response intended for the user. Explain what was estimated, the criteria used excluding the size code, the assumptions made, and the confidence level of the estimate. Then provide a cautious indicative estimate. If some important information is unknown or led to the use of ? in the SEARCHCODE, clearly mention those missing details naturally, for example area, number of bedrooms, parking, or view. Explain that these missing details make the estimate less precise. Also mention naturally that the more detailed the information is, the more precise the estimate is likely to be. Never use a field format, list, or structured summary. Write a natural, conversational text in the requested language.>
+ESTIME_GPT=<complete natural-language response intended for the user. Explain what was estimated, the assumptions made, do not refer to code values used within the SEARCHCODE. Then provide a cautious indicative estimate. If some important information is unknown or led to the use of ? in the SEARCHCODE, clearly mention those missing details naturally, for example area, number of bedrooms, parking, or view. Explain that these missing details make the estimate less precise. Also mention naturally that the more detailed the information is, the more precise the estimate is likely to be. Never use a field format, list, or structured summary. Write a natural, conversational text in the requested language.>
 
 RUE=<street name only, normalized in French if possible. Use abbreviations: Av., Boul., Ch., St-. For example, "Saint-Charles" becomes "St-Charles". If unknown, return ?>
 
