@@ -130,7 +130,15 @@ If the message alone is ambiguous or incomplete, always analyze it together with
 
 5. If the message is a simple statement unrelated to real estate (e.g. thanks, good evening, perfect, okay) → declaration
 
-6. If the message is a question clearly about something other than real estate → other`;;
+6. If the message is a question clearly about something other than real estate → other
+
+Important rules:
+- NEVER classify a simple human statement as other.
+- Use other only for truly out-of-domain questions.
+
+Answer with only one word: estimate, gpt, declaration, or other.
+
+`;
 }
 //construit les 5 derniers messages avec les specs de l'usager
 function buildContextualPrompt(session, lang = "fr") {
